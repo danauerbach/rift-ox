@@ -26,10 +26,10 @@ def main() -> None:
     parser.add_argument("--exercise-pin", help="exercise stop pin only", type=str, 
                         choices=["stop", "up", "down", "latch", "none"], default="none")
     
-    parser.add_argument("--stop-hi", help="set STOP pin high to start", default=False, type=bool)
-    parser.add_argument("--up-hi", help="set UP pin high to start", default=False, type=bool)
-    parser.add_argument("--down-hi", help="set DOWN pin high to start", default=False, type=bool)
-    parser.add_argument("--latch-hi", help="set LATCH pin high to start", default=False, type=bool)
+    parser.add_argument("--stop-hi", help="set STOP pin high to start", choices=[True, False], default=False, type=bool)
+    parser.add_argument("--up-hi", help="set UP pin high to start", choices=[True, False], default=False, type=bool)
+    parser.add_argument("--down-hi", help="set DOWN pin high to start", choices=[True, False], default=False, type=bool)
+    parser.add_argument("--latch-hi", help="set LATCH pin high to start", choices=[True, False], default=False, type=bool)
 
     args = parser.parse_args()
 
