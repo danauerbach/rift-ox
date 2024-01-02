@@ -62,7 +62,7 @@ class DIOCommander():
             "pin": cfg["rift-ox-pi"]["DIO_LATCH_SENSOR_PIN"],
         }
 
-        # self.init_dio_pins()
+        self.init_dio_pins()
 
     def init_dio_pins(self):
         cmds = [
@@ -72,7 +72,8 @@ class DIOCommander():
             f'dio mode DO_G3 source\r',
             f'dio set DO_G{self.UPCAST_PIN["group"]} {self.UPCAST_PIN["pin"]} false\r',
             f'dio set DO_G{self.DOWNCAST_PIN["group"]} {self.DOWNCAST_PIN["pin"]} false\r',
-            f'dio set DO_G{self.MOTOR_STOP_PIN["group"]} {self.MOTOR_STOP_PIN["pin"]} true\r'
+            f'dio set DO_G{self.MOTOR_STOP_PIN["group"]} {self.MOTOR_STOP_PIN["pin"]} false\r'
+            f'dio set DO_G{self.LATCH_RELEASE_PIN["group"]} {self.LATCH_RELEASE_PIN["pin"]} false\r'
         ]
         for cmd in cmds:
             self.issue_command(method="init_dio_pins", cmd=cmd)
