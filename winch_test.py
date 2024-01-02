@@ -43,7 +43,7 @@ def main() -> None:
 
     cfg = config.read()
     if cfg == None:
-        print(f'ctdmon: ERROR unable to read rift-ox.toml config file. Quitting.')
+        print(f'winch_test: ERROR unable to read rift-ox.toml config file. Quitting.')
         sys.exit(1)
 
     cmndr = DIOCommander(cfg, sim)
@@ -74,6 +74,12 @@ def main() -> None:
             cmndr.pin_hi(expin)
             time.sleep(3)
             ndx += 1
+
+        # let's end with everything LOW
+        cmndr.pin_low("stop")
+        cmndr.pin_low("up")
+        cmndr.pin_low("down")
+        cmndr.pin_low("latch")
 
         return
 
