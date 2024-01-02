@@ -3,6 +3,7 @@
 import argparse
 import sys
 import signal
+import time
 import config
 
 from winch.dio_cmds import DIOCommander
@@ -14,7 +15,7 @@ def interrupt_handler(signum, frame):
     # time.sleep(1)
     sys.exit(0)
 
-def main():
+def main() -> None:
 
     signal.signal(signal.SIGINT, interrupt_handler)
 
@@ -33,6 +34,23 @@ def main():
 
     cmndr = DIOCommander(cfg, sim)
     VALID_CMDS = ["down", "up", "stop", "pedgecnt", "ledgecnt", "lrelease", "lhold", "quit"]
+
+    cmnds = ["stop_hi", "stop_low", "stop_hi","stop_low", "stop_hi", "stop_low"]
+
+    cmndr.stop_low()
+    time.sleep(3)
+    cmndr.stop_hi()
+    time.sleep(3)
+    cmndr.stop_low()
+    time.sleep(3)
+    cmndr.stop_hi()
+    time.sleep(3)
+    cmndr.stop_low()
+    time.sleep(3)
+    cmndr.stop_hi()
+    time.sleep(3)
+
+    return
 
     done: bool = False
     while not done:

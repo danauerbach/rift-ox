@@ -62,7 +62,7 @@ class DIOCommander():
             "pin": cfg["rift-ox-pi"]["DIO_LATCH_SENSOR_PIN"],
         }
 
-        self.init_dio_pins()
+        # self.init_dio_pins()
 
     def init_dio_pins(self):
         cmds = [
@@ -76,6 +76,22 @@ class DIOCommander():
         ]
         for cmd in cmds:
             self.issue_command(method="init_dio_pins", cmd=cmd)
+            time.sleep(0.03)
+
+    def stop_low(self):
+        cmds = [
+            f'dio set DO_G{self.MOTOR_STOP_PIN["group"]} {self.MOTOR_STOP_PIN["pin"]} false\r',
+        ]
+        for cmd in cmds:
+            self.issue_command(method="stop_low", cmd=cmd)
+            time.sleep(0.03)
+
+    def stop_hi(self):
+        cmds = [
+            f'dio set DO_G{self.MOTOR_STOP_PIN["group"]} {self.MOTOR_STOP_PIN["pin"]} true\r',
+        ]
+        for cmd in cmds:
+            self.issue_command(method="stop_hi", cmd=cmd)
             time.sleep(0.03)
 
     def stop_winch(self):
@@ -397,7 +413,7 @@ class DIOCommander():
             # cmd_bytes = dio_command_bytes(DIO_ACTION_NUMINPUTS_NAME, dir=DIO_DIRECTION_IN, group=0, pin=1)
             written = mcu.write(cmd_bytes)
             mcu.flush()
-            print(f'DIO COMMAND BYTES: {cmd_bytes}')
+            print(f'Command sent: {cmd_bytes.decode().strip()}')
             #TODO LOG INFO
 
             time.sleep(0.01)
@@ -406,15 +422,15 @@ class DIOCommander():
             #TODO LOG INFO
             # print(f"RESPONSE: {res_array}")
             if res_array:
-                print(f'DIO RESPONSE: {res_array}')
-                print(f"DIO RESPONSE: {res_array[1].decode()}")
+                # print(f'DIO RESPONSE: {res_array}')
+                # print(f"DIO RESPONSE: {res_array[1].decode()}")
                 result = res_array[1]
                 #TODO LOG INFO
             else:
                 result = None
                 err = True
                 #TODO log error
-                print(f'DIO INVALID RESPONSE')
+                # print(f'DIO INVALID RESPONSE')
 
         return result, err
 
