@@ -263,17 +263,17 @@ if __name__ == "__main__":
                 print(f'Invalid command verb: {cmd_words[0]}')
                 continue
 
-        if cmd_words[0] == 'RAW:':
-            cmd_bytes = f'{" ".join(cmd_words[1:])}\r'.encode()
-        else:
-            cmd_verb, params = dio_parse_params(cmd)
-            print(f'CMD: {cmd_verb}')
-            pprint(params)
-            if cmd_verb:
-                cmd_bytes = dio_command_bytes(cmd_verb, **params)
-                # print(f'CMD_BYTES: {cmd_bytes}')
-            else:
-                print(f'error constructing command from: {cmd}')
+        # if cmd_words[0] == 'RAW:':
+        cmd_bytes = f'{" ".join(cmd_words[1:])}\r'.encode()
+        # else:
+        #     cmd_verb, params = dio_parse_params(cmd)
+        #     print(f'CMD: {cmd_verb}')
+        #     pprint(params)
+        #     if cmd_verb:
+        #         cmd_bytes = dio_command_bytes(cmd_verb, **params)
+        #         # print(f'CMD_BYTES: {cmd_bytes}')
+        #     else:
+        #         print(f'error constructing command from: {cmd}')
 
         try:
             with serial.Serial(dio_port) as mcu:
@@ -284,7 +284,7 @@ if __name__ == "__main__":
                 mcu.read(mcu.inWaiting()) #get anything waiting in buffer and discard
 
                 # cmd_bytes = dio_command_bytes(DIO_ACTION_NUMINPUTS_NAME, dir=DIO_DIRECTION_IN, group=0, pin=1)
-                print(f'COMMAND BYTES: {cmd_bytes}')
+                # print(f'COMMAND BYTES: {cmd_bytes}')
                 written = mcu.write(cmd_bytes)
                 mcu.flush()
                 #TODO LOG INFO
@@ -295,7 +295,7 @@ if __name__ == "__main__":
                 #TODO LOG INFO
                 # print(f"RESPONSE: {res_array}")
                 if res_array:
-                    print(f'RESPONSE: {res_array}')
+                    # print(f'RESPONSE: {res_array}')
                     print(f"RESPONSE: {res_array[1].decode()}")
                     text = res_array[1]
                     #TODO LOG INFO
