@@ -78,21 +78,31 @@ class DIOCommander():
             self.issue_command(method="init_dio_pins", cmd=cmd)
             time.sleep(0.03)
 
-    def stop_low(self):
-        cmds = [
-            f'dio set DO_G{self.MOTOR_STOP_PIN["group"]} {self.MOTOR_STOP_PIN["pin"]} false\r',
-        ]
-        for cmd in cmds:
-            self.issue_command(method="stop_low", cmd=cmd)
-            time.sleep(0.03)
+    def pin_low(self, pin: str):
+        if pin == 'stop':
+            cmd = f'dio set DO_G{self.MOTOR_STOP_PIN["group"]} {self.MOTOR_STOP_PIN["pin"]} false\r'
+        elif pin == 'up':
+            cmd = f'dio set DO_G{self.UPCAST_PIN["group"]} {self.UPCAST_PIN["pin"]} false\r'
+        elif pin == 'down':
+            cmd = f'dio set DO_G{self.DOWNCAST_PIN["group"]} {self.DOWNCAST_PIN["pin"]} false\r'
+        elif pin == 'latch':
+            cmd = f'dio set DO_G{self.LATCH_RELEASE_PIN["group"]} {self.LATCH_RELEASE_PIN["pin"]} false\r'
 
-    def stop_hi(self):
-        cmds = [
-            f'dio set DO_G{self.MOTOR_STOP_PIN["group"]} {self.MOTOR_STOP_PIN["pin"]} true\r',
-        ]
-        for cmd in cmds:
-            self.issue_command(method="stop_hi", cmd=cmd)
-            time.sleep(0.03)
+        self.issue_command(method=f"{pin}_low", cmd=cmd)
+        time.sleep(0.03)
+
+    def pin_hi(self, pin: str):
+        if pin == 'stop':
+            cmd = f'dio set DO_G{self.MOTOR_STOP_PIN["group"]} {self.MOTOR_STOP_PIN["pin"]} true\r'
+        elif pin == 'up':
+            cmd = f'dio set DO_G{self.UPCAST_PIN["group"]} {self.UPCAST_PIN["pin"]} true\r'
+        elif pin == 'down':
+            cmd == f'dio set DO_G{self.DOWNCAST_PIN["group"]} {self.DOWNCAST_PIN["pin"]} true\r'
+        elif pin == 'latch':
+            cmd = f'dio set DO_G{self.LATCH_RELEASE_PIN["group"]} {self.LATCH_RELEASE_PIN["pin"]} true\r'
+
+        self.issue_command(method=f"{pin}_hi", cmd=cmd)
+        time.sleep(0.03)
 
     def stop_winch(self):
         cmds = [
