@@ -37,7 +37,6 @@ btnC.pull = Pull.UP
 
 # Create the I2C interface.
 i2c = busio.I2C(board.SCL, board.SDA)
-i2c = I2C(6)
 
 # 128x32 OLED Display
 reset_pin = DigitalInOut(board.D4)
@@ -68,8 +67,7 @@ while True:
         print('RFM9x Error: ', error)
 
     # check for a packet
-    packet = None
-    #packet = rfm9x.receive(timeout=1.0)
+    packet = rfm9x.receive(timeout=1.0)
 
     if packet is None:
       # Packet has not been received

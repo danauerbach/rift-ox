@@ -55,7 +55,7 @@ def connector(client : str, broker : str = 'localhost', port : int = 1883, keep_
 
 
 def client_loop(client, broker, port, keepalive):
-    t = threading.Thread(target = client_loop, args=(client,broker,port,60))
+    t = threading.Thread(target = client_loop, args=(client,broker,port,60), name='simul:client')
     t.start()
 
 def simulate_downcast(ctd_simul : mqtt.Client, monitor_client : mqtt.Client, cmd_q : queue.Queue, start_evt : threading.Event) -> bool:

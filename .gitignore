@@ -1,6 +1,12 @@
 # Created by https://www.toptal.com/developers/gitignore/api/python,circuitpython
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,circuitpython
 
+### Custom RIFT-OX
+logs/
+etc/
+ops/
+
+
 ### CircuitPython ###
 .Trashes
 .metadata_never_index

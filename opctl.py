@@ -7,28 +7,17 @@ import sys
 import threading
 import time
 
-HDR_START_BYTE = 0x01
-
-### DIO COMMAND FORMAT (8-bytes)
-# byte 0 - DIO ACTION
-# byte 1 - DIO DIO Bank (0 to DIO bank cnt. I.e. 2 for FR202?)
-# byte 2 - DIO PIN INDEX
-# byte 3 - DIO STATE or MODE of PIN. The current state of the pin (if read), or the state to set (if written), or the mode to set (mode 0=sourcing, mode 1=sinking)
-# byte 4-7 - DIO The edge-count of the pin, or the number of inputs/outputs
-###
-DIO_CMD = 0x00
-DIO_ACTION_GET_VAL           = 0x00    # Read the state and count of an input, or just the state of an output
-DIO_ACTION_SET_VAL           = 0x01    # Set the logical state of a digital output
-DIO_ACTION_SETCOUNT_VAL      = 0x02    # Set the edge count of a digital input to the passed value
-DIO_ACTION_SETMODE_VAL       = 0x03    # Switch between sink-source and open-collector drive mode on supported hardware
-DIO_ACTION_NUMDEVICES_VAL    = 0x04    # Reports the number of DIO banks available on the device
-DIO_ACTION_NUMOUTPUTS_VAL    = 0x05    # Reports the number of outputs available to the indicated device
-DIO_ACTION_NUMINPUTS_VAL     = 0x06    # Reports the number of inputs available to the indicated device
-DIO_ACTION_GETEDGECOUNT_VAL  = 0x07    # Reports the number of rising and failing edges detected by an input pin
+# DIO_ACTION_GET_VAL           = 0x00    # Read the state and count of an input, or just the state of an output
+# DIO_ACTION_SET_VAL           = 0x01    # Set the logical state of a digital output
+# DIO_ACTION_SETCOUNT_VAL      = 0x02    # Set the edge count of a digital input to the passed value
+# DIO_ACTION_SETMODE_VAL       = 0x03    # Switch between sink-source and open-collector drive mode on supported hardware
+# DIO_ACTION_NUMDEVICES_VAL    = 0x04    # Reports the number of DIO banks available on the device
+# DIO_ACTION_NUMOUTPUTS_VAL    = 0x05    # Reports the number of outputs available to the indicated device
+# DIO_ACTION_NUMINPUTS_VAL     = 0x06    # Reports the number of inputs available to the indicated device
+# DIO_ACTION_GETEDGECOUNT_VAL  = 0x07    # Reports the number of rising and failing edges detected by an input pin
 
 DIO_ACTION_GET_NAME          = "dio-get"        # Read the state and count of an input, or just the state of an output
 DIO_ACTION_SET_NAME          = "dio-set"        # Set the logical state of a digital output
-DIO_ACTION_SETCOUNT_NAME     = "dio-setcount"   # Set the edge count of a digital input to the passed value
 DIO_ACTION_SETMODE_NAME      = "dio-mode"    # Switch between sink-source and open-collector drive mode on supported hardware
 DIO_ACTION_NUMDEVICES_NAME   = "dio-numdev"     # Reports the number of DIO banks available on the device
 DIO_ACTION_NUMOUTPUTS_NAME   = "dio-numoutputs"     # Reports the number of outputs available to the indicated device
@@ -36,7 +25,6 @@ DIO_ACTION_NUMINPUTS_NAME    = "dio-numinputs"     # Reports the number of input
 DIO_ACTION_GETEDGECOUNT_NAME = 'dio-getedges'    # Reports the number of rising and failing edges detected by an input pin
 DIO_VALID_COMMANDS           = [DIO_ACTION_GET_NAME, 
                                 DIO_ACTION_SET_NAME, 
-                                DIO_ACTION_SETCOUNT_NAME, 
                                 DIO_ACTION_SETMODE_NAME, 
                                 DIO_ACTION_NUMDEVICES_NAME, 
                                 DIO_ACTION_NUMOUTPUTS_NAME, 
@@ -63,16 +51,16 @@ DIO_MODE_SOURCE               = 'source'
 DIO_VALID_MODES               = [DIO_MODE_DRAIN,
                                  DIO_MODE_SOURCE]
 
-CMD_RESPONOSE_SUCCESS         = 0x0000     # The last command was processed successfully    
-CMD_RESPONOSE_INV_DEV         = 0x0001     # The device indicated by the command exceeded the number of devices available to the system
-CMD_RESPONOSE_UNB_DEV         = 0x0002     # The device targetted exists, but the MCU was unable to attach to and communicate with it
-CMD_RESPONOSE_DIO_INV_PIN     = 0x0003     # The target pin exceeded the number of inputs or outputs actually present
-CMD_RESPONOSE_DIO_READ_FAIL   = 0x0004     # Reading the state of the targetted pin failed for an unknown reason
-CMD_RESPONOSE_DIO_WRITE_FAIL  = 0x0005     # Writing the state of the targetted pin failed for an unknown reason
-CMD_RESPONOSE_DIO_MODE_UNSUP  = 0x0006     # Setting the DIO mode to push-pull or sink-source is not supported
-CMD_RESPONOSE_INVALID_CMD     = 0x0007     # The subcommand requested was outside of the valid range for the message kind
-CMD_RESPONOSE_BAD_MSG_KIND    = 0x0008     # The message kind was not one of Valid Command Kinds
-CMD_RESPONOSE_VER_READ_FAIL   = 0x0009     # Reading the application version failed for an unknown reason
+# CMD_RESPONOSE_SUCCESS         = 0x0000     # The last command was processed successfully    
+# CMD_RESPONOSE_INV_DEV         = 0x0001     # The device indicated by the command exceeded the number of devices available to the system
+# CMD_RESPONOSE_UNB_DEV         = 0x0002     # The device targetted exists, but the MCU was unable to attach to and communicate with it
+# CMD_RESPONOSE_DIO_INV_PIN     = 0x0003     # The target pin exceeded the number of inputs or outputs actually present
+# CMD_RESPONOSE_DIO_READ_FAIL   = 0x0004     # Reading the state of the targetted pin failed for an unknown reason
+# CMD_RESPONOSE_DIO_WRITE_FAIL  = 0x0005     # Writing the state of the targetted pin failed for an unknown reason
+# CMD_RESPONOSE_DIO_MODE_UNSUP  = 0x0006     # Setting the DIO mode to push-pull or sink-source is not supported
+# CMD_RESPONOSE_INVALID_CMD     = 0x0007     # The subcommand requested was outside of the valid range for the message kind
+# CMD_RESPONOSE_BAD_MSG_KIND    = 0x0008     # The message kind was not one of Valid Command Kinds
+# CMD_RESPONOSE_VER_READ_FAIL   = 0x0009     # Reading the application version failed for an unknown reason
 
 
 

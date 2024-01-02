@@ -21,7 +21,8 @@ import time
 import paho.mqtt.client as mqtt
 import gsw
 
-import msgbus
+# import msgbus
+import config
 import sbe19v2plus.config
 
 
@@ -96,8 +97,8 @@ class SBE33SerialDataPort():
         self.data_q = data_q
         self.ser_port = serial.serial_for_url(args.serialport, baud, timeout=0.5, write_timeout=1, parity=serial.PARITY_EVEN, bytesize=7)
         
-        self.read_thr = threading.Thread(target=self.read_loop)
-        self.write_thr = threading.Thread(target=self.write_loop)
+        self.read_thr = threading.Thread(target=self.read_loop, name="ctdmon:read")
+        self.write_thr = threading.Thread(target=self.write_loop, name="ctdmon:read")
         self.threads_started = False
         self.lock = threading.Lock()
         self.sbe19_active_event = threading.Event()
@@ -735,7 +736,7 @@ def process_commands(ctd : SBE33SerialDataPort):
     return
 
 
-def data_relay_loop(data_q : queue.Queue, quit_evt : threading.Event):
+def data_relay_loop(cfg: dict, data_q : queue.Queue, quit_evt : threading.Event):
 
     client : mqtt.Client = mqtt.Client('ctdmon')
     client.connect('localhost', 1883)
@@ -745,13 +746,13 @@ def data_relay_loop(data_q : queue.Queue, quit_evt : threading.Event):
 
         try:
             msg = data_q.get(block=True, timeout=1)
+            data_q.task_done()
 
             # Convert the dictionary to bytes
             bytes_data = json.dumps(msg).encode("utf-8")
             # Print the bytes data
-            client.publish(msgbus.TOPIC_CTD_SENSOR_DATA, bytes_data, qos=2)
+            client.publish(cfg["mqtt"]["CTD_DATA_TOPIC"], bytes_data, qos=2)
 
-            data_q.task_done()
         except queue.Empty as e:
             pass
         else:
@@ -784,11 +785,14 @@ def main(quit_evt : threading.Event):
     #     output_format = sbe19v2plus.config.SBE19OutputFmt.OUTPUT_FORMAT_1,
     #     data_chan_volt0=True, data_chan_volt2=True
     # )
+    cfg = config.read()
+    if cfg == None:
+        print(f'ctdmon: ERROR unable to read rift-ox.toml config file. Quitting.')
+        sys.exit(1)
 
     data_q : queue.Queue = queue.Queue()
-    data_relay_thr = threading.Thread(target=data_relay_loop, args=(data_q, quit_evt))
+    data_relay_thr = threading.Thread(target=data_relay_loop, args=(cfg, data_q, quit_evt), name="ctdmon:datarelay")
     data_relay_thr.start()
-
 
     ctd_io = SBE33SerialDataPort("serialport.log", quit_evt, data_q)
     ctd_io.start()
@@ -810,40 +814,3 @@ if __name__ == '__main__':
     quit_evt = threading.Event()
 
     main(quit_evt)
-
-
-
-    # print('done')
-
-    # import asyncio
-    # import serial_asyncio
-
-    # class OutputProtocol(asyncio.Protocol):
-    #     def connection_made(self, transport):
-    #         self.transport = transport
-    #         print('port opened', transport)
-    #         transport.serial.rts = False  # You can manipulate Serial object via transport
-    #         transport.write(b'Hello, World!\n')  # Write serial data via transport
-
-    #     def data_received(self, data):
-    #         print('data received', repr(data))
-    #         if b'\n' in data:
-    #             self.transport.close()
-
-    #     def connection_lost(self, exc):
-    #         print('port closed')
-    #         self.transport.loop.stop()
-
-    #     def pause_writing(self):
-    #         print('pause writing')
-    #         print(self.transport.get_write_buffer_size())
-
-    #     def resume_writing(self):
-    #         print(self.transport.get_write_buffer_size())
-    #         print('resume writing')
-
-    # loop = asyncio.get_event_loop()
-    # coro = serial_asyncio.create_serial_connection(loop, OutputProtocol, '/dev/ttyUSB0', baudrate=9600)
-    # transport, protocol = loop.run_until_complete(coro)
-    # loop.run_forever()
-    # loop.close()

@@ -20,8 +20,8 @@ def main():
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--simulation", help="Log RIFT-OX Winch commands to STDOUT",  
-                        action="store", type=bool, default=True)
+    parser.add_argument("--to-winch", help="Send commands to RIFT-OX Winch",  
+                        type=bool, default=False)
     args = parser.parse_args()
 
     sim = args.simulation
