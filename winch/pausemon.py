@@ -37,7 +37,7 @@ def pause_monitor(cfg: dict, quit_evt: Event):
 
     mqtt_host : str = cfg["mqtt"]["HOST"]
     mqtt_port : int = cfg["mqtt"]["PORT"]
-    pause_dur: int = int(cfg["rift-ox-pi"]["PAUSE_DURATION_SECS"])
+    pause_dur: int = int(cfg["winch"]["PAUSE_DURATION_SECS"])
     pause_t = cfg["mqtt"]["WINCH_PAUSE_TOPIC"]
     pause_q: queue.Queue = queue.Queue()
     pause_active: bool = False

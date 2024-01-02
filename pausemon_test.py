@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import queue
 import time
 import sys
 from threading import Thread, Event
@@ -26,7 +25,7 @@ def main(quit_evt: Event):
         print(f'ctdmon: ERROR unable to read rift-ox.toml config file. Quitting.')
         sys.exit(1)
 
-    pthr = Thread(target=pausemon.pause_monitor, args=(cfg, quit_evt))
+    pthr = Thread(target=pausemon.pause_monitor, args=(cfg, quit_evt), name=pausemon)
     pthr.start()
     
     pthr.join()
