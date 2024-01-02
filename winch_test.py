@@ -24,7 +24,7 @@ def main():
                         type=bool, default=False)
     args = parser.parse_args()
 
-    sim = args.simulation
+    sim = not args.to_winch
 
     cfg = config.read()
     if cfg == None:

@@ -274,7 +274,7 @@ class DIOCommander():
         if not self.simulation:
             return self._send_bytes(cmd_bytes)
         else:
-            self._log_cmd(method, cmd.strip())
+            self._log_cmd(method, cmd_bytes)
             return "", True
 
 
@@ -382,11 +382,10 @@ class DIOCommander():
 
         # return cmd_bytes
     
-    def _send_bytes(self, cmd: str) -> (str, bool):
+    def _send_bytes(self, cmd_bytes: bytes) -> (str, bool):
            
         result: str = ""
         err: bool = False
-        cmd_bytes = cmd.encode()
 
         with serial.Serial(self.dio_tty_port) as mcu:
 
@@ -419,5 +418,5 @@ class DIOCommander():
 
         return result, err
 
-    def _log_cmd(self, method, cmd: str):
-        print(f'{method} issuing: "{cmd}"')
+    def _log_cmd(self, method, cmd_bytes: bytes):
+        print(f'{method} issuing: "{cmd_bytes.decode().strip()}"')
