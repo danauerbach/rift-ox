@@ -70,10 +70,10 @@ class DIOCommander():
             f'dio mode DO_G1 source\r',
             f'dio mode DO_G2 source\r',
             f'dio mode DO_G3 source\r',
-            f'dio set DO_G{self.UPCAST_PIN["group"]} {self.UPCAST_PIN["pin"]} false\r',
-            f'dio set DO_G{self.DOWNCAST_PIN["group"]} {self.DOWNCAST_PIN["pin"]} false\r',
-            f'dio set DO_G{self.MOTOR_STOP_PIN["group"]} {self.MOTOR_STOP_PIN["pin"]} false\r'
-            f'dio set DO_G{self.LATCH_RELEASE_PIN["group"]} {self.LATCH_RELEASE_PIN["pin"]} false\r'
+            f'dio set DO_G{self.UPCAST_PIN["group"]} {self.UPCAST_PIN["pin"]} low\r',
+            f'dio set DO_G{self.DOWNCAST_PIN["group"]} {self.DOWNCAST_PIN["pin"]} low\r',
+            f'dio set DO_G{self.MOTOR_STOP_PIN["group"]} {self.MOTOR_STOP_PIN["pin"]} low\r'
+            f'dio set DO_G{self.LATCH_RELEASE_PIN["group"]} {self.LATCH_RELEASE_PIN["pin"]} low\r'
         ]
         for cmd in cmds:
             self.issue_command(method="init_dio_pins", cmd=cmd)
@@ -81,35 +81,35 @@ class DIOCommander():
 
     def pin_low(self, pin: str):
         if pin == 'stop':
-            cmd = f'dio set DO_G{self.MOTOR_STOP_PIN["group"]} {self.MOTOR_STOP_PIN["pin"]} false\r'
+            cmd = f'dio set DO_G{self.MOTOR_STOP_PIN["group"]} {self.MOTOR_STOP_PIN["pin"]} low\r'
         elif pin == 'up':
-            cmd = f'dio set DO_G{self.UPCAST_PIN["group"]} {self.UPCAST_PIN["pin"]} false\r'
+            cmd = f'dio set DO_G{self.UPCAST_PIN["group"]} {self.UPCAST_PIN["pin"]} low\r'
         elif pin == 'down':
-            cmd = f'dio set DO_G{self.DOWNCAST_PIN["group"]} {self.DOWNCAST_PIN["pin"]} false\r'
+            cmd = f'dio set DO_G{self.DOWNCAST_PIN["group"]} {self.DOWNCAST_PIN["pin"]} low\r'
         elif pin == 'latch':
-            cmd = f'dio set DO_G{self.LATCH_RELEASE_PIN["group"]} {self.LATCH_RELEASE_PIN["pin"]} false\r'
+            cmd = f'dio set DO_G{self.LATCH_RELEASE_PIN["group"]} {self.LATCH_RELEASE_PIN["pin"]} low\r'
 
         self.issue_command(method=f"{pin}_low", cmd=cmd)
         time.sleep(0.03)
 
     def pin_hi(self, pin: str):
         if pin == 'stop':
-            cmd = f'dio set DO_G{self.MOTOR_STOP_PIN["group"]} {self.MOTOR_STOP_PIN["pin"]} true\r'
+            cmd = f'dio set DO_G{self.MOTOR_STOP_PIN["group"]} {self.MOTOR_STOP_PIN["pin"]} high\r'
         elif pin == 'up':
-            cmd = f'dio set DO_G{self.UPCAST_PIN["group"]} {self.UPCAST_PIN["pin"]} true\r'
+            cmd = f'dio set DO_G{self.UPCAST_PIN["group"]} {self.UPCAST_PIN["pin"]} high\r'
         elif pin == 'down':
-            cmd = f'dio set DO_G{self.DOWNCAST_PIN["group"]} {self.DOWNCAST_PIN["pin"]} true\r'
+            cmd = f'dio set DO_G{self.DOWNCAST_PIN["group"]} {self.DOWNCAST_PIN["pin"]} high\r'
         elif pin == 'latch':
-            cmd = f'dio set DO_G{self.LATCH_RELEASE_PIN["group"]} {self.LATCH_RELEASE_PIN["pin"]} true\r'
+            cmd = f'dio set DO_G{self.LATCH_RELEASE_PIN["group"]} {self.LATCH_RELEASE_PIN["pin"]} high\r'
 
         self.issue_command(method=f"{pin}_hi", cmd=cmd)
         time.sleep(0.03)
 
     def stop_winch(self):
         cmds = [
-            f'dio set DO_G{self.MOTOR_STOP_PIN["group"]} {self.MOTOR_STOP_PIN["pin"]} true\r',
-            f'dio set DO_G{self.DOWNCAST_PIN["group"]} {self.DOWNCAST_PIN["pin"]} false\r',
-            f'dio set DO_G{self.UPCAST_PIN["group"]} {self.UPCAST_PIN["pin"]} false\r',
+            f'dio set DO_G{self.MOTOR_STOP_PIN["group"]} {self.MOTOR_STOP_PIN["pin"]} high\r',
+            f'dio set DO_G{self.DOWNCAST_PIN["group"]} {self.DOWNCAST_PIN["pin"]} low\r',
+            f'dio set DO_G{self.UPCAST_PIN["group"]} {self.UPCAST_PIN["pin"]} low\r',
         ]
         for cmd in cmds:
             self.issue_command(method="stop_winch", cmd=cmd)
@@ -117,7 +117,7 @@ class DIOCommander():
 
     def latch_release(self):
         cmds = [
-            f'dio set DO_G{self.LATCH_RELEASE_PIN["group"]} {self.LATCH_RELEASE_PIN["pin"]} false\r',
+            f'dio set DO_G{self.LATCH_RELEASE_PIN["group"]} {self.LATCH_RELEASE_PIN["pin"]} low\r',
         ]
         for cmd in cmds:
             self.issue_command(method="latch_release", cmd=cmd)
@@ -125,7 +125,7 @@ class DIOCommander():
 
     def latch_hold(self):
         cmds = [
-            f'dio set DO_G{self.LATCH_RELEASE_PIN["group"]} {self.LATCH_RELEASE_PIN["pin"]} true\r',
+            f'dio set DO_G{self.LATCH_RELEASE_PIN["group"]} {self.LATCH_RELEASE_PIN["pin"]} high\r',
         ]
         for cmd in cmds:
             self.issue_command(method="latch_hold", cmd=cmd)
@@ -133,9 +133,9 @@ class DIOCommander():
 
     def stage(self):
         cmds = [
-            f'dio set DO_G{self.UPCAST_PIN["group"]} {self.UPCAST_PIN["pin"]} false\r',
-            f'dio set DO_G{self.DOWNCAST_PIN["group"]} {self.DOWNCAST_PIN["pin"]} true\r',
-            f'dio set DO_G{self.MOTOR_STOP_PIN["group"]} {self.MOTOR_STOP_PIN["pin"]} false\r',
+            f'dio set DO_G{self.UPCAST_PIN["group"]} {self.UPCAST_PIN["pin"]} low\r',
+            f'dio set DO_G{self.DOWNCAST_PIN["group"]} {self.DOWNCAST_PIN["pin"]} high\r',
+            f'dio set DO_G{self.MOTOR_STOP_PIN["group"]} {self.MOTOR_STOP_PIN["pin"]} low\r',
         ]
         for cmd in cmds:
             self.issue_command(method="stage", cmd=cmd)
@@ -143,9 +143,9 @@ class DIOCommander():
 
     def down_cast(self, stop_after_ms=0):
         cmds = [
-            f'dio set DO_G{self.UPCAST_PIN["group"]} {self.UPCAST_PIN["pin"]} false\r',
-            f'dio set DO_G{self.DOWNCAST_PIN["group"]} {self.DOWNCAST_PIN["pin"]} true\r',
-            f'dio set DO_G{self.MOTOR_STOP_PIN["group"]} {self.MOTOR_STOP_PIN["pin"]} false\r',
+            f'dio set DO_G{self.UPCAST_PIN["group"]} {self.UPCAST_PIN["pin"]} low\r',
+            f'dio set DO_G{self.DOWNCAST_PIN["group"]} {self.DOWNCAST_PIN["pin"]} high\r',
+            f'dio set DO_G{self.MOTOR_STOP_PIN["group"]} {self.MOTOR_STOP_PIN["pin"]} low\r',
         ]
         for cmd in cmds:
             self.issue_command(method="down_cast", cmd=cmd)
@@ -156,9 +156,9 @@ class DIOCommander():
 
     def up_cast(self, stop_after_ms=0):
         cmds = [
-            f'dio set DO_G{self.UPCAST_PIN["group"]} {self.UPCAST_PIN["pin"]} true\r',
-            f'dio set DO_G{self.DOWNCAST_PIN["group"]} {self.DOWNCAST_PIN["pin"]} false\r',
-            f'dio set DO_G{self.MOTOR_STOP_PIN["group"]} {self.MOTOR_STOP_PIN["pin"]} false\r',
+            f'dio set DO_G{self.UPCAST_PIN["group"]} {self.UPCAST_PIN["pin"]} high\r',
+            f'dio set DO_G{self.DOWNCAST_PIN["group"]} {self.DOWNCAST_PIN["pin"]} low\r',
+            f'dio set DO_G{self.MOTOR_STOP_PIN["group"]} {self.MOTOR_STOP_PIN["pin"]} low\r',
         ]
         for cmd in cmds:
             self.issue_command(method="up_cast", cmd=cmd)
