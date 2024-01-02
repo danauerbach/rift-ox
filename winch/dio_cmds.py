@@ -242,21 +242,21 @@ class DIOCommander():
         return edge_count, False
 
     def get_payout_edge_count(self) -> (list[int], bool):
-        cmds = [
-            f'dio edge DI_G{self.PAYOUT1_PIN["group"]} {self.PAYOUT1_PIN["pin"]}\r',
-            f'dio edge DI_G{self.PAYOUT2_PIN["group"]} {self.PAYOUT2_PIN["pin"]}\r',
-        ]
-        payout_counts = []
-        for cmd in cmds:
-            result, err = self.issue_command(method="get_payout_edge_count", cmd=cmd)
-            if err:
-                return None, True
-            payout_counts = payout_counts.append(int(result))
+        payout_1: int
+        payout_2: int
+        cmd = f'dio edge DI_G{self.PAYOUT1_PIN["group"]} {self.PAYOUT1_PIN["pin"]}\r'
+        result, err = self.issue_command(method="get_payout_edge_count", cmd=cmd)
+        if err:
+            return None, True
+        payout_1 = int(result)
 
-        if len(payout_counts) == 0:
-            return payout_counts, True
-        
-        return payout_counts, False
+        cmd = f'dio edge DI_G{self.PAYOUT2_PIN["group"]} {self.PAYOUT2_PIN["pin"]}\r'
+        result, err = self.issue_command(method="get_payout_edge_count", cmd=cmd)
+        if err:
+            return None, True
+        payout_2 = int(result)
+
+        return [payout_1, payout_2], False
 
     def get_winch_direction(self) -> (WinchDir, bool):
         err: bool = False
