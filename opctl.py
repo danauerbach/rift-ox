@@ -257,14 +257,14 @@ if __name__ == "__main__":
         elif not cmd:
             print('no command entered, try again')
             continue
-        else:
-            cmd_words = cmd.split()
-            if cmd_words[0] not in DIO_VALID_COMMANDS:
-                print(f'Invalid command verb: {cmd_words[0]}')
-                continue
+        # else:
+        #     cmd_words = cmd.split()
+        #     if cmd_words[0] not in DIO_VALID_COMMANDS:
+        #         print(f'Invalid command verb: {cmd_words[0]}')
+        #         continue
 
         # if cmd_words[0] == 'RAW:':
-        cmd_bytes = f'{" ".join(cmd_words[])}\r'.encode()
+        cmd_bytes = f'{" ".join(cmd)}\r'.encode()
         # else:
         #     cmd_verb, params = dio_parse_params(cmd)
         #     print(f'CMD: {cmd_verb}')
