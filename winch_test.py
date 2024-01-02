@@ -22,7 +22,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--to-winch", help="Send commands to RIFT-OX Winch", action="store_true")
-    parser.add_argument("--exercise-pin", help="exercise stop pin only", type=str, 
+    parser.add_argument("--exercise-pin", type=str, 
                         help="cycle pin low/high three times",
                         choices=["stop", "up", "down", "latch", "none"], default="none")
     
