@@ -97,7 +97,7 @@ class DIOCommander():
         elif pin == 'up':
             cmd = f'dio set DO_G{self.UPCAST_PIN["group"]} {self.UPCAST_PIN["pin"]} true\r'
         elif pin == 'down':
-            cmd == f'dio set DO_G{self.DOWNCAST_PIN["group"]} {self.DOWNCAST_PIN["pin"]} true\r'
+            cmd = f'dio set DO_G{self.DOWNCAST_PIN["group"]} {self.DOWNCAST_PIN["pin"]} true\r'
         elif pin == 'latch':
             cmd = f'dio set DO_G{self.LATCH_RELEASE_PIN["group"]} {self.LATCH_RELEASE_PIN["pin"]} true\r'
 
