@@ -23,6 +23,7 @@ def main() -> None:
 
     parser.add_argument("--to-winch", help="Send commands to RIFT-OX Winch", action="store_true")
     parser.add_argument("--exercise-pin", help="exercise stop pin only", type=str, 
+                        help="cycle pin low/high three times",
                         choices=["stop", "up", "down", "latch", "none"], default="none")
     
     parser.add_argument("--stop-hi", help="set STOP pin HIGH at start of exercising pin", action="store_true")
