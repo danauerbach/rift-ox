@@ -264,7 +264,7 @@ if __name__ == "__main__":
                 continue
 
         # if cmd_words[0] == 'RAW:':
-        cmd_bytes = f'{" ".join(cmd_words[1:])}\r'.encode()
+        cmd_bytes = f'{" ".join(cmd_words[])}\r'.encode()
         # else:
         #     cmd_verb, params = dio_parse_params(cmd)
         #     print(f'CMD: {cmd_verb}')
