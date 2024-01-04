@@ -126,13 +126,15 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
                 cur_direction = winch_status["dir"]
                 cur_payouts = winch_status["payouts"]
                 cur_state = winch_status["state"]
+        else:
+            print('winctl:winmon: INFO no WONCH-STATUS message in winch_status_q queue')
 
         try:
             data_dict : dict = data_q.get(block=True, timeout=1)
             data_q.task_done()
             empty_count = 0
         except queue.Empty as e:
-            print('winctl:winmon: INFO no data message in data_q queue')
+            print('winctl:winmon: INFO no CTDDATA message in data_q queue')
             empty_count += 1
             if empty_count > 60:
                 print('winctl:winmon: still no CTD, PAYOUT or LATCH data')
