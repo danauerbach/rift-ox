@@ -13,30 +13,30 @@ class WinchDir(Enum):
     DIRECTION_DOWN = 'DOWN'
 
 class WinchStateName(Enum):
-    PARKED =        "parked"
-    PARKING  =      "parking"
-    STAGING  =      "staging"
-    UP_STAGED  =    "upstaged"
-    DOWN_STAGED  =  "downstaged"
-    UP_PAUSED  =    "uppaused"
-    DOWN_PAUSED  =  "downpaused"
-    DOWNCASTING  =  "downcasting"
-    UPCASTING  =    "upcasting"
-    MAXDEPTH  =     "maxdepth"
+    PARKED =        "PARKED"
+    PARKING  =      "PARKING"
+    STAGING  =      "STAGING"
+    UP_STAGED  =    "UPSTAGED"
+    DOWN_STAGED  =  "DOWNSTAGED"
+    UP_PAUSED  =    "UPPAUSED"
+    DOWN_PAUSED  =  "DOWNPAUSED"
+    DOWNCASTING  =  "DOWNCASTING"
+    UPCASTING  =    "UPCASTING"
+    MAXDEPTH  =     "MAXDEPTH"
     # ATLATCH  =    "atlatch"
 
 
 # WINCH CONTROL COMMAND CONSTANTS
 class WinchCmd(Enum):
-    WINCH_CMD_START =             'start'                   # go to staging depth (see config file). Only valid when ParkedState
-    WINCH_CMD_DOWNCAST =          'down-cast'             # start downcast (from StagedState)
-    WINCH_CMD_PAUSE =             'pause'             # stop winch and wait for PAUSE_DURATION_SECS timeout
-    WINCH_CMD_STOP =              'stop'              # essentially an alias for 'pause'
-    WINCH_CMD_STOP_AT_MAX_DEPTH = 'stop-at-max-depth' # stop winch motion and wait for next command
-    WINCH_CMD_UPCAST =            'up-cast'                 # Start upcast (from any state except HomeState)
-    WINCH_CMD_UPSTAGE =           'up-stage'                 # Start upcast (from any state except HomeState)
-    WINCH_CMD_PARK =              'park'                     # go up past latch and down a little bit and release latch and drop down a little
-    WINCH_CMD_SETSTATE =          'set-state'
+    WINCH_CMD_START =             'START'                   # go to staging depth (see config file). Only valid when ParkedState
+    WINCH_CMD_DOWNCAST =          'DOWN-CAST'             # start downcast (from StagedState)
+    WINCH_CMD_PAUSE =             'PAUSE'             # stop winch and wait for PAUSE_DURATION_SECS timeout
+    WINCH_CMD_STOP =              'STOP'              # essentially an alias for 'pause'
+    WINCH_CMD_STOP_AT_MAX_DEPTH = 'STOP-AT-MAX-DEPTH' # stop winch motion and wait for next command
+    WINCH_CMD_UPCAST =            'UP-CAST'                 # Start upcast (from any state except HomeState)
+    WINCH_CMD_UPSTAGE =           'UP-STAGE'                 # Start upcast (from any state except HomeState)
+    WINCH_CMD_PARK =              'PARK'                     # go up past latch and down a little bit and release latch and drop down a little
+    WINCH_CMD_SETSTATE =          'SET-STATE'
 
 WINCH_CMD_LIST = {
     WinchCmd.WINCH_CMD_START.value, \
