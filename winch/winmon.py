@@ -45,24 +45,13 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
         payjson = json.loads(payload)
         if data_q: data_q.put(payjson)
 
-    def _on_ctl_publish(client, userdata, mid):
-        print("winctl:winmon: {client} mid= "  ,mid)
-
     def _on_data_subscribe(client, userdata, mid, granted_qos):
         print("winctl:winmon: Subscribed: "+str(mid)+" "+str(granted_qos))
 
-    def update_depth(cur: float, last: float, depth: float) -> (float, float):
-        if last == None:
-            last = depth
-        else:
-            last = cur
-        cur = depth
-        return cur, last
-    
     def get_winch_status(q: queue.Queue) -> (dict, bool):
         status: dict
         try:
-            status = q.get()
+            status = q.get(block=True, timeout=0.05)
         except queue.Empty as em:
             return {}, True
         else:
@@ -89,7 +78,6 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
     wincmd_pub : mqtt.Client = mqtt.Client('winmon-ctl-pub')
     wincmd_pub.on_connect = _on_connect
     wincmd_pub.on_disconnect = _on_disconnect
-    wincmd_pub.on_publish = _on_ctl_publish
     wincmd_pub.connect(mqtt_host, mqtt_port)
     wincmd_pub.loop_start()
 
@@ -108,10 +96,10 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
     # assume we're at the surface, aka "Parked"
     cur_direction  : WinchDir = WinchDir.DIRECTION_NONE.value
     cur_depth_ctd: float = 0
-    last_depth_ctd: float = None
     cur_depth: float = 0
-    last_depth: float = None
     cur_altitude: float = MAX_DEPTH
+    MAX_DEPTH_REACHED = False
+    MAX_DEPTH_PAYOUT_EDGES = -1
 
     empty_count: int = 0
 
@@ -124,46 +112,54 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
             else:
                 winch_status = status
                 cur_direction = winch_status["dir"]
-                cur_payouts = winch_status["payouts"]
+                cur_depth = float(winch_status["depth_m"])
                 cur_state = winch_status["state"]
+                
         else:
-            print('winctl:winmon: INFO no WONCH-STATUS message in winch_status_q queue')
+            # print('winctl:winmon: NO WINCH-STATUS message in winch_status_q queue')
+            pass
 
+        data_dict = None
         try:
-            data_dict : dict = data_q.get(block=True, timeout=1)
+            data_dict : dict = data_q.get(block=True, timeout=0.05)
             data_q.task_done()
             empty_count = 0
         except queue.Empty as e:
-            print('winctl:winmon: INFO no CTDDATA message in data_q queue')
+            # print('winctl:winmon: NO CTDDATA message in data_q queue')
             empty_count += 1
             if empty_count > 60:
-                print('winctl:winmon: still no CTD, PAYOUT or LATCH data')
+                print('winctl:winmon: still NO CTD, PAYOUT or LATCH data')
                 empty_count = 0
-            continue
         except Exception as e:
             print(f'winctl:winmon: ERROR receiving data msg: {e}')
             continue
 
         # set Direction and log change in motion state
-        if data_dict.get('record_type') == 'payoutdata':
-            cur_depth, last_depth = update_depth(cur_depth, last_depth, data_dict["payout_m"])            
-
-        elif data_dict.get('record_type') == 'ctddata':
-            cur_depth_ctd, last_depth_ctd = update_depth(cur_depth_ctd, last_depth_ctd, data_dict["depth_m"])            
-            cur_altitude = data_dict["altitude"]
+        if data_dict:
+            if data_dict.get('type') == 'ctd':
+                # NOTE: PRIMARY DEPTH INFO COMES FROM PAYOUT SENSORS
+                #       THIS IS FOR COMPARISON ONLY
+                cur_depth_ctd = data_dict["depth_m"]
+                cur_altitude = data_dict["alt_m"]
 
         if cfg["rift-ox-pi"]["REALTIME_CTD"]:
             # Let's compare winch payout readings with depth from CTD
             delta: float = cur_depth - cur_depth_ctd
-            if (cur_depth_ctd > 10) and ((delta / cur_depth_ctd) > 0.03):
+            if (cur_depth_ctd > 10) and ((delta / cur_depth_ctd) > 0.005):
+                # report difference if more than 0.5%
                 print(f'winctl:winmon: WARNING: winch PAYOUT reading differs from CTD DEPTH by {delta} meters at CTD depth of: {cur_depth_ctd}.')
 
         if (cur_direction == WinchDir.DIRECTION_DOWN.value):
 
+            # print(f'cur_direction: {cur_direction}')
+            print(f'cur_depth: {cur_depth}')
+            # print(f'cur_state: {cur_state}')
+            # print(f'STAGING_DEPTH: {STAGING_DEPTH}')
+            # print(f'{cur_depth > STAGING_DEPTH}; {cur_state == WinchStateName.STAGING.value}')
             if (cur_depth > STAGING_DEPTH) and \
                 (cur_state == WinchStateName.STAGING.value):
                     # just hit stagin depth on way down, call winch.state.pause() pause
-                pub_winch_cmd(wincmd_pub, winch_command_topic, WinchCmd.WINCH_CMD_DOWN_PAUSE)
+                pub_winch_cmd(wincmd_pub, winch_command_topic, WinchCmd.WINCH_CMD_PAUSE.value)
 
             if (cur_altitude < MIN_ALTITUDE):
                 print(f'winctl:winmon: Winch is stopping within {MIN_ALTITUDE}m of the seafloor.')
@@ -182,9 +178,9 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
             if (cur_depth < STAGING_DEPTH) and \
                 (cur_state in [WinchStateName.UPCASTING.value]):
                 # just hit stagin depth on way up, let's pause here]
-                pub_winch_cmd(wincmd_pub, winch_command_topic, WinchCmd.WINCH_CMD_PAUSE.value)
+                pub_winch_cmd(wincmd_pub, winch_command_topic, WinchCmd.WINCH_CMD_UPSTAGE.value)
 
-
+        time.sleep(0.1)
 
     wincmd_pub.loop_stop()
     datamon_sub.loop_stop()
