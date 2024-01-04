@@ -104,7 +104,7 @@ def wincmd_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
             cmd_msg = cmd_q.get(block=True, timeout=1.0)
             cmd_q.task_done()
         except queue.Empty as em:
-            print('winctl:wincmd: INFO no data message in cmd_q queue')
+            print('winctl:wincmd: NO WINCH COMMAND message in cmd_q queue')
             continue
         except Exception as e:
             print(f'winctl:wincmd: Error receiving msg from cmd_q Queue: {e}')
@@ -112,30 +112,30 @@ def wincmd_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
 
         cmd = cmd_msg['command'].lower()
         if cmd not in WINCH_CMD_LIST:
-            print(f'winctl:wincmd: INVALID COMMAND: {cmd}')
+            print(f'winctl:wincmd: INVALID COMMAND ===>>> {cmd}')
             continue
 
         
-        if cmd == WinchCmd.WINCH_CMD_START:
+        if cmd == WinchCmd.WINCH_CMD_START.value:
             winch.start()
 
-        elif cmd == WinchCmd.WINCH_CMD_STOP:
+        elif cmd == WinchCmd.WINCH_CMD_STOP.value:
             # currently an alias for PAUSE
             winch.stop()
 
-        elif cmd == WinchCmd.WINCH_CMD_DOWNCAST:
+        elif cmd == WinchCmd.WINCH_CMD_DOWNCAST.value:
             winch.down_cast()
 
-        elif cmd == WinchCmd.WINCH_CMD_STOP_AT_MAX_DEPTH:
+        elif cmd == WinchCmd.WINCH_CMD_STOP_AT_MAX_DEPTH.value:
             winch.stop_at_bottom()
 
-        elif cmd == WinchCmd.WINCH_CMD_UPCAST:
+        elif cmd == WinchCmd.WINCH_CMD_UPCAST.value:
             winch.up_cast()
 
-        elif cmd == WinchCmd.WINCH_CMD_UPSTAGE:
+        elif cmd == WinchCmd.WINCH_CMD_UPSTAGE.value:
             winch.up_stage()
 
-        elif cmd == WinchCmd.WINCH_CMD_PARK:
+        elif cmd == WinchCmd.WINCH_CMD_PARK.value:
             """Parking is moving winch backwards until LATCH signal
             is detected and then paying out for < 1sec so that bullet will latch.
             This should leave the winch in the (physically) LATCHED position
@@ -184,7 +184,7 @@ def wincmd_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
             dio_cmndr.down_cast(stop_after_ms=int(cfg["winch"]["PARKING_DOWNCAST_MS"]))
             dio_cmndr.stop_winch()
 
-        elif cmd == WinchCmd.WINCH_CMD_SETSTATE:
+        elif cmd == WinchCmd.WINCH_CMD_SETSTATE.value:
             winch.set_state()
 
     
