@@ -295,11 +295,11 @@ class DIOCommander():
             stop_active = not bool(int(stop_pin_state))
 
         if stop_active:
-            return WinchDir.DIRECTION_NONE
+            return WinchDir.DIRECTION_NONE.value
 
         # stop not active...
-        if up_active and not down_active: return WinchDir.DIRECTION_UP, err
-        if not up_active and down_active: return WinchDir.DIRECTION_DOWN, err
+        if up_active and not down_active: return WinchDir.DIRECTION_UP.value, err
+        if not up_active and down_active: return WinchDir.DIRECTION_DOWN.value, err
         
         # either both direction lines HIGH or both LOW, either way winch not moving.
         return WinchDir.DIRECTION_NONE, err

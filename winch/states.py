@@ -568,11 +568,11 @@ class Winch:
         # get winch direction, if any
         if self.cmndr.simulation:
             if isinstance(self.state, (UpcastingState,)):
-                cur_status["dir"] = WinchDir.DIRECTION_UP
+                cur_status["dir"] = WinchDir.DIRECTION_UP.value
             elif isinstance(self.state, (DowncastingState, StagingState)):
-                cur_status["dir"] = WinchDir.DIRECTION_DOWN
+                cur_status["dir"] = WinchDir.DIRECTION_DOWN.value
             else:
-                cur_status["dir"] = WinchDir.DIRECTION_NONE
+                cur_status["dir"] = WinchDir.DIRECTION_NONE.value
             err = False
         else:
             cur_status["dir"], err = self.cmndr.get_winch_direction()

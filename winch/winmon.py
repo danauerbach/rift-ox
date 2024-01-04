@@ -106,7 +106,7 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
     pause_thr.start()
     
     # assume we're at the surface, aka "Parked"
-    cur_direction  : WinchDir = WinchDir.DIRECTION_NONE
+    cur_direction  : WinchDir = WinchDir.DIRECTION_NONE.value
     cur_depth_ctd: float = 0
     last_depth_ctd: float = None
     cur_depth: float = 0
@@ -156,31 +156,31 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
             if (cur_depth_ctd > 10) and ((delta / cur_depth_ctd) > 0.03):
                 print(f'winctl:winmon: WARNING: winch PAYOUT reading differs from CTD DEPTH by {delta} meters at CTD depth of: {cur_depth_ctd}.')
 
-        if (cur_direction == WinchDir.DIRECTION_DOWN):
+        if (cur_direction == WinchDir.DIRECTION_DOWN.value):
 
             if (cur_depth > STAGING_DEPTH) and \
-                (cur_state == WinchStateName.STAGING):
+                (cur_state == WinchStateName.STAGING.value):
                     # just hit stagin depth on way down, call winch.state.pause() pause
                 pub_winch_cmd(wincmd_pub, winch_command_topic, WinchCmd.WINCH_CMD_DOWN_PAUSE)
 
             if (cur_altitude < MIN_ALTITUDE):
                 print(f'winctl:winmon: Winch is stopping within {MIN_ALTITUDE}m of the seafloor.')
-                pub_winch_cmd(wincmd_pub, winch_command_topic, WinchCmd.WINCH_CMD_STOP_AT_MAX_DEPTH)
+                pub_winch_cmd(wincmd_pub, winch_command_topic, WinchCmd.WINCH_CMD_STOP_AT_MAX_DEPTH.value)
                 stop_and_pause_at_bottom()
                 continue
 
             elif (cur_depth > MAX_DEPTH):
-                pub_winch_cmd(wincmd_pub, winch_command_topic, WinchCmd.WINCH_CMD_STOP_AT_MAX_DEPTH)
+                pub_winch_cmd(wincmd_pub, winch_command_topic, WinchCmd.WINCH_CMD_STOP_AT_MAX_DEPTH.value)
                 stop_and_pause_at_bottom()
                 print(f'winctl:winmon: Winch is stopping at MAX depth {MAX_DEPTH} meters.')
                 continue
 
-        elif (cur_direction == WinchDir.DIRECTION_UP):
+        elif (cur_direction == WinchDir.DIRECTION_UP.value):
             
             if (cur_depth < STAGING_DEPTH) and \
-                (cur_state in [WinchStateName.UPCASTING]):
+                (cur_state in [WinchStateName.UPCASTING.value]):
                 # just hit stagin depth on way up, let's pause here]
-                pub_winch_cmd(wincmd_pub, winch_command_topic, WinchCmd.WINCH_CMD_UP_PAUSE)
+                pub_winch_cmd(wincmd_pub, winch_command_topic, WinchCmd.WINCH_CMD_PAUSE.value)
 
 
 
