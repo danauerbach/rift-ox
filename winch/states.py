@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from datetime import datetime
+from math import pi
 from threading import Timer
 import time
 from typing import Protocol
@@ -73,10 +74,7 @@ class WinchProto(Protocol):
     def start(self):
         ...
 
-    def down_pause(self):
-        ...
-
-    def up_pause(self):
+    def pause(self):
         ...
 
     def down_cast(self):
@@ -153,7 +151,8 @@ class StagingState():
         print(f'Can not down-cast when {self}')
 
     def pause(self):
-        print(f'Can not pause when {self}')
+        self.winch.cmndr.stop_winch()
+        self.winch.set_state(DownStagedState(self.winch))        
 
     def stop_at_bottom(self):
         print(f'Can not stop-at-bottom when {self}')
@@ -171,6 +170,7 @@ class StagingState():
         return WinchStateName.STAGING.value
 
 
+@dataclass
 class DownStagedState():
     winch: WinchProto
 
@@ -212,6 +212,7 @@ class DownStagedState():
         return WinchStateName.DOWN_STAGED.value
 
 
+@dataclass
 class UpStagedState():
     winch: WinchProto
 
@@ -248,6 +249,7 @@ class UpStagedState():
 
 
 
+@dataclass
 class DowncastingState():
     winch: WinchProto
 
@@ -317,6 +319,7 @@ class UpcastingState():
 
 
 
+@dataclass
 class MaxDepthState():
     winch: WinchProto
 
@@ -349,6 +352,7 @@ class MaxDepthState():
         return WinchStateName.MAXDEPTH.value
 
 
+@dataclass
 class ParkingState():
     # the park() command which intiates ParkingState
     # ends by setting state to ParkedState
@@ -382,6 +386,7 @@ class ParkingState():
     def __str__(self):
         return WinchStateName.PARKING.value
 
+@dataclass
 class DownPausedState():
     winch: WinchProto
 
@@ -415,6 +420,7 @@ class DownPausedState():
     def __str__(self):
         return WinchStateName.DOWN_PAUSED.value
 
+@dataclass
 class UpPausedState():
     winch: WinchProto
 
@@ -456,63 +462,54 @@ class Winch:
         self.cmndr: DIOCommander = cmndr
         self.state: WinchState = ParkedState(self)
 
+        # set up payout vars
+        self.down_edges: float = 0.0
+        self.up_edges: float = 0.0
+        self.last_payout_cnt: int
+        self._sim_payout_ts: float = time.time()  # only used when simulation == True
+
+        if not self.cmndr.simulation:
+            payouts, err = self.cmndr.get_payout_edge_count()
+            if err:
+                print(f'winch:winch: ERROR getting payout edge cnts')
+                return 
+            else:
+                self.last_payout_cnt = payouts[0]  # doesn't matter which sensor we use
+
         # vars only to facilitate simulated responses from winch
-        self._sim_start_time = time.time()
-        self._sim_winch_in_motion_dur = 0
-        self._sim_winch_paused_dur = 0
-        self._sim_start_motion = 0
-        self._sim_start_pause = 0
-        self._sim_park_start = 0
         self._sim_latch_edge_count = 0
 
     def stop(self):
         self.state.stop()
-        t = time.time()
-        self._sim_winch_in_motion_dur += t - self._sim_start_motion
-        self._sim_start_pause = t
 
     def start(self):
         self.state.start()
-        t = time.time()
-        self._sim_winch_paused_dur += t - self._sim_start_pause
-        self._sim_start_motion = t
 
     def down_cast(self):
         self.state.down_cast()
-        t = time.time()
-        self._sim_winch_paused_dur += t - self._sim_start_pause
-        self._sim_start_motion = t
 
     def pause(self):
-        self.state.up_pause()
-        t = time.time()
-        self._sim_winch_in_motion_dur += t - self._sim_start_motion
-        self._sim_start_pause = t
+        self.state.pause()
 
     def stop_at_bottom(self):
         self.state.stop_at_bottom()
-        t = time.time()
-        self._sim_winch_in_motion_dur += t - self._sim_start_motion
-        self._sim_start_pause = t
 
     def up_cast(self):
         self.state.up_cast()
-        t = time.time()
-        self._sim_winch_paused_dur += t - self._sim_start_pause
-        self._sim_start_motion = t
 
     def up_stage(self):
-        self.state.up_pause()
-        t = time.time()
-        self._sim_winch_in_motion_dur += t - self._sim_start_motion
-        self._sim_start_pause = t
+        self.state.pause()
 
     def park(self):
+        #TODO WORK ON LATCH_EDGE SIMULATION: use timer() ??
+        #     PUT IN dio_cmnds.park() ??
         if self.cmndr.simulation:
             self._sim_latch_edge_count += 3
         self.state.park()
 
     def set_state(self, state: WinchState):
+        if self.cmndr.simulation:
+            self.update_payout_edge_counts()
         self.state = state
 
     def get_latch_edge_count(self) -> (int, bool):
@@ -521,32 +518,44 @@ class Winch:
             latch_edge_count = self._sim_latch_edge_count
         return latch_edge_count, False
     
-    # def _sim_inc_latch_edge_count(self, cnt: int):
-    #     self._sim_latch_edge_count += cnt
-
-    # def _sim_inc_latch_edge_count(self, cnt: int, delay_secs: int = 0) -> None:
-    #     timer = 
-    
     def latch_release(self):
         self.cmndr.latch_release()
 
+    def update_payout_edge_counts(self):
+        if self.cmndr.simulation:
+            t = time.time()
+            if isinstance(self.state, (StagingState, DowncastingState)):
+                self.down_edges += (t - self._sim_payout_ts) * 12.0
+            elif self.state in [UpcastingState]:
+                self.up_edges += (t - self._sim_payout_ts) * 12.0
+            self._sim_payout_ts = t
+
+        else:
+            # get real payout sensors readings
+            payouts, err = self.cmndr.get_payout_edge_count()
+            if err:
+                print(f'states:winch ERROR get payout edge count')
+                return
+            if self.state in [StagingState, DowncastingState]:
+                self.down_edges += (payouts[0] - self.last_payout_cnt)
+            elif self.state in [UpcastingState]:
+                self.up_edges += (payouts[0] - self.last_payout_cnt)
+            self.last_payout_cnt = payouts[0]
+
+    def depth_from_payout_edges_m(self) -> float:
+        # assumes 5.25in radius wheel
+        #TODO THIS MUST BE REFINED TO INCLUDE CABLE RADIUS
+        dist_down: float = (self.down_edges / 12) * 2 * pi * 5.25 / 39.37008
+        dist_up: float = (self.up_edges / 12) * 2 * pi * 5.25 / 39.37008
+        return dist_down - dist_up
+
     def status(self) -> (dict, bool):
+
         cur_status = {}
 
-        # get payout sensors readings
-        payouts, err = self.cmndr.get_payout_edge_count()
-        if err:
-            print(f'states:winch ERROR get payout edge count')
-            return {}, err
+        self.update_payout_edge_counts()
 
-        if self.cmndr.simulation:
-            # based on 2 sec per rotation a 6 triggers
-            # simulate 3 signals or 6 edges
-            edgecnt = self._sim_winch_in_motion_dur * 12
-            payouts = [edgecnt, edgecnt]
-            err = False
-
-        cur_status["payouts"] = payouts
+        cur_status["depth_m"] = round(self.depth_from_payout_edges_m(), 2)
 
         # get latch sensor readings
         latch_cnt, err = self.cmndr.get_latch_edge_count()
@@ -578,4 +587,3 @@ class Winch:
         cur_status["ts"] = datetime.utcnow().isoformat()
 
         return cur_status, False
-
