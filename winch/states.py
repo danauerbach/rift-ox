@@ -141,6 +141,7 @@ class ParkedState():
         return WinchStateName.PARKED.value
 
 
+@dataclass
 class StagingState():
     winch: WinchProto
 
@@ -170,7 +171,7 @@ class StagingState():
         print(f'Can not park when {self}')
 
     def __str__(self):
-        return WinchStateName.STAGING  
+        return WinchStateName.STAGING.value
 
 
 class DownStagedState():
