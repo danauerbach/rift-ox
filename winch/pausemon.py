@@ -63,7 +63,7 @@ def pause_monitor(cfg: dict, quit_evt: Event):
     wincmd_pub.connect(mqtt_host, mqtt_port)
     wincmd_pub.loop_start()
 
-    while not quit_evt.set():
+    while not quit_evt.is_set():
 
         pause_msg: str = ""
 
