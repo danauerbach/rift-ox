@@ -146,8 +146,8 @@ class StagingState():
     winch: WinchProto
 
     def stop(self):
-        # same as down_pause when Staging
-        self.down_pause()
+        # same as pause when Staging
+        self.pause()
 
     def start(self):
         print(f'Can not start when {self}')
@@ -256,7 +256,7 @@ class DowncastingState():
 
     def stop(self):
         # same as down_pause
-        self.down_pause()
+        self.pause()
 
     def start(self):
         print(f'Can not start when {self}')
