@@ -396,8 +396,8 @@ class SBE33SerialDataPort():
 
                     if self.ctd_status[self.CTD_STATE] == self.CTD_STATE_ACQUIRING_DATA:
                         sample_dict = self.parse_data(line_utf8)
-                        sample_dict["timestamp"] = timestamp
-                        sample_dict["record_type"] = 'ctddata'
+                        sample_dict["ts"] = timestamp
+                        sample_dict["type"] = 'ctd'
                         of.write(f"{line_utf8} {sample_dict}\n")
                         self.data_q.put(sample_dict)
 
@@ -557,7 +557,7 @@ class SBE33SerialDataPort():
         if cfg.volt0:
             strval = line[pos:pos+4]; pos += 4
             res["volt0"] = round(int(strval, 16) / 13107, 4)
-            res["altitude_m"] = round(self.altimeter_meters(res["volt0"], 
+            res["alt_m"] = round(self.altimeter_meters(res["volt0"], 
                                                             minV=0, 
                                                             maxV=altimeter_max_volts), 2)
         if cfg.volt1:
