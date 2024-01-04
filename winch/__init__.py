@@ -39,14 +39,15 @@ class WinchCmd(Enum):
     WINCH_CMD_SETSTATE =          'set-state'
 
 WINCH_CMD_LIST = {
-    WinchCmd.WINCH_CMD_START, \
-    WinchCmd.WINCH_CMD_DOWNCAST, \
-    WinchCmd.WINCH_CMD_PAUSE, \
-    WinchCmd.WINCH_CMD_STOP_AT_MAX_DEPTH, \
-    WinchCmd.WINCH_CMD_UPCAST, \
-    WinchCmd.WINCH_CMD_UPSTAGE, \
-    WinchCmd.WINCH_CMD_PARK, \
-    WinchCmd.WINCH_CMD_SETSTATE
+    WinchCmd.WINCH_CMD_START.value, \
+    WinchCmd.WINCH_CMD_DOWNCAST.value, \
+    WinchCmd.WINCH_CMD_PAUSE.value, \
+    WinchCmd.WINCH_CMD_STOP.value, \
+    WinchCmd.WINCH_CMD_STOP_AT_MAX_DEPTH.value, \
+    WinchCmd.WINCH_CMD_UPCAST.value, \
+    WinchCmd.WINCH_CMD_UPSTAGE.value, \
+    WinchCmd.WINCH_CMD_PARK.value, \
+    WinchCmd.WINCH_CMD_SETSTATE.value
 }
 
 # Orange Pi DIO
