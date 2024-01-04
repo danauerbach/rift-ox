@@ -48,9 +48,9 @@ def wincmd_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
     
     def save_payout(status: dict, fn: Path):
         ts = status["ts"]
-        payouts = status["payouts"]
+        payout_depth = status["depth_m"]
         with open(get_payout_fn(fn), mode='a') as pofl:
-            pofl.write(f'{ts:<26}, {payouts[0]}, {payouts[1]}')
+            pofl.write(f'{ts:<26}, {payout_depth}\r')
         return
 
     def share_new_winch_status(winch: Winch, fname: Path) -> (dict, bool):
@@ -93,15 +93,13 @@ def wincmd_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
 
     while not quit_evt.is_set():
 
-        print(f'wincmd_loop: top')
-
         status, err = share_new_winch_status(winch, Path("payouts"))
         if err:
             print(f'winctl:winmon: ERROR getting winch status')
 
         state_json = json.dumps(status)
         print(f' WINCH STATE: {state_json}')
-        
+
         cmd_msg = ""
         try:
             cmd_msg = cmd_q.get(block=True, timeout=1.0)
@@ -113,7 +111,7 @@ def wincmd_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
             print(f'winctl:wincmd: Error receiving msg from cmd_q Queue: {e}')
             continue
 
-        cmd = cmd_msg['command'].lower()
+        cmd = cmd_msg['command'].upper()
         if cmd not in WINCH_CMD_LIST:
             print(f'winctl:wincmd: INVALID COMMAND ===>>> {cmd}')
             continue
@@ -125,6 +123,9 @@ def wincmd_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
         elif cmd == WinchCmd.WINCH_CMD_STOP.value:
             # currently an alias for PAUSE
             winch.stop()
+
+        elif cmd == WinchCmd.WINCH_CMD_PAUSE.value:
+            winch.pause()
 
         elif cmd == WinchCmd.WINCH_CMD_DOWNCAST.value:
             winch.down_cast()
@@ -189,6 +190,8 @@ def wincmd_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
 
         elif cmd == WinchCmd.WINCH_CMD_SETSTATE.value:
             winch.set_state()
+
+        time.sleep(0.15)
 
     
     status, err = share_new_winch_status(winch, Path("payouts"))
