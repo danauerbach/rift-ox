@@ -91,9 +91,6 @@ class WinchProto(Protocol):
     def set_state(self, state: WinchState):
         ...
 
-    def get_state_str(self) -> str:
-        ...
-
     def get_latch_edge_count(self):
         ...
     
@@ -518,9 +515,6 @@ class Winch:
     def set_state(self, state: WinchState):
         self.state = state
 
-    def get_state_str(self) -> str:
-        return str(self.state)
-    
     def get_latch_edge_count(self) -> (int, bool):
         latch_edge_count, _ = self.cmndr.get_latch_edge_count()
         if self.cmndr.simulation:
