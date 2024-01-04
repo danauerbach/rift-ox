@@ -13,48 +13,41 @@ class WinchDir(Enum):
     DIRECTION_DOWN = 'DOWN'
 
 class WinchStateName(Enum):
-    PARKED =  "parked"
-    PARKING  =  "parking"
-    # ATLATCH  =  "atlatch"
-    STAGING  =  "staging"
-    UP_STAGED  =  "upstaged"
+    PARKED =        "parked"
+    PARKING  =      "parking"
+    STAGING  =      "staging"
+    UP_STAGED  =    "upstaged"
     DOWN_STAGED  =  "downstaged"
-    UP_PAUSED  =  "uppaused"
+    UP_PAUSED  =    "uppaused"
     DOWN_PAUSED  =  "downpaused"
     DOWNCASTING  =  "downcasting"
-    UPCASTING  =  "upcasting"
-    ATMAXDEPTH  =  "atmaxdepth"
+    UPCASTING  =    "upcasting"
+    MAXDEPTH  =     "maxdepth"
+    # ATLATCH  =    "atlatch"
 
 
 # WINCH CONTROL COMMAND CONSTANTS
 class WinchCmd(Enum):
-    WINCH_CMD_START = 'start'                   # go to staging depth (see config file). Only valid when ParkedState
+    WINCH_CMD_START =             'start'                   # go to staging depth (see config file). Only valid when ParkedState
+    WINCH_CMD_DOWNCAST =          'down-cast'             # start downcast (from StagedState)
+    WINCH_CMD_PAUSE =             'pause'             # stop winch and wait for PAUSE_DURATION_SECS timeout
+    WINCH_CMD_STOP =              'stop'              # essentially an alias for 'pause'
     WINCH_CMD_STOP_AT_MAX_DEPTH = 'stop-at-max-depth' # stop winch motion and wait for next command
-    WINCH_CMD_UP_PAUSE = 'up-pause'             # stop winch motion after latch is detected
-    WINCH_CMD_DOWN_PAUSE = 'down-pause'         # stop winch motion after latch is detected
-    WINCH_CMD_PARK = 'park'                     # go up past latch and down a little bit to lock latch
-    WINCH_CMD_DOWNCAST = 'downcast'              # start downcast (from StagedState)
-    WINCH_CMD_UPCAST = 'upcast'                # Start upcast (from any state except HomeState)
-    WINCH_CMD_SETSTATE = 'set-state'
-    WINCH_CMD_RETURN = 'return'                 # STOP and PARK, not used in normal operation
+    WINCH_CMD_UPCAST =            'up-cast'                 # Start upcast (from any state except HomeState)
+    WINCH_CMD_UPSTAGE =           'up-stage'                 # Start upcast (from any state except HomeState)
+    WINCH_CMD_PARK =              'park'                     # go up past latch and down a little bit and release latch and drop down a little
+    WINCH_CMD_SETSTATE =          'set-state'
 
 WINCH_CMD_LIST = {
     WinchCmd.WINCH_CMD_START, \
-    WinchCmd.WINCH_CMD_STOP_AT_MAX_DEPTH, \
-    WinchCmd.WINCH_CMD_UP_PAUSE, \
-    WinchCmd.WINCH_CMD_DOWN_PAUSE, \
-    WinchCmd.WINCH_CMD_PARK, \
-    WinchCmd.WINCH_CMD_RETURN, \
     WinchCmd.WINCH_CMD_DOWNCAST, \
+    WinchCmd.WINCH_CMD_PAUSE, \
+    WinchCmd.WINCH_CMD_STOP_AT_MAX_DEPTH, \
     WinchCmd.WINCH_CMD_UPCAST, \
+    WinchCmd.WINCH_CMD_UPSTAGE, \
+    WinchCmd.WINCH_CMD_PARK, \
     WinchCmd.WINCH_CMD_SETSTATE
 }
-
-# WINCH TOPICS
-# TOPIC_WINCH_PAYOUT = 'rift-ox/winch/payout'
-# TOPIC_WINCH_TENSION = 'rift-ox/winch/tension'
-# TOPIC_WINCH_MOTION_COMMAND = 'rift-ox/winch/cmd'
-# TOPIC_WINCH_ALL = 'rift-ox/winch/#'
 
 # Orange Pi DIO
 DIO_ACTION_DEVICE_LIST_NAME  = "device list"     # Reports the number of outputs available to the indicated device

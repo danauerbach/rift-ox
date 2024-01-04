@@ -9,6 +9,8 @@ import time
 
 import paho.mqtt.client as mqtt
 
+from winch import WinchCmd
+
 
 def pause_monitor(cfg: dict, quit_evt: Event):
     """waits the later of PAUSE_DURATION_SECS.
@@ -43,7 +45,7 @@ def pause_monitor(cfg: dict, quit_evt: Event):
     pause_active: bool = False
 
     CMD_START: dict = {
-        "command": "start"
+        "command": WinchCmd.WINCH_CMD_START
     }
 
     pausemon_sub : mqtt.Client = mqtt.Client('pausemon-data-sub')

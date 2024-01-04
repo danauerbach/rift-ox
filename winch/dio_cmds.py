@@ -33,6 +33,8 @@ class DIOCommander():
         self.dio_tty_port = cfg["rift-ox-pi"]["DIO_PORT"]
         self.simulation = simulation
 
+        print(f"SIMULATION: {simulation}")
+
         self.MOTOR_STOP_PIN = {
             "group": cfg["rift-ox-pi"]["DIO_MOTOR_STOP_GROUP"],
             "pin": cfg["rift-ox-pi"]["DIO_MOTOR_STOP_PIN"],
@@ -76,7 +78,7 @@ class DIOCommander():
             f'dio set DO_G{self.LATCH_RELEASE_PIN["group"]} {self.LATCH_RELEASE_PIN["pin"]} low\r'
         ]
         for cmd in cmds:
-            self.issue_command(method="init_dio_pins", cmd=cmd)
+            self.issue_command(cmd=cmd)
             time.sleep(0.03)
 
     def pin_low(self, pin: str):
@@ -89,7 +91,7 @@ class DIOCommander():
         elif pin == 'latch':
             cmd = f'dio set DO_G{self.LATCH_RELEASE_PIN["group"]} {self.LATCH_RELEASE_PIN["pin"]} low\r'
 
-        self.issue_command(method=f"{pin}_low", cmd=cmd)
+        self.issue_command(cmd=cmd)
         time.sleep(0.03)
 
     def pin_hi(self, pin: str):
@@ -102,7 +104,7 @@ class DIOCommander():
         elif pin == 'latch':
             cmd = f'dio set DO_G{self.LATCH_RELEASE_PIN["group"]} {self.LATCH_RELEASE_PIN["pin"]} high\r'
 
-        self.issue_command(method=f"{pin}_hi", cmd=cmd)
+        self.issue_command(cmd=cmd)
         time.sleep(0.03)
 
     def stop_winch(self):
@@ -112,7 +114,7 @@ class DIOCommander():
             f'dio set DO_G{self.UPCAST_PIN["group"]} {self.UPCAST_PIN["pin"]} low\r',
         ]
         for cmd in cmds:
-            self.issue_command(method="stop_winch", cmd=cmd)
+            self.issue_command(cmd=cmd)
             time.sleep(0.03)
 
     def latch_release(self):
@@ -120,7 +122,7 @@ class DIOCommander():
             f'dio set DO_G{self.LATCH_RELEASE_PIN["group"]} {self.LATCH_RELEASE_PIN["pin"]} low\r',
         ]
         for cmd in cmds:
-            self.issue_command(method="latch_release", cmd=cmd)
+            self.issue_command(cmd=cmd)
             time.sleep(0.03)
 
     def latch_hold(self):
@@ -128,102 +130,106 @@ class DIOCommander():
             f'dio set DO_G{self.LATCH_RELEASE_PIN["group"]} {self.LATCH_RELEASE_PIN["pin"]} high\r',
         ]
         for cmd in cmds:
-            self.issue_command(method="latch_hold", cmd=cmd)
+            self.issue_command(cmd=cmd)
             time.sleep(0.03)
 
     def stage(self):
+        # fdist let's make sure latch pin is being held...
+        self.latch_hold()
         cmds = [
             f'dio set DO_G{self.UPCAST_PIN["group"]} {self.UPCAST_PIN["pin"]} low\r',
             f'dio set DO_G{self.DOWNCAST_PIN["group"]} {self.DOWNCAST_PIN["pin"]} high\r',
             f'dio set DO_G{self.MOTOR_STOP_PIN["group"]} {self.MOTOR_STOP_PIN["pin"]} low\r',
         ]
         for cmd in cmds:
-            self.issue_command(method="stage", cmd=cmd)
+            self.issue_command(cmd=cmd)
             time.sleep(0.03)
 
-    def down_cast(self, stop_after_ms=0):
+    def down_cast(self, stop_after_ms: int =0):
         cmds = [
             f'dio set DO_G{self.UPCAST_PIN["group"]} {self.UPCAST_PIN["pin"]} low\r',
             f'dio set DO_G{self.DOWNCAST_PIN["group"]} {self.DOWNCAST_PIN["pin"]} high\r',
             f'dio set DO_G{self.MOTOR_STOP_PIN["group"]} {self.MOTOR_STOP_PIN["pin"]} low\r',
         ]
         for cmd in cmds:
-            self.issue_command(method="down_cast", cmd=cmd)
+            self.issue_command(cmd=cmd)
             time.sleep(0.03)
         if stop_after_ms > 0:
-            time.sleep(stop_after_ms / 1.000)
+            time.sleep(stop_after_ms / 1000)
             self.stop_winch()
 
-    def up_cast(self, stop_after_ms=0):
+    def up_cast(self, stop_after_ms: int =0):
         cmds = [
             f'dio set DO_G{self.UPCAST_PIN["group"]} {self.UPCAST_PIN["pin"]} high\r',
             f'dio set DO_G{self.DOWNCAST_PIN["group"]} {self.DOWNCAST_PIN["pin"]} low\r',
             f'dio set DO_G{self.MOTOR_STOP_PIN["group"]} {self.MOTOR_STOP_PIN["pin"]} low\r',
         ]
         for cmd in cmds:
-            self.issue_command(method="up_cast", cmd=cmd)
+            self.issue_command(cmd=cmd)
             time.sleep(0.03)
         if stop_after_ms > 0:
-            time.sleep(stop_after_ms / 1.000)
+            time.sleep(stop_after_ms / 1000)
             self.stop_winch()
 
-    def park(self):
-        """Parking is moving winch backwards until LATCH signal
-        is detected and then paying out until the latch is not detected.
-        This should leave the winch in the (physically) LATCHED position"""
+    # def park(self):
+    #     """Parking is moving winch backwards until LATCH signal
+    #     is detected and then paying out until the latch is not detected.
+    #     This should leave the winch in the (physically) LATCHED position"""
 
-        # check currnet latch state
-        latch_high, err = self.get_latch_sensor_state()
-        if err:
-            print('dio_cmds:park UNABLE to get LATCH SENSOR state when PARKING')
-            return
+    #     # check currnet latch state
+    #     latch_high, err = self.get_latch_sensor_state()
+    #     if err:
+    #         print('dio_cmds:park UNABLE to get LATCH SENSOR state when PARKING')
+    #         return
         
-        if not latch_high:
-            # we don't know if we are above or below the latch,
-            # so unwind just a little to be confident we are below the latch
-            self.down_cast(stop_after_ms=self.cfg["winch"]["PARKING_DOWNCAST_1_MS"])
-            latch_high, err = self.get_latch_sensor_state()
+    #     if not latch_high:
+    #         # we don't know if we are above or below the latch,
+    #         # so unwind just a little to be confident we are below the latch
+    #         self.down_cast(stop_after_ms=self.cfg["winch"]["PARKING_DOWNCAST_1_MS"])
+    #         latch_high, err = self.get_latch_sensor_state()
 
-        # start upcast
-        if not latch_high:
-            # capture latch_sensor edge count before raising back up
-            start_latch_edge_count, err = self.get_latch_edge_count()
-            new_latch_edge_count = start_latch_edge_count
+    #     # start upcast
+    #     if not latch_high:
+    #         # capture latch_sensor edge count before raising back up
+    #         start_latch_edge_count, err = self.get_latch_edge_count()
+    #         new_latch_edge_count = start_latch_edge_count
         
-            latch_found = False
-            self.up_cast() #### NOT SURE THIS IS A GOOD IDEA
-            while not latch_found:
-                # check fr new LATCH edge count
-                if self.simulation:  # SIMULATION: fake latch addl edges after 2 secs
-                    time.sleep(1.5)
-                    new_latch_edge_count = start_latch_edge_count + 2
-                    err = False
-                else:
-                    new_latch_edge_count, err = self.get_latch_edge_count()
-                if err:
-                    self.stop_winch() #### NOT SURE THIS IS A GOOD IDEA
-                    print('dio_cmds:park UNABLE to get LATCH SENSOR state when PARKING')
-                    return
-                latch_found = new_latch_edge_count > start_latch_edge_count
-                if latch_found:
-                    self.stop_winch()
-                    start_latch_edge_count = new_latch_edge_count
-                    break
-                time.sleep(0.33)    
+    #         latch_found = False
+    #         self.up_cast() #### NOT SURE THIS IS A GOOD IDEA
+    #         while not latch_found:
+    #             # check fr new LATCH edge count
+    #             if self.simulation:  # SIMULATION: fake latch addl edges after 2 secs
+    #                 time.sleep(1.5)
+    #                 new_latch_edge_count = start_latch_edge_count + 2
+    #                 err = False
+    #             else:
+    #                 new_latch_edge_count, err = self.get_latch_edge_count()
+    #             if err:
+    #                 self.stop_winch() #### NOT SURE THIS IS A GOOD IDEA
+    #                 print('dio_cmds:park UNABLE to get LATCH SENSOR state when PARKING')
+    #                 return
+    #             latch_found = new_latch_edge_count > start_latch_edge_count
+    #             if latch_found:
+    #                 self.stop_winch()
+    #                 start_latch_edge_count = new_latch_edge_count
+    #                 break
+    #             time.sleep(0.33)    
 
-        # presumably we are on the LATCH now. SO, per SHerman/CLARS, 
-        # need to move up a little, then down just past the latch
-        self.up_cast(stop_after_ms=self.cfg["winch"]["PARKING_UPCAST_MS"])
-        time.sleep(.5)
-        self.down_cast(stop_after_ms=self.cfg["winch"]["PARKING_DOWNCAST_2_MS"])
+    #     # presumably we are on the LATCH now. SO, per SHerman/CLARS, 
+    #     # need to move up a little, then down just past the latch
+    #     self.up_cast(stop_after_ms=self.cfg["winch"]["PARKING_UPCAST_MS"])
+    #     self.latch_release()
+    #     time.sleep(.5)
+    #     self.down_cast(stop_after_ms=self.cfg["winch"]["PARKING_DOWNCAST_2_MS"])
+    #     self.stop_winch()
                 
-        # it should now be parked with physical catch latch activated
-        #TODO TEST TEST TEST
+    #     # it should now be parked with physical catch latch activated
+    #     #TODO TEST TEST TEST
 
     def get_latch_sensor_state(self) -> (bool, bool):
 
         cmd = f'dio get DI_G{self.LATCH_SENSOR_PIN["group"]}\r'
-        result, err = self.issue_command(method="get_latch_sensor_state", cmd=cmd)
+        result, err = self.issue_command(cmd=cmd)
         if self.simulation:  # SIMULATION: fake latch LOW signal
             result = "0"
             err = False
@@ -232,52 +238,61 @@ class DIOCommander():
                 return result, err
 
         return int(result), err
-
+    
     def get_latch_edge_count(self) -> (int, bool):
         cmd = f'dio edge DI_G{self.LATCH_SENSOR_PIN["group"]} {self.LATCH_SENSOR_PIN["pin"]}\r'
-        edge_count, err = self.issue_command("get_latch_edge_count", cmd)
+        edge_count, err = self.issue_command(cmd=cmd)
         if err:
             return None, True
-        edge_count = int(edge_count)
+        if edge_count != None:
+            edge_count = int(edge_count)
         return edge_count, False
 
     def get_payout_edge_count(self) -> (list[int], bool):
         payout_1: int
         payout_2: int
         cmd = f'dio edge DI_G{self.PAYOUT1_PIN["group"]} {self.PAYOUT1_PIN["pin"]}\r'
-        result, err = self.issue_command(method="get_payout_edge_count", cmd=cmd)
+        payout_1, err = self.issue_command(cmd=cmd)
         if err:
             return None, True
-        payout_1 = int(result)
+        if payout_1 != None:
+            payout_1 = int(payout_1)
 
         cmd = f'dio edge DI_G{self.PAYOUT2_PIN["group"]} {self.PAYOUT2_PIN["pin"]}\r'
-        result, err = self.issue_command(method="get_payout_edge_count", cmd=cmd)
+        payout_2, err = self.issue_command(cmd=cmd)
         if err:
             return None, True
-        payout_2 = int(result)
+        if payout_2 != None:
+            payout_2 = int(payout_2)
 
         return [payout_1, payout_2], False
 
     def get_winch_direction(self) -> (WinchDir, bool):
         err: bool = False
+        up_active: bool
+        down_active: bool
+        stop_active: bool
         up_pin_query = f'dio get DO_G{self.UPCAST_PIN["group"]} output {self.UPCAST_PIN["pin"]}\r'.encode()
         down_pin_query = f'dio get DO_G{self.DOWNCAST_PIN["group"]} output {self.DOWNCAST_PIN["pin"]}\r'.encode()
         stop_pin_query = f'dio get DO_G{self.MOTOR_STOP_PIN["group"]} output {self.MOTOR_STOP_PIN["pin"]}\r'.encode()
 
-        up_pin_state, err = self._send_bytes(up_pin_query)
+        up_pin_state, err = self.issue_command(up_pin_query)
         if err:
             return None, True
-        up_active: bool = not bool(int(up_pin_state))  # "1" is active but in python 0 == True
+        if up_pin_state != None:
+            up_active = not bool(int(up_pin_state))  # "1" is active but in python 0 == True
 
-        down_pin_state, err = self._send_bytes(down_pin_query)
+        down_pin_state, err = self.issue_command(down_pin_query)
         if err:
             return None, True
-        down_active:bool = not bool(int(down_pin_state))
+        if down_pin_state != None:
+            down_active = not bool(int(down_pin_state))
 
-        stop_pin_state, err = self._send_bytes(stop_pin_query)
+        stop_pin_state, err = self.issue_command(stop_pin_query)
         if err:
             return None, True
-        stop_active = not bool(int(stop_pin_state))
+        if stop_pin_query != None:
+            stop_active = not bool(int(stop_pin_state))
 
         if stop_active:
             return WinchDir.DIRECTION_NONE
@@ -289,7 +304,7 @@ class DIOCommander():
         # either both direction lines HIGH or both LOW, either way winch not moving.
         return WinchDir.DIRECTION_NONE, err
 
-    def issue_command(self, method: str, cmd : str) -> (str, bool):
+    def issue_command(self, cmd : str) -> (str, bool):
 
         # cmd_bytes: bytes = self._dio_command_ddbytes(cmd)
         cmd_bytes: bytes = cmd.encode()
@@ -297,12 +312,7 @@ class DIOCommander():
             print(f'ERROR converting command info {cmd.strip()} to bytes')
             return "", True
 
-        # print(f'COMMAND to {self.dio_tty_port}: {cmd_bytes.decode()}')
-        if not self.simulation:
-            return self._send_bytes(cmd_bytes)
-        else:
-            self._log_cmd(method, cmd_bytes)
-            return "", True
+        return self._send_bytes(cmd_bytes)
 
 
     def _dio_command_bytes (self, cmd : str) -> (bytes or None):
@@ -414,36 +424,40 @@ class DIOCommander():
         result: str = ""
         err: bool = False
 
-        with serial.Serial(self.dio_tty_port) as mcu:
+        if not self.simulation:
 
-            mcu.write(b"\r\n")
-            time.sleep(0.05)
-            # print(f'{mcu.read(mcu.inWaiting())}')  #get anything waiting in buffer and discard
-            mcu.read(mcu.inWaiting()) #get anything waiting in buffer and discard
+            with serial.Serial(self.dio_tty_port) as mcu:
 
-            # cmd_bytes = dio_command_bytes(DIO_ACTION_NUMINPUTS_NAME, dir=DIO_DIRECTION_IN, group=0, pin=1)
-            written = mcu.write(cmd_bytes)
-            mcu.flush()
-            print(f'Command sent: {cmd_bytes.decode().strip()}')
-            #TODO LOG INFO
+                print(f'_send_bytes issuing: "{cmd_bytes.decode().strip()}"')
+                mcu.write(b"\r\n")
+                time.sleep(0.05)
+                # print(f'{mcu.read(mcu.inWaiting())}')  #get anything waiting in buffer and discard
+                mcu.read(mcu.inWaiting()) #get anything waiting in buffer and discard
 
-            time.sleep(0.01)
-            res = mcu.read(mcu.inWaiting())
-            res_array = res.split(b'\r\n')
-            #TODO LOG INFO
-            # print(f"RESPONSE: {res_array}")
-            if res_array:
-                # print(f'DIO RESPONSE: {res_array}')
-                # print(f"DIO RESPONSE: {res_array[1].decode()}")
-                result = res_array[1]
+                # cmd_bytes = dio_command_bytes(DIO_ACTION_NUMINPUTS_NAME, dir=DIO_DIRECTION_IN, group=0, pin=1)
+                written = mcu.write(cmd_bytes)
+                mcu.flush()
+                print(f'Command sent: {cmd_bytes.decode().strip()}')
                 #TODO LOG INFO
-            else:
-                result = None
-                err = True
-                #TODO log error
-                # print(f'DIO INVALID RESPONSE')
 
-        return result, err
+                time.sleep(0.01)
+                res = mcu.read(mcu.inWaiting())
+                res_array = res.split(b'\r\n')
+                #TODO LOG INFO
+                # print(f"RESPONSE: {res_array}")
+                if res_array:
+                    # print(f'DIO RESPONSE: {res_array}')
+                    # print(f"DIO RESPONSE: {res_array[1].decode()}")
+                    result = res_array[1]
+                    #TODO LOG INFO
+                else:
+                    result = None
+                    err = True
+                    #TODO log error
+                    # print(f'DIO INVALID RESPONSE')
 
-    def _log_cmd(self, method, cmd_bytes: bytes):
-        print(f'{method} issuing: "{cmd_bytes.decode().strip()}"')
+            return result, err
+
+        else:
+            print(f'_send_bytes logging: "{cmd_bytes.decode().strip()}"')
+            return None, False

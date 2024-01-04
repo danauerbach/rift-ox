@@ -243,9 +243,6 @@ if __name__ == "__main__":
 
     quit_evt = threading.Event()
 
-    # op_gpio_serial : serial.Serial = serial.Serial('/dev/ttyACM0') #, 9600, timeout=2.0, write_timeout=2, parity=serial.PARITY_EVEN, bytesize=8)
-
-    """setup dio parameters"""
     dio_port = '/dev/ttyACM0'
 
     while not quit_evt.is_set():
@@ -257,23 +254,7 @@ if __name__ == "__main__":
         elif not cmd:
             print('no command entered, try again')
             continue
-        # else:
-        #     cmd_words = cmd.split()
-        #     if cmd_words[0] not in DIO_VALID_COMMANDS:
-        #         print(f'Invalid command verb: {cmd_words[0]}')
-        #         continue
-
-        # if cmd_words[0] == 'RAW:':
         cmd_bytes = f'{cmd}\r'.encode()
-        # else:
-        #     cmd_verb, params = dio_parse_params(cmd)
-        #     print(f'CMD: {cmd_verb}')
-        #     pprint(params)
-        #     if cmd_verb:
-        #         cmd_bytes = dio_command_bytes(cmd_verb, **params)
-        #         # print(f'CMD_BYTES: {cmd_bytes}')
-        #     else:
-        #         print(f'error constructing command from: {cmd}')
 
         try:
             with serial.Serial(dio_port) as mcu:
@@ -310,83 +291,4 @@ if __name__ == "__main__":
 
         print()
         time.sleep(0.3)
-        # quit_evt.set()
 
-
-
-        # cmd : str = input('Enter byte-code cmd> ')
-        # # cmd = cmd.upper()
-        # # cmd_words : list[str] = cmd.split()
-        # cmd_words = cmd
-
-        # print(f"you entered {cmd_words}")
-        # print()
-
-
-        # time.sleep(0.005)
-        # op_gpio_serial.write(b"\r\n")
-        # time.sleep(0.005)
-
-        # pin_status = dio_get_all_pin_status(op_gpio_serial, "O")
-        # print(pin_status)
-
-        # break
-
-        # time.sleep(0.005)
-        # op_gpio_serial.write(b"\r\n")
-        # time.sleep(0.005)
-        # op_gpio_serial.read(op_gpio_serial.inWaiting()) #get anything waiting in buffer and discard
-
-        # for pin in range(0,8):
-        #     op_gpio_serial.write(f'dio get DO_G0 output {pin}\n'.encode())
-        #     time.sleep(0.05)
-        #     res = op_gpio_serial.read(op_gpio_serial.inWaiting())
-        #     res_array = res.split(b'\r\n')
-        #     print(f"{res_array}")
-    
-        # break
-
-
-
-        # if cmd_words[0] == 'QUIT':
-        #     quit_evt.set()
-
-        # elif cmd_words[0] == DIO_ACTION_GET_NAME:
-        #     pin_val : int = int(cmd_words[1]).to_bytes(length=1, byteorder=sys.byteorder)
-        #     print(pin_val)
-        #     cmd_bytes = dio_command_bytes(DIO_ACTION_GET_NAME, pin_val)
-
-        # elif cmd_words[0] == DIO_ACTION_SET_NAME:
-        #     pin_val : int = int(cmd_words[1]).to_bytes(length=1, byteorder=sys.byteorder)
-        #     print(pin_val)
-        #     cmd_bytes = dio_command_bytes(DIO_ACTION_GET_NAME, pin_val)
-
-        # elif cmd_words[0] == DIO_ACTION_NUMDEVICES_NAME:
-
-        #     cmd_bytes = dio_command_bytes(cmd_words[0], None)
-        #     op_gpio_serial.write(cmd_bytes)
-        #     print(f'sending command: {cmd_bytes}')
-
-        #     while not quit_evt.is_set():
-
-        #         try: 
-        #             resp = op_gpio_serial.readline()
-        #             print(resp)
-        #             print(resp.decode())
-        #         except:
-        #             print('serial read timeout/error, quitting')
-        #             quit_evt.set()
-        # # elif: cmd[0] == DIO_ACTION_SETCOUNT_NAME:
-        # #     pin_val = int(cmd[1])
-
-        # # elif: cmd[0] == DIO_ACTION_SETMODE_NAME:
-        # #     pin_val = int(cmd[1])
-
-        # # elif cmd[0] == DIO_ACTION_NUMDEVICES_NAME:
-
-        # # elif cmd[0] == DIO_ACTION_NUMOUTPUTS_NAME:
-
-        # # elif cmd[0] == DIO_ACTION_NUMINPUTS_NAME:
-
-
-        

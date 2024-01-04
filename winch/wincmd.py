@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-from datetime import datetime
-from enum import Enum
 import json
 import logging
 from pathlib import Path
@@ -11,8 +9,7 @@ import time
 
 import paho.mqtt.client as mqtt
 
-from winch.dio_cmds import DIOCommander
-# from winch import states
+from .dio_cmds import DIOCommander
 from winch.states import Winch
 
 from . import WINCH_CMD_LIST, WinchCmd
@@ -25,6 +22,7 @@ def wincmd_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
     def on_CMD(client, userdata, message):
 
         msg_str = message.payload.decode('utf-8')
+        print(f'wincmd_loop: cmd rcvd: {msg_str}')
         msg_json = json.loads(msg_str)
         cmd_q.put(msg_json)
 
@@ -45,7 +43,7 @@ def wincmd_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
 
     def get_payout_fn(name: Path) -> str:
         ops_dir = Path(cfg['rift-ox-pi']['OPS_DIR'])
-        Path.mkdir(ops_dir, parents = True, exists_ok = True)
+        Path.mkdir(ops_dir, parents = True, exist_ok = True)
         return ops_dir.joinpath(name)
     
     def save_payout(status: dict, fn: Path):
@@ -73,8 +71,8 @@ def wincmd_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
     wincmd_sub.on_subscribe = on_ctl_subscribe
     wincmd_sub.on_message = on_CMD
     wincmd_sub.connect(cfg["mqtt"]["HOST"], cfg["mqtt"]["PORT"])
-    err, _ = wincmd_sub.subscribe(cfg["mqtt"]["WINCH_CMD_TOPIC"], qos=2)
-    if err != None:
+    res, _ = wincmd_sub.subscribe(cfg["mqtt"]["WINCH_CMD_TOPIC"], qos=2)
+    if res != mqtt.MQTT_ERR_SUCCESS:
         print(f'winmon:wincmd ERROR subscribing to {cfg["mqtt"]["WINCH_CMD_TOPIC"]}')
         print(f'winmon:wincmd shutting down')
         quit_evt.set()
@@ -95,9 +93,11 @@ def wincmd_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
 
     while not quit_evt.is_set():
 
+        print(f'wincmd_loop: top')
+
         status, err = share_new_winch_status(winch, Path("payouts"))
         if err:
-            print(f'winctl:winmon: ERROR getting initial winch status')
+            print(f'winctl:winmon: ERROR getting winch status')
 
         cmd_msg = ""
         try:
@@ -115,91 +115,86 @@ def wincmd_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
             print(f'winctl:wincmd: INVALID COMMAND: {cmd}')
             continue
 
+        
         if cmd == WinchCmd.WINCH_CMD_START:
             winch.start()
 
-        elif cmd == WinchCmd.WINCH_CMD_STOP_AT_MAX_DEPTH:
-            winch.up_pause()
-
-        elif cmd == WinchCmd.WINCH_CMD_UP_PAUSE:
-            winch.up_pause()
-
-        elif cmd == WinchCmd.WINCH_CMD_DOWN_PAUSE:
-            winch.down_pause()
-
-        elif cmd == WinchCmd.WINCH_CMD_PARK:
-            winch.park()
+        elif cmd == WinchCmd.WINCH_CMD_STOP:
+            # currently an alias for PAUSE
+            winch.stop()
 
         elif cmd == WinchCmd.WINCH_CMD_DOWNCAST:
-            winch.downcast()
+            winch.down_cast()
+
+        elif cmd == WinchCmd.WINCH_CMD_STOP_AT_MAX_DEPTH:
+            winch.stop_at_bottom()
 
         elif cmd == WinchCmd.WINCH_CMD_UPCAST:
-            winch.upcast()
+            winch.up_cast()
 
-        elif cmd == WinchCmd.WINCH_CMD_RETURN:
-            winch.upcast()
+        elif cmd == WinchCmd.WINCH_CMD_UPSTAGE:
+            winch.up_stage()
+
+        elif cmd == WinchCmd.WINCH_CMD_PARK:
+            """Parking is moving winch backwards until LATCH signal
+            is detected and then paying out for < 1sec so that bullet will latch.
+            This should leave the winch in the (physically) LATCHED position
+            
+            NOTE we are using dio_cmndr.<command> directly to control winch while bypassing the 
+            because WInch state machine because Parking requires multiple winch 
+            commands all while Parking and the Winch state machine can handle this."""
+
+            print(f'PARKING: STARTING')
+
+            # check current latch edge count
+            start_latch_edge_cnt, err = winch.get_latch_edge_count()
+            if err:
+                print('dio_cmds:park UNABLE to get LATCH SENSOR state when PARKING')
+                return
+
+            new_latch_edge_count = start_latch_edge_cnt
+            print(f'PARKING: LATCH EDGE CNT: {start_latch_edge_cnt}')
+        
+            print(f'PARKING: UP CASTING')
+            dio_cmndr.up_cast() #### NOT SURE THIS IS A GOOD IDEA
+            latch_found = (new_latch_edge_count > start_latch_edge_cnt)
+            print(f'PARKING: LATCH FOUND - INITIAL: {latch_found}')
+            while not latch_found:
+                # check fr new LATCH edge count
+                new_latch_edge_count, err = winch.get_latch_edge_count()
+                if err:
+                    winch.stop_winch() #### NOT SURE THIS IS A GOOD IDEA
+                    print('dio_cmds:park UNABLE to get LATCH SENSOR state when PARKING')
+                    return
+                latch_found = new_latch_edge_count > start_latch_edge_cnt
+                print(f'PARKING: LATCH FOUND - LOOP: {latch_found}')
+
+                # need a pretty fast loop here while up_casting
+                time.sleep(0.01)    
+
+            print(f'PARKING: LATCH FOUND: {latch_found}')
+            print(f'PARKING: STOPPING WINCH')
+            # latch has been found
+            dio_cmndr.stop_winch()
+            # presumably we are on the LATCH now. drop a fraction of a sec (an inch or two)
+            print(f'PARKING: RELEASING LATCH')
+            dio_cmndr.latch_release()
+            time.sleep(1) # REMOVE AFTER TESTING
+            print(f'PARKING: DOWNCASTING FOR {cfg["winch"]["PARKING_DOWNCAST_MS"]}ms')
+            dio_cmndr.down_cast(stop_after_ms=int(cfg["winch"]["PARKING_DOWNCAST_MS"]))
+            dio_cmndr.stop_winch()
 
         elif cmd == WinchCmd.WINCH_CMD_SETSTATE:
-            winch.set_state
+            winch.set_state()
 
-        #     print(f'############# WINCH COMMAND "{cmd}" BEGIN')
-        #     if winch_status not in [WINCH_CMD_STOP, WINCH_CMD_NONE]:
-        #         #TODO set DIO speed pin 'low' using ttyACM0 serial port
-        #         print(f'{round(time.time(), 2)} WIN CTL: STOP: SPEED->low')
-        #         time.sleep(2) # wait 2 secs for winch deceleration before changing direction lines
-        #         #TODO set DIO FORWARD (sink) pin 'low' using ttyACM0 serial port
-        #         #TODO set DIO REVERSE (sink) pin 'low' using ttyACM0 serial port
-        #         print(f'{round(time.time(), 2)} WIN CTL: STOP: FORWARD->high')
-        #         print(f'{round(time.time(), 2)} WIN CTL: STOP: REVERSE->high')
-        #     winch_status = WINCH_CMD_STOP
-        #     print(f'############# WINCH COMMAND "{cmd}" END')
-
-        # elif cmd == WinchCmd.WINCH_CMD_DOWNCAST:
-
-        #     print(f'############# WINCH COMMAND "{cmd}" BEGIN:')
-        #     if winch_status not in [WINCH_CMD_STOP, WINCH_CMD_NONE]:   # if in motion stop and wait for decel
-        #         #TODO set DIO speed pin 'low' using ttyACM0 serial port
-        #         print(f'WIN CTL FORWARD: SPEED->low (stopping before estting new direction)')
-        #         time.sleep(2)
-        #     print(f'{round(time.time(), 2)} WIN CTL FORWARD: REVERSE->high')
-        #     print(f'{round(time.time(), 2)} WIN CTL FORWARD: FORWARD->low')
-        #     print(f'{round(time.time(), 2)} WIN CTL FORWARD: SPEED->high')
-        #     winch_status = WINCH_CMD_DOWNCAST
-
-        # elif cmd == WinchCmd.WINCH_CMD_UPCAST:
-
-        #     print(f'############# WINCH COMMAND "{cmd}" BEGIN:')
-        #     if winch_status not in [WINCH_CMD_STOP, WINCH_CMD_NONE]:
-        #         print(f'{round(time.time(), 2)} WIN CTL REVERSE: SPEED->low')
-        #         time.sleep(2)
-        #     print(f'{round(time.time(), 2)} WIN CTL REVERSE: FORWARD->high')
-        #     print(f'{round(time.time(), 2)} WIN CTL REVERSE: REVERSE->low')
-        #     print(f'{round(time.time(), 2)} WIN CTL REVERSE: SPEED->high')
-        #     winch_status = WINCH_CMD_UPCAST
-
-        # elif cmd == WinchCmd.WINCH_CMD_START:
-            
-        #     print(f'############# WINCH COMMAND "{cmd}" BEGIN:')
-        #     if winch_status not in [WINCH_CMD_STOP, WINCH_CMD_NONE]:
-        #         # really shouldn't be in motion for gostart, but hey...
-        #         print(f'WIN CTL GOSTART: SPEED->low')
-        #         time.sleep(2)
-
-        #     # we need to get the simulator going with motion
-        #     cmd_msg["command"] = WINCH_CMD_DOWNCAST
-        #     # simulator_pub.publish(TOPIC_WINCH_MOTION_COMMAND, json.dumps(CMD).encode())
-        #     print(f'{round(time.time(), 2)} WIN CTL GOSTART: REVERSE->high')
-        #     print(f'{round(time.time(), 2)} WIN CTL GOSTART: FORWARD->low')
-        #     print(f'{round(time.time(), 2)} WIN CTL GOSTART: SPEED->high')
-        #     winch_status = WINCH_CMD_DOWNCAST
-
+    
     status, err = share_new_winch_status(winch, Path("payouts"))
     if err:
-        print(f'winctl:winmon: ERROR getting initial winch status')
+        print(f'winctl:winmon: ERROR getting final winch status')
 
 
-    err = save_payout(status, Path('last_payouts'))
-    if err:
-        print(f"winctl:wincmd: ERROR GET LAST Payout Edge Counts")
+    # err = save_payout(status, Path('last_payouts'))
+    # if err:
+    #     print(f"winctl:wincmd: ERROR GET LAST Payout Edge Counts")
 
     wincmd_sub.loop_stop()

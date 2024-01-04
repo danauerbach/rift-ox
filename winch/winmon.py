@@ -156,16 +156,6 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
             if (cur_depth_ctd > 10) and ((delta / cur_depth_ctd) > 0.03):
                 print(f'winctl:winmon: WARNING: winch PAYOUT reading differs from CTD DEPTH by {delta} meters at CTD depth of: {cur_depth_ctd}.')
 
-        # if (abs(last_depth - cur_depth) < STATIONARY_MAX_DIFF) and (direction != WinchDir.DIRECTION_NONE):
-        #     print(f'winctl: Winch is stopped. Setting DIRECTION_NONE.')
-        #     direction = WinchDir.DIRECTION_NONE
-        # elif ((cur_depth - last_depth) > STATIONARY_MAX_DIFF) and (direction != WinchDir.DIRECTION_DOWN):
-        #     print(f'winctl: Winch is now in FORWARD (downcast). Setting DIRECTION_DOWN.')
-        #     direction = WinchDir.DIRECTION_DOWN
-        # elif ((cur_depth - last_depth) < -STATIONARY_MAX_DIFF) and (direction != WinchDir.DIRECTION_UP):
-        #     print(f'winctl: Winch is now in REVERSE (upcast). Setting DIRECTION_UP.')
-        #     direction = WinchDir.DIRECTION_UP
-
         if (cur_direction == WinchDir.DIRECTION_DOWN):
 
             if (cur_depth > STAGING_DEPTH) and \
@@ -175,18 +165,14 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
 
             if (cur_altitude < MIN_ALTITUDE):
                 print(f'winctl:winmon: Winch is stopping within {MIN_ALTITUDE}m of the seafloor.')
-                stopped = True
                 pub_winch_cmd(wincmd_pub, winch_command_topic, WinchCmd.WINCH_CMD_STOP_AT_MAX_DEPTH)
                 stop_and_pause_at_bottom()
-                #TODO stopped = false
                 continue
 
             elif (cur_depth > MAX_DEPTH):
                 pub_winch_cmd(wincmd_pub, winch_command_topic, WinchCmd.WINCH_CMD_STOP_AT_MAX_DEPTH)
                 stop_and_pause_at_bottom()
                 print(f'winctl:winmon: Winch is stopping at MAX depth {MAX_DEPTH} meters.')
-                stopped = True
-                #TODO stopped = false
                 continue
 
         elif (cur_direction == WinchDir.DIRECTION_UP):
