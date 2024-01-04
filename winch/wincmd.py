@@ -99,6 +99,9 @@ def wincmd_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
         if err:
             print(f'winctl:winmon: ERROR getting winch status')
 
+        state_json = json.dumps(status)
+        print(f' WINCH STATE: {state_json}')
+        
         cmd_msg = ""
         try:
             cmd_msg = cmd_q.get(block=True, timeout=1.0)
