@@ -386,7 +386,7 @@ class DIOCommander():
                 # cmd_bytes = dio_command_bytes(DIO_ACTION_NUMINPUTS_NAME, dir=DIO_DIRECTION_IN, group=0, pin=1)
                 written = mcu.write(cmd_bytes)
                 mcu.flush()
-                # print(f'Command sent: {cmd_bytes.decode().strip()}')
+                print(f'_send_bytes: Command sent: {cmd_bytes.decode().strip()}')
                 #TODO LOG INFO
 
                 time.sleep(0.01)
@@ -408,5 +408,5 @@ class DIOCommander():
             return result, err
 
         else:
-            print(f'_send_bytes logging: "{cmd_bytes.decode().strip()}"')
+            print(f'_send_bytes: logging: "{cmd_bytes.decode().strip()}"')
             return "", False
