@@ -11,7 +11,7 @@ import time
 import paho.mqtt.client as mqtt
 import toml
 
-import winch
+import winch.pausemon
 import winch.winmon
 import winch.wincmd
 import ctd
@@ -24,6 +24,7 @@ def interrupt_handler(signum, frame):
     quit_evt.set()
     wincmd_thr.join()
     winmon_thr.join()
+    pause_thr.join()
 
     # do whatever...
     # time.sleep(1)
@@ -46,6 +47,9 @@ if __name__ == "__main__":
     # queue so wincmd can tell winmon what state the winch is in
     winch_status_q: queue.Queue = queue.Queue()
 
+    pause_thr = threading.Thread(target=winch.pausemon.pause_monitor, args=(cfg, quit_evt), name="pausemon")
+    pause_thr.start()
+    
     wincmd_thr = threading.Thread(target=winch.wincmd.wincmd_loop, args=(cfg, winch_status_q, quit_evt), name="wincmd")
     wincmd_thr.start()
 
@@ -54,5 +58,6 @@ if __name__ == "__main__":
 
     quit_evt.wait()
 
-    wincmd_thr.join()
     winmon_thr.join()
+    wincmd_thr.join()
+    pause_thr.join()
