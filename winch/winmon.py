@@ -115,10 +115,11 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
             empty_count = 0
         except queue.Empty as e:
             # print('winctl:winmon: NO CTDDATA message in data_q queue')
-            empty_count += 1
-            if empty_count > 60:
-                print('winctl:winmon: still NO CTD, PAYOUT or LATCH data')
-                empty_count = 0
+            if cfg["rift-ox-pi"]["REALTIME_CTD"]:
+                empty_count += 1
+                if empty_count > 60:
+                    print('winctl:winmon: still NO CTD, PAYOUT or LATCH data')
+                    empty_count = 0
         except Exception as e:
             print(f'winctl:winmon: ERROR receiving data msg: {e}')
             continue
@@ -131,12 +132,12 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
                 cur_depth_ctd = data_dict["depth_m"]
                 cur_altitude = data_dict["alt_m"]
 
-        if cfg["rift-ox-pi"]["REALTIME_CTD"]:
-            # Let's compare winch payout readings with depth from CTD
-            delta: float = cur_depth - cur_depth_ctd
-            if (cur_depth_ctd > 10) and ((delta / cur_depth_ctd) > 0.005):
-                # report difference if more than 0.5%
-                print(f'winctl:winmon: WARNING: winch PAYOUT reading differs from CTD DEPTH by {delta} meters at CTD depth of: {cur_depth_ctd}.')
+                if cfg["rift-ox-pi"]["REALTIME_CTD"]:
+                    # Let's compare winch payout readings with depth from CTD
+                    delta: float = cur_depth - cur_depth_ctd
+                    if (cur_depth_ctd > 10) and ((delta / cur_depth_ctd) > 0.005):
+                        # report difference if more than 0.5%
+                        print(f'winctl:winmon: WARNING: winch PAYOUT reading differs from CTD DEPTH by {delta} meters at CTD depth of: {cur_depth_ctd}.')
 
         # print(f'winctl:winmon: cur_depth: {cur_depth}')
         if (cur_direction == WinchDir.DIRECTION_DOWN.value):
