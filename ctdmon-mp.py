@@ -362,10 +362,12 @@ class SBE33SerialDataPort():
         # print(f'enqueuing: {cmds}')
 
         if isinstance(cmds, str) or (cmds == ''):
-            cmds = [cmds]
+            cmdlist = [cmds]
+        else:
+            cmdlist = cmds
 
-        if isinstance(cmds, list):
-            for cmd in cmds:
+        if isinstance(cmdlist, list):
+            for cmd in cmdlist:
                 cmd += eol
                 ba = bytearray()
                 ba.extend(cmd.encode())
@@ -433,7 +435,7 @@ class SBE33SerialDataPort():
 
         try:
             self.lock.acquire()
-            self.ser_port.write(cmd)
+            self.ser_port.write(cmd.encode())
             self.ser_port.flush()
             self.lock.release()
             print(f'Command sent                   : [{cmd}]')
@@ -502,7 +504,7 @@ class SBE33SerialDataPort():
         return len(line) == self.expected_sample_line_length(has_gps)
         
 
-    def parse_data(self, line : str == None) -> dict:
+    def parse_data(self, line : str or None) -> dict:
         """Parse raw data line based on current output format.
         Output a dict with parsed values in proper type: int or float
         """
