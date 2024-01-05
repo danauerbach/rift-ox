@@ -6,6 +6,7 @@ import logging
 import queue
 import threading
 import time
+from typing import Tuple
 
 import paho.mqtt.client as mqtt
 
@@ -30,14 +31,12 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
 
     def _on_connect(client, userdata, flags, rc):
         if rc==0:
-            client.connected_flag=True #set flag
             print("winctl:winmon: connected OK: {client}")
         else:
             print("winctl:winmon: Bad connection for {client} Returned code: ", rc)
             client.loop_stop()
 
     def _on_disconnect(client, userdata, rc):
-        client.connected_flag=False #set flag
         print("winctl:winmon: client disconnected ok")
 
     def _on_data_message(client : mqtt.Client, userdata, message):
@@ -48,10 +47,10 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
     def _on_data_subscribe(client, userdata, mid, granted_qos):
         print("winctl:winmon: Subscribed: "+str(mid)+" "+str(granted_qos))
 
-    def get_winch_status(q: queue.Queue) -> (dict, bool):
+    def get_winch_status(q: queue.Queue) -> Tuple[dict, bool]:
         status: dict
         try:
-            status = q.get(block=True, timeout=0.05)
+            status = q.get()
         except queue.Empty as em:
             return {}, True
         else:
@@ -60,8 +59,7 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
     
     data_q : queue.Queue = queue.Queue()
 
-    
-    # STATIONARY_MAX_DIFF : float = float(cfg["winch"]["STATIONARY_MAX_DIFF"]) # meters. depth difference less than this is considered sattionary
+        # STATIONARY_MAX_DIFF : float = float(cfg["winch"]["STATIONARY_MAX_DIFF"]) # meters. depth difference less than this is considered sattionary
     MIN_ALTITUDE : float = float(cfg["winch"]["MIN_ALTITUDE"])                # meters. DOn't get any closer to the seafloor than this
     MAX_DEPTH : float = float(cfg["winch"]["MAX_DEPTH"])                      # meters. GO NO FARTHER
     STAGING_DEPTH : float = float(cfg["winch"]["STAGING_DEPTH"])              # meters. This is depth of initial pause at start of the downcast
@@ -90,13 +88,11 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
     datamon_sub.subscribe(data_t, qos=2)
     datamon_sub.loop_start()
 
-    pause_thr = threading.Thread(target=pausemon.pause_monitor, args=(cfg, quit_evt), name="pausemon")
-    pause_thr.start()
-    
     # assume we're at the surface, aka "Parked"
-    cur_direction  : WinchDir = WinchDir.DIRECTION_NONE.value
+    cur_direction  : str = WinchDir.DIRECTION_NONE.value
     cur_depth_ctd: float = 0
     cur_depth: float = 0
+    cur_state: str = ""
     cur_altitude: float = MAX_DEPTH
     MAX_DEPTH_REACHED = False
     MAX_DEPTH_PAYOUT_EDGES = -1
@@ -105,23 +101,16 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
 
     while not quit_evt.is_set():
 
-        if not winch_status_q.empty():
-            status, err = get_winch_status(winch_status_q)
-            if err:
-                print('winctl:winmon ERROR retrieving winch status from queue')
-            else:
-                winch_status = status
-                cur_direction = winch_status["dir"]
-                cur_depth = float(winch_status["depth_m"])
-                cur_state = winch_status["state"]
+        status, err = get_winch_status(winch_status_q)
+        if len(status.keys()) > 0:
+            winch_status = status
+            cur_direction = winch_status["dir"]
+            cur_depth = float(winch_status["depth_m"])
+            cur_state = winch_status["state"]
                 
-        else:
-            # print('winctl:winmon: NO WINCH-STATUS message in winch_status_q queue')
-            pass
-
-        data_dict = None
+        data_dict = {}
         try:
-            data_dict : dict = data_q.get(block=True, timeout=0.05)
+            data_dict : dict = data_q.get(block=True, timeout=0.1)
             data_q.task_done()
             empty_count = 0
         except queue.Empty as e:
@@ -149,10 +138,10 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
                 # report difference if more than 0.5%
                 print(f'winctl:winmon: WARNING: winch PAYOUT reading differs from CTD DEPTH by {delta} meters at CTD depth of: {cur_depth_ctd}.')
 
+        print(f'winctl:winmon: cur_depth: {cur_depth}')
         if (cur_direction == WinchDir.DIRECTION_DOWN.value):
 
             # print(f'cur_direction: {cur_direction}')
-            print(f'cur_depth: {cur_depth}')
             # print(f'cur_state: {cur_state}')
             # print(f'STAGING_DEPTH: {STAGING_DEPTH}')
             # print(f'{cur_depth > STAGING_DEPTH}; {cur_state == WinchStateName.STAGING.value}')
@@ -184,11 +173,10 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
 
     wincmd_pub.loop_stop()
     datamon_sub.loop_stop()
-    pause_thr.join()
 
-def pub_winch_cmd(pubber: mqtt.Client, topic: str, cmd: str, **kwargs) -> bool:
+def pub_winch_cmd(pubber: mqtt.Client, topic: str, command: str, **kwargs) -> bool:
     cmd: dict = {
-        "command": cmd
+        "command": command
     }
     for key, val in kwargs.items():
         cmd[key] = val
