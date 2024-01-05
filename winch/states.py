@@ -678,18 +678,6 @@ class Winch:
             self.update_payout_edge_counts()
 
         cur_status["depth_m"] = round(self.depth_from_payout_edges_m(), 2)
-
-        # # get latch sensor readings
-        # latch_cnt, err = self.get_latch_edge_count()
-        # if err:
-        #     print(f'states:winch ERROR get latch sensor edge count')
-        #     return {}, err
-
-        # if self.cmndr.simulation:
-        #     latch_cnt = self._sim_latch_edge_count
-
-        # cur_status["latch_cnt"] = latch_cnt
-
         cur_status["state"] = str(self.state)
         cur_status["ts"] = datetime.utcnow().isoformat()
 
