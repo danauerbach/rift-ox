@@ -244,9 +244,14 @@ class UpStagedState():
         print(f'Can not up-stage when {self}')
 
     def park(self):
-        self.winch.set_state(ParkingState(self.winch))
-        self.winch.park()
-        self.winch.set_state(ParkedState(self.winch))
+        if not self.winch.cmndr.cfg['winch']['NO_PARKING']:
+            self.winch.set_state(ParkingState(self.winch))
+            self.winch.park()
+            self.winch.set_state(ParkedState(self.winch))
+        else:
+            print(f'Sorry, parking is disabled for today. STOPPING HERE')
+            self.winch.cmndr.stop_winch()
+            self.winch.set_state(ParkedState(self.winch))
 
     def __str__(self):
         return WinchStateName.UP_STAGED.value
@@ -622,6 +627,8 @@ class Winch:
 
     def update_payout_edge_counts(self):
         if self.cmndr.simulation:
+            # calling get_payout)_edge_count just so we can send cmd being 'sent'
+            _, _ = self.cmndr.get_payout_edge_count()
             t = time.time()
             if isinstance(self.state, (StagingState, DowncastingState)):
                 self.down_edges += (t - self._sim_payout_ts) * 12.0
@@ -669,6 +676,7 @@ class Winch:
 
         # get winch direction, if any
         if self.cmndr.simulation:
+            _, _ = self.cmndr.get_winch_direction()
             if isinstance(self.state, (UpcastingState,)):
                 cur_status["dir"] = WinchDir.DIRECTION_UP.value
             elif isinstance(self.state, (DowncastingState, StagingState)):
