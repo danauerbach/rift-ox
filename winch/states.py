@@ -5,10 +5,11 @@ from datetime import datetime
 from math import pi
 from threading import Timer
 import time
-from typing import Protocol
+from typing import Protocol, Tuple, Union
 
-from winch.dio_cmds import DIOCommander
+import paho.mqtt.client as mqtt
 
+from .dio_cmds import DIOCommander
 from . import WinchStateName, WinchDir
 
 # STATE_PARKED_STR = 'parked'
@@ -33,6 +34,8 @@ from . import WinchStateName, WinchDir
 # upcasting
 # atmaxdepth
 # unknown
+
+
 
 
 class WinchState(Protocol):
@@ -61,12 +64,14 @@ class WinchState(Protocol):
     def park(self):
         ...
 
-    def ___str__(self):
+    def __str__(self) -> str:
         ...        
 
 
 class WinchProto(Protocol):
     cmndr: DIOCommander
+    pause_t: str
+    pausemon_pub: mqtt.Client
 
     def stop(self):
         ...
@@ -86,16 +91,19 @@ class WinchProto(Protocol):
     def stop_at_bottom(self):
         ...
 
+    def park(self):
+        ...
+
     def set_state(self, state: WinchState):
         ...
 
-    def get_latch_edge_count(self):
+    def get_latch_edge_count(self) -> Tuple[int, bool]:
         ...
     
     def latch_release(self):
         ...
 
-    def status(self) -> (dict, bool):
+    def status(self) -> tuple[dict, bool]:
         ...
    
 @dataclass
@@ -126,11 +134,11 @@ class ParkedState():
         print(f'Can not up_stage when {self}')
 
     def park(self):
-        # re-park, probably just for testing or if
-        # a problem with the latch
-        self.winch.set_state(ParkingState(self.winch))
-        self.winch.cmndr.park()
-        self.winch.set_state(ParkedState(self.winch))
+        # Handled directly in wincmd loop
+        pass
+        # self.winch.set_state(ParkingState(self.winch))
+        # self.winch.cmndr.park()
+        # self.winch.set_state(ParkedState(self.winch))
 
     def __str__(self):
         return WinchStateName.PARKED.value
@@ -141,8 +149,7 @@ class StagingState():
     winch: WinchProto
 
     def stop(self):
-        # same as pause when Staging
-        self.pause()
+        print(f'Can not stop when {self}')
 
     def start(self):
         print(f'Can not start when {self}')
@@ -151,6 +158,8 @@ class StagingState():
         print(f'Can not down-cast when {self}')
 
     def pause(self):
+        self.winch.pausemon_pub.publish(self.winch.pause_t, \
+                                        "pause".encode(), qos=2)
         self.winch.cmndr.stop_winch()
         self.winch.set_state(DownStagedState(self.winch))        
 
@@ -196,17 +205,13 @@ class DownStagedState():
         print(f'Can not pause when {self}')
 
     def up_cast(self):
-        print(f'Can not upcast when {self}')
+        print(f'Can not up-cast when {self}')
 
     def up_stage(self):
         print(f'Can not up-stage when {self}')
 
     def park(self):
-        # shouldn't need to parked after being Staged
-        # but just in case
-        self.winch.set_state(ParkingState(self.winch))
-        self.winch.cmndr.park()
-        self.winch.set_state(ParkedState(self.winch))
+        print(f'Can not park when {self}')
 
     def __str__(self):
         return WinchStateName.DOWN_STAGED.value
@@ -239,9 +244,8 @@ class UpStagedState():
         print(f'Can not up-stage when {self}')
 
     def park(self):
-        # We're almost done, let's park
         self.winch.set_state(ParkingState(self.winch))
-        self.winch.cmndr.park()
+        self.winch.park()
         self.winch.set_state(ParkedState(self.winch))
 
     def __str__(self):
@@ -254,8 +258,7 @@ class DowncastingState():
     winch: WinchProto
 
     def stop(self):
-        # same as down_pause
-        self.pause()
+        print(f'Can not stop when {self}')
 
     def start(self):
         print(f'Can not start when {self}')
@@ -264,10 +267,14 @@ class DowncastingState():
         print(f'Can not downcast when {self}.')
 
     def pause(self):
+        self.winch.pausemon_pub.publish(self.winch.pause_t, \
+                                        "pause".encode(), qos=2)
         self.winch.cmndr.stop_winch()
         self.winch.set_state(DownPausedState(self.winch))        
 
     def stop_at_bottom(self):
+        self.winch.pausemon_pub.publish(self.winch.pause_t, \
+                                        "pause".encode(), qos=2)
         self.winch.cmndr.stop_winch()
         self.winch.set_state(MaxDepthState(self.winch))
 
@@ -284,12 +291,12 @@ class DowncastingState():
         return WinchStateName.DOWNCASTING.value
 
 
+@dataclass
 class UpcastingState():
     winch: WinchProto
 
     def stop(self):
-        # same as pause
-        self.pause()
+        print(f'Can not stop when {self}')
 
     def start(self):
         print(f'Can not start when {self}')
@@ -298,6 +305,8 @@ class UpcastingState():
         print(f'Can not downcast when {self}.')
 
     def pause(self):
+        self.winch.pausemon_pub.publish(self.winch.pause_t, \
+                                        "pause".encode(), qos=2)
         self.winch.cmndr.stop_winch()
         self.winch.set_state(UpPausedState(self.winch))        
 
@@ -308,6 +317,8 @@ class UpcastingState():
         print(f'Can not upcast when {self}')
 
     def up_stage(self):
+        self.winch.pausemon_pub.publish(self.winch.pause_t, \
+                                        "pause".encode(), qos=2)
         self.winch.cmndr.stop_winch()
         self.winch.set_state(UpStagedState(self.winch))        
 
@@ -316,7 +327,6 @@ class UpcastingState():
 
     def __str__(self):
         return WinchStateName.UPCASTING.value
-
 
 
 @dataclass
@@ -429,7 +439,7 @@ class UpPausedState():
 
     def start(self):
         # same as up_cast when in up-paused state
-        self.winch.cmndr.upcast()
+        self.winch.cmndr.up_cast()
         self.winch.set_state(UpcastingState(self.winch))
 
     def down_cast(self):
@@ -442,7 +452,7 @@ class UpPausedState():
         print(f'Can not stop-at-bottom when {self}')
 
     def up_cast(self):
-        self.winch.cmndr.upcast()
+        self.winch.cmndr.up_cast()
         self.winch.set_state(UpcastingState(self.winch))
 
     def up_stage(self):
@@ -459,6 +469,23 @@ class UpPausedState():
 class Winch:
 
     def __init__(self, cmndr: DIOCommander):
+
+        def on_connect(client, userdata, flags, rc):
+            if rc==0:
+                client.connected_flag=True #set flag
+                print("winctl:states:pausemon connected OK: {client}")
+            else:
+                print("winctl:states:pausemon Bad connection for {client} Returned code: ", rc)
+                client.loop_stop()
+
+        def on_disconnect(client, userdata, rc):
+            client.connected_flag=False #set flag
+            print("winctl:states:pausemon client disconnected ok")
+
+        def _on_pause_publish(client, userdata, mid):
+            print("winctl:states:pausemon: {client} mid= "  ,mid)
+
+    
         self.cmndr: DIOCommander = cmndr
         self.state: WinchState = ParkedState(self)
 
@@ -479,6 +506,19 @@ class Winch:
         # vars only to facilitate simulated responses from winch
         self._sim_latch_edge_count = 0
 
+        mqtt_host : str = self.cmndr.cfg["mqtt"]["HOST"]
+        mqtt_port : int = self.cmndr.cfg["mqtt"]["PORT"]
+
+        # set up pause cmd mqtt publisher
+        self.pause_t = self.cmndr.cfg["mqtt"]["WINCH_PAUSE_TOPIC"]
+
+        self.pausemon_pub : mqtt.Client = mqtt.Client('pausemon-ctl-pub')
+        self.pausemon_pub.on_connect = on_connect
+        self.pausemon_pub.on_disconnect = on_disconnect
+        self.pausemon_pub.on_publish = _on_pause_publish
+        self.pausemon_pub.connect(mqtt_host, mqtt_port)
+        self.pausemon_pub.loop_start()
+
     def stop(self):
         self.state.stop()
 
@@ -498,25 +538,84 @@ class Winch:
         self.state.up_cast()
 
     def up_stage(self):
-        self.state.pause()
+        self.state.up_stage()
+
+    # def park(self):
+    #     #TODO WORK ON LATCH_EDGE SIMULATION: use timer() ??
+    #     #     PUT IN dio_cmnds.park() ??
+    #     if self.cmndr.simulation:
+    #         self._sim_latch_edge_count += 3
+    #     self.state.park()
 
     def park(self):
-        #TODO WORK ON LATCH_EDGE SIMULATION: use timer() ??
-        #     PUT IN dio_cmnds.park() ??
+        """Parking is moving winch backwards until LATCH signal
+        is detected and then paying out for < 1sec so that bullet will latch.
+        This should leave the winch in the (physically) LATCHED position
+        
+        NOTE we are using dio_cmndr.<command> directly to control winch while bypassing the 
+        because WInch state machine because Parking requires multiple winch 
+        commands all while Parking and the Winch state machine can handle this."""
+
+        def _sim_inc_latch_cnt(edgeinc: int) -> None:
+            self._sim_latch_edge_count += edgeinc
+            print(f'PARKING Timer changed latch edge count to {self._sim_latch_edge_count}')
+
+        print(f'PARKING: STARTING')
+
         if self.cmndr.simulation:
-            self._sim_latch_edge_count += 3
-        self.state.park()
+            t = Timer(interval=3, function=_sim_inc_latch_cnt, args=(10,))
+            t.start()
+            # self._sim_latch_edge_count += 3
+
+        # check current latch edge count
+        start_latch_edge_cnt, err = self.get_latch_edge_count()
+        if err:
+            print('PARKING UNABLE to get LATCH SENSOR state when PARKING')
+            return
+
+        new_latch_edge_count = start_latch_edge_cnt
+        print(f'PARKING: LATCH EDGE CNT: {start_latch_edge_cnt}')
+    
+        print(f'PARKING: UP CASTING')
+        self.cmndr.up_cast() #### NOT SURE THIS IS A GOOD IDEA
+        latch_found = (new_latch_edge_count > start_latch_edge_cnt)
+        print(f'PARKING: LATCH FOUND - INITIAL: {latch_found}')
+        while not latch_found:
+            # check fr new LATCH edge count
+            new_latch_edge_count, err = self.get_latch_edge_count()
+            print(f'PARKING: NEW LATCH EDGE CNT: {new_latch_edge_count}')
+            if err:
+                self.cmndr.stop_winch() #### NOT SURE THIS IS A GOOD IDEA
+                print('PARKING UNABLE to get LATCH SENSOR state when PARKING')
+                return
+            latch_found = new_latch_edge_count > start_latch_edge_cnt
+            print(f'PARKING: LATCH FOUND - LOOP: {latch_found}')
+
+            # need a pretty fast loop here while up_casting
+            time.sleep(0.05)    
+
+        print(f'PARKING: LATCH FOUND: {latch_found}')
+        print(f'PARKING: STOPPING WINCH')
+        # latch has been found
+        self.cmndr.stop_winch()
+        # presumably we are on the LATCH now. drop a fraction of a sec (an inch or two)
+        print(f'PARKING: RELEASING LATCH')
+        self.cmndr.latch_release()
+        time.sleep(1) # REMOVE AFTER TESTING
+        print(f'PARKING: DOWNCASTING FOR {self.cmndr.cfg["winch"]["PARKING_DOWNCAST_MS"]}ms')
+        self.cmndr.down_cast(stop_after_ms=int(self.cmndr.cfg["winch"]["PARKING_DOWNCAST_MS"]))
+        self.cmndr.stop_winch()
 
     def set_state(self, state: WinchState):
         if self.cmndr.simulation:
             self.update_payout_edge_counts()
         self.state = state
 
-    def get_latch_edge_count(self) -> (int, bool):
-        latch_edge_count, _ = self.cmndr.get_latch_edge_count()
+    def get_latch_edge_count(self) -> Tuple[int, bool]:
+        latch_edge_count_str, _ = self.cmndr.get_latch_edge_count()
         if self.cmndr.simulation:
-            latch_edge_count = self._sim_latch_edge_count
-        return latch_edge_count, False
+            latch_edge_count_str = self._sim_latch_edge_count
+        return int(latch_edge_count_str), False
     
     def latch_release(self):
         self.cmndr.latch_release()
@@ -526,7 +625,7 @@ class Winch:
             t = time.time()
             if isinstance(self.state, (StagingState, DowncastingState)):
                 self.down_edges += (t - self._sim_payout_ts) * 12.0
-            elif self.state in [UpcastingState]:
+            elif isinstance(self.state, UpcastingState):
                 self.up_edges += (t - self._sim_payout_ts) * 12.0
             self._sim_payout_ts = t
 
@@ -536,9 +635,9 @@ class Winch:
             if err:
                 print(f'states:winch ERROR get payout edge count')
                 return
-            if self.state in [StagingState, DowncastingState]:
+            if isinstance(self.state, (StagingState, DowncastingState)):
                 self.down_edges += (payouts[0] - self.last_payout_cnt)
-            elif self.state in [UpcastingState]:
+            elif isinstance(self.state, UpcastingState):
                 self.up_edges += (payouts[0] - self.last_payout_cnt)
             self.last_payout_cnt = payouts[0]
 
@@ -549,7 +648,7 @@ class Winch:
         dist_up: float = (self.up_edges / 12) * 2 * pi * 5.25 / 39.37008
         return dist_down - dist_up
 
-    def status(self) -> (dict, bool):
+    def status(self) -> Tuple[dict, bool]:
 
         cur_status = {}
 
@@ -558,7 +657,7 @@ class Winch:
         cur_status["depth_m"] = round(self.depth_from_payout_edges_m(), 2)
 
         # get latch sensor readings
-        latch_cnt, err = self.cmndr.get_latch_edge_count()
+        latch_cnt, err = self.get_latch_edge_count()
         if err:
             print(f'states:winch ERROR get latch sensor edge count')
             return {}, err
