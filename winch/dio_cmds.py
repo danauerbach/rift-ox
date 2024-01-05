@@ -386,7 +386,7 @@ class DIOCommander():
                 # cmd_bytes = dio_command_bytes(DIO_ACTION_NUMINPUTS_NAME, dir=DIO_DIRECTION_IN, group=0, pin=1)
                 written = mcu.write(cmd_bytes)
                 mcu.flush()
-                print(f'Command sent: {cmd_bytes.decode().strip()}')
+                # print(f'Command sent: {cmd_bytes.decode().strip()}')
                 #TODO LOG INFO
 
                 time.sleep(0.01)
@@ -396,7 +396,7 @@ class DIOCommander():
                 # print(f"RESPONSE: {res_array}")
                 if res_array:
                     # print(f'DIO RESPONSE: {res_array}')
-                    # print(f"DIO RESPONSE: {res_array[1].decode()}")
+                    print(f"DIO RESPONSE: {res_array[1].decode()}")
                     result = res_array[1].decode()
                     #TODO LOG INFO
                 else:
