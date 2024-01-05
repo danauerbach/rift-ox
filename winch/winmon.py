@@ -138,7 +138,7 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
                 # report difference if more than 0.5%
                 print(f'winctl:winmon: WARNING: winch PAYOUT reading differs from CTD DEPTH by {delta} meters at CTD depth of: {cur_depth_ctd}.')
 
-        print(f'winctl:winmon: cur_depth: {cur_depth}')
+        # print(f'winctl:winmon: cur_depth: {cur_depth}')
         if (cur_direction == WinchDir.DIRECTION_DOWN.value):
 
             # print(f'cur_direction: {cur_direction}')
