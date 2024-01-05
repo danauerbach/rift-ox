@@ -2,10 +2,11 @@
 
 import os
 from pathlib import Path
+from typing import Union
 
 import toml
 
-def read() -> None or dict:
+def read() -> Union[None, dict]:
     # check for config file ENV VAR
     config_file = os.getenv("RIFT_OX_CONFIG_FILE", "")
     if not config_file:
