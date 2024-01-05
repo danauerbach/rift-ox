@@ -67,23 +67,22 @@ def pause_monitor(cfg: dict, quit_evt: Event):
 
     while not quit_evt.is_set():
 
-        # pause_dur: float = 0
-
         try:
+            pause_msg = ''
             pause_msg = pause_q.get(block=True, timeout= 0.15)
             pause_q.task_done()
         except queue.Empty as e:
-            pause_msg = ''
+            pass
         except Exception as e:
-            pause_msg = ''
             print(f'winctl:pausemon: ERROR receiving data msg: {e}')
             continue
 
         # ignore pause if pause already active
+        t = time.time()
         if (pause_msg == "pause"):
             if not pause_active:
                 pause_active = True
-                pause_start = time.time()
+                pause_start = t
                 pause_end = pause_start + pause_dur
                 print(f'winctl:pausemon: PAUSE starting  t:{time.time()} dur={pause_dur} secs at={pause_start} ending={pause_end}')
             else:
@@ -95,7 +94,7 @@ def pause_monitor(cfg: dict, quit_evt: Event):
             # check modified date on pause flag file and add another pause_dur secs
             # print(f'winctl:pausemon: PAUSE active    t:{time.time()} dur={pause_dur} secs at={pause_start} ending={pause_end}')
 
-            if time.time() > pause_end:
+            if t > pause_end:
                 print(f'winctl:pausemon: PAUSE ending t:{time.time()} over after {pause_end - pause_start} secs')
                 pause_active = False
                 wincmd_pub.publish(cfg["mqtt"]["WINCH_CMD_TOPIC"],  json.dumps(CMD_START).encode(), qos=2)
