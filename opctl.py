@@ -6,6 +6,7 @@ import signal
 import sys
 import threading
 import time
+from typing import Tuple, Union
 
 # DIO_ACTION_GET_VAL           = 0x00    # Read the state and count of an input, or just the state of an output
 # DIO_ACTION_SET_VAL           = 0x01    # Set the logical state of a digital output
@@ -73,169 +74,6 @@ def interrupt_handler(signum, frame):
     time.sleep(1)
     sys.exit(0)
 
-def dio_get_pin_status(port, dir, group, pin):
-    if dir == "I":
-        dircmd = "input"
-    else:
-        dircmd = "output"
-
-    print(f'ISSUING COMMAND: dio get D{dir}_G{group} {dircmd} {pin}'.encode())
-    port.write(f'dio get D{dir}_G{group} {dircmd} {pin}\r'.encode())
-    time.sleep(0.05)
-    res = port.read(port.inWaiting())
-    # print(f' GOT RESPONSE: {res}')
-    if len(res) > 0:
-        return res.split(b'\r\n')[1]
-    else:
-        return b''
-
-def dio_get_all_pin_status(port, dir="I"):
-    result = ""
-    for group in range(0, 4):
-        for pin in range(0, 4):
-            result = result + dio_get_pin_status(port, dir, group, pin).decode()
-    if "Failed" in result:
-        result = "Not found"
-    return result
-
-
-def dio_command_bytes (cmd_name : str, **kwargs) -> (bytes or None):
-
-    def group_valid(group : int):
-        return group in DIO_VALID_GROUPS
-
-    def pin_valid(group : int):
-        return group in DIO_VALID_PINS
-
-    ldir : str = ''
-    llong_dir : str = ''
-    lgroup : int = -1
-    lpin : int = -1
-    lvalue : str = ''
-    cmd_bytes = bytearray(0)
-
-    if 'dir' in kwargs:
-        if kwargs["dir"] in DIO_VALID_DIRECTIONS:
-            long_dir = DIO_LONG_DIRECTION_DICT[kwargs["dir"]]
-            dir = kwargs["dir"][0].upper()
-        else:
-            #TODO LOG error
-            return None
-
-    if 'group' in kwargs:
-        group = int(kwargs["group"])
-        if not group_valid(group):
-            #TODO log error
-            print(f"invalid GROUP: {type(group)}. SHould be in {DIO_VALID_GROUPS}")
-            return None
-
-    if 'pin' in kwargs:
-        pin = int(kwargs["pin"])
-        if not pin_valid(pin):
-            #TODO log error
-            print(f"invalid PIN: {pin}. SHould be in {DIO_VALID_PINS}")
-            return None
-
-    if 'value' in kwargs:
-        value = kwargs["value"]
-
-    # cmd_bytes = bytearray(0)  # save enough room for the command header. 
-    #                           # will have to expand for DIO command info
-    # cmd_bytes = f'{cmd_name} dir={dir} group={group} pin={pin}\r'.encode()
-
-    print(f'cmd_name: {cmd_name}')
-    if cmd_name == DIO_ACTION_GET_NAME:
-
-        cmd_bytes = f'dio get D{dir}_G{group} {long_dir} {pin}\r'. encode()
-
-    elif cmd_name == DIO_ACTION_SET_NAME:
-
-        if dir != DIO_DIRECTION_OUT[0].upper():
-            #TODO log error
-            print("can't SET INPUT pin")
-            return None
-
-        if not value:
-            #TODO log error
-            print("SET requires value= parameter")
-            return None
-        if value not in ['high', 'low', 'true', 'false']:
-            #TODO log error
-            print("Invalid set value: {value}")
-            return None
-        else:
-            cmd_bytes = f'dio set D{dir}_G{group} {pin} {value}\r'. encode()
-
-    elif cmd_name == DIO_ACTION_SETMODE_NAME:
-
-        if dir != DIO_DIRECTION_OUT[0].upper():
-            #TODO log error
-            print("can't SET MODE on input group")
-            return None
-        
-        # if value not in DIO_VALID_MODES:
-        #     #TODO log error
-        #     print("Invalid MODE {value}")
-        #     return None
-        # else:
-        cmd_bytes = f'dio mode D{dir}_G{group} {value}\r'. encode()
-
-    elif cmd_name == DIO_ACTION_NUMDEVICES_NAME:
-
-        cmd_bytes = f'device list\r'. encode()
-
-    elif cmd_name == DIO_ACTION_NUMOUTPUTS_NAME:
-
-        cmd_bytes = f'dio num DO_G{group} outputs\r'. encode()
-
-    elif cmd_name == DIO_ACTION_NUMINPUTS_NAME:
-
-        cmd_bytes = f'dio num DI_G{group} inputs\r'. encode()
-
-    elif cmd_name == DIO_ACTION_GETEDGECOUNT_NAME:
-
-        cmd_bytes = f'dio edges D{dir}_G{group} {pin}\r'.encode()
-
-    elif cmd_name == None:
-        print(f"No valid command string: cmd:{cmd_name}; params:{kwargs};")
-        cmd_bytes = None
-    else:
-        print(f"Unsupported command: cmd:{cmd_name}; params:{kwargs};")
-        cmd_bytes = None
-
-    return cmd_bytes
-
-def dio_parse_params(cmdstr : str) -> (str, dict):
-
-    params : dict = {}
-    if cmdstr:
-        cmdparts = cmdstr.split()
-        if cmdparts[0] in DIO_VALID_COMMANDS:
-            cmd = cmdparts[0]
-        else:
-            cmd = ''
-
-        for part in cmdparts[1:]:
-            # print(f'checking param: {part}')
-            if part.startswith('dir='):
-                params['dir'] = part.split('=')[1]
-            elif part.startswith('group='):
-                params['group'] = int(part.split('=')[1])
-            elif part.startswith('pin='):
-                params['pin'] = int(part.split('=')[1])
-            elif part.startswith('value='):
-                params['value'] = part.split('=')[1]
-            else:
-                print(f'invalid param: {part}')
-                #TODO Logg error
-                return None, {}
-
-        #TODO Log info
-        print(params)
-
-    return cmd, params
-
-
 
 if __name__ == "__main__":
 
@@ -262,27 +100,20 @@ if __name__ == "__main__":
                 mcu.write(b"\r\n")
                 time.sleep(0.05)
                 # print(f'{mcu.read(mcu.inWaiting())}')  #get anything waiting in buffer and discard
-                mcu.read(mcu.inWaiting()) #get anything waiting in buffer and discard
+                mcu.read(mcu.in_waiting) #get anything waiting in buffer and discard
 
-                # cmd_bytes = dio_command_bytes(DIO_ACTION_NUMINPUTS_NAME, dir=DIO_DIRECTION_IN, group=0, pin=1)
-                # print(f'COMMAND BYTES: {cmd_bytes}')
                 written = mcu.write(cmd_bytes)
                 mcu.flush()
-                #TODO LOG INFO
 
                 time.sleep(0.01)
-                res = mcu.read(mcu.inWaiting())
+                res = mcu.read(mcu.in_waiting)
                 res_array = res.split(b'\r\n')
-                #TODO LOG INFO
-                # print(f"RESPONSE: {res_array}")
+
                 if res_array:
-                    # print(f'RESPONSE: {res_array}')
                     print(f"RESPONSE: {res_array[1].decode()}")
                     text = res_array[1]
-                    #TODO LOG INFO
                 else:
                     text=None
-                    #TODO log error
                     print(f'INVALID RESPONSE')
 
         except Exception as e:
