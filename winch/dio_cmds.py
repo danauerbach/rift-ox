@@ -2,26 +2,27 @@
 
 import serial
 import time
+from typing import Tuple, Union
 
-from . import  WinchDir, \
-    DIO_VALID_COMMANDS, \
-    DIO_VALID_GROUPS, \
-    DIO_VALID_PINS, \
-    DIO_VALID_DIRECTIONS, \
-    DIO_VALID_MODES, \
-    DIO_ACTION_DEVICE_LIST_NAME, \
-    DIO_ACTION_GET_NAME, \
-    DIO_ACTION_SET_NAME, \
-    DIO_ACTION_MODE_NAME, \
-    DIO_ACTION_NUM_NAME, \
-    DIO_ACTION_PWM_NAME, \
-    DIO_ACTION_EDGE_NAME, \
-    DIO_LONG_DIRECTION_DICT, \
-    DIO_SHORT_DIRECTION_DICT, \
-    DIO_DIRECTION_IN , \
-    DIO_DIRECTION_OUT, \
-    DIO_MODE_DRAIN, \
-    DIO_MODE_SOURCE
+from . import  WinchDir
+    # DIO_VALID_COMMANDS, \
+    # DIO_VALID_GROUPS, \
+    # DIO_VALID_PINS, \
+    # DIO_VALID_DIRECTIONS, \
+    # DIO_VALID_MODES, \
+    # DIO_ACTION_DEVICE_LIST_NAME, \
+    # DIO_ACTION_GET_NAME, \
+    # DIO_ACTION_SET_NAME, \
+    # DIO_ACTION_MODE_NAME, \
+    # DIO_ACTION_NUM_NAME, \
+    # DIO_ACTION_PWM_NAME, \
+    # DIO_ACTION_EDGE_NAME, \
+    # DIO_LONG_DIRECTION_DICT, \
+    # DIO_SHORT_DIRECTION_DICT, \
+    # DIO_DIRECTION_IN , \
+    # DIO_DIRECTION_OUT, \
+    # DIO_MODE_DRAIN, \
+    # DIO_MODE_SOURCE
 
 
 
@@ -77,11 +78,12 @@ class DIOCommander():
             f'dio set DO_G{self.MOTOR_STOP_PIN["group"]} {self.MOTOR_STOP_PIN["pin"]} low\r',
             f'dio set DO_G{self.LATCH_RELEASE_PIN["group"]} {self.LATCH_RELEASE_PIN["pin"]} low\r'
         ]
-        for cmd in cmds:
-            self.issue_command(cmd=cmd)
+        for command in cmds:
+            self.issue_command(cmd=command)
             time.sleep(0.03)
 
     def pin_low(self, pin: str):
+        cmd: str = ''
         if pin == 'stop':
             cmd = f'dio set DO_G{self.MOTOR_STOP_PIN["group"]} {self.MOTOR_STOP_PIN["pin"]} low\r'
         elif pin == 'up':
@@ -91,10 +93,10 @@ class DIOCommander():
         elif pin == 'latch':
             cmd = f'dio set DO_G{self.LATCH_RELEASE_PIN["group"]} {self.LATCH_RELEASE_PIN["pin"]} low\r'
 
-        self.issue_command(cmd=cmd)
-        time.sleep(0.03)
+        self.issue_command(cmd)
 
     def pin_hi(self, pin: str):
+        cmd: str = ''
         if pin == 'stop':
             cmd = f'dio set DO_G{self.MOTOR_STOP_PIN["group"]} {self.MOTOR_STOP_PIN["pin"]} high\r'
         elif pin == 'up':
@@ -105,8 +107,8 @@ class DIOCommander():
             cmd = f'dio set DO_G{self.LATCH_RELEASE_PIN["group"]} {self.LATCH_RELEASE_PIN["pin"]} high\r'
 
         self.issue_command(cmd=cmd)
-        time.sleep(0.03)
 
+        cmd: str = ''
     def stop_winch(self):
         cmds = [
             f'dio set DO_G{self.MOTOR_STOP_PIN["group"]} {self.MOTOR_STOP_PIN["pin"]} high\r',
@@ -171,140 +173,87 @@ class DIOCommander():
             time.sleep(stop_after_ms / 1000)
             self.stop_winch()
 
-    # def park(self):
-    #     """Parking is moving winch backwards until LATCH signal
-    #     is detected and then paying out until the latch is not detected.
-    #     This should leave the winch in the (physically) LATCHED position"""
-
-    #     # check currnet latch state
-    #     latch_high, err = self.get_latch_sensor_state()
-    #     if err:
-    #         print('dio_cmds:park UNABLE to get LATCH SENSOR state when PARKING')
-    #         return
-        
-    #     if not latch_high:
-    #         # we don't know if we are above or below the latch,
-    #         # so unwind just a little to be confident we are below the latch
-    #         self.down_cast(stop_after_ms=self.cfg["winch"]["PARKING_DOWNCAST_1_MS"])
-    #         latch_high, err = self.get_latch_sensor_state()
-
-    #     # start upcast
-    #     if not latch_high:
-    #         # capture latch_sensor edge count before raising back up
-    #         start_latch_edge_count, err = self.get_latch_edge_count()
-    #         new_latch_edge_count = start_latch_edge_count
-        
-    #         latch_found = False
-    #         self.up_cast() #### NOT SURE THIS IS A GOOD IDEA
-    #         while not latch_found:
-    #             # check fr new LATCH edge count
-    #             if self.simulation:  # SIMULATION: fake latch addl edges after 2 secs
-    #                 time.sleep(1.5)
-    #                 new_latch_edge_count = start_latch_edge_count + 2
-    #                 err = False
-    #             else:
-    #                 new_latch_edge_count, err = self.get_latch_edge_count()
-    #             if err:
-    #                 self.stop_winch() #### NOT SURE THIS IS A GOOD IDEA
-    #                 print('dio_cmds:park UNABLE to get LATCH SENSOR state when PARKING')
-    #                 return
-    #             latch_found = new_latch_edge_count > start_latch_edge_count
-    #             if latch_found:
-    #                 self.stop_winch()
-    #                 start_latch_edge_count = new_latch_edge_count
-    #                 break
-    #             time.sleep(0.33)    
-
-    #     # presumably we are on the LATCH now. SO, per SHerman/CLARS, 
-    #     # need to move up a little, then down just past the latch
-    #     self.up_cast(stop_after_ms=self.cfg["winch"]["PARKING_UPCAST_MS"])
-    #     self.latch_release()
-    #     time.sleep(.5)
-    #     self.down_cast(stop_after_ms=self.cfg["winch"]["PARKING_DOWNCAST_2_MS"])
-    #     self.stop_winch()
-                
-    #     # it should now be parked with physical catch latch activated
-    #     #TODO TEST TEST TEST
-
-    def get_latch_sensor_state(self) -> (bool, bool):
+    def get_latch_sensor_state(self) -> Tuple[int, bool]:
 
         cmd = f'dio get DI_G{self.LATCH_SENSOR_PIN["group"]}\r'
         result, err = self.issue_command(cmd=cmd)
         if self.simulation:  # SIMULATION: fake latch LOW signal
-            result = "0"
+            result = 0
             err = False
         else:
             if err:
-                return result, err
+                return 0, err
 
         return int(result), err
     
-    def get_latch_edge_count(self) -> (int, bool):
+    def get_latch_edge_count(self) -> Tuple[str, bool]:
+        edge_cnt_str: str
         cmd = f'dio edge DI_G{self.LATCH_SENSOR_PIN["group"]} {self.LATCH_SENSOR_PIN["pin"]}\r'
-        edge_count, err = self.issue_command(cmd=cmd)
+        edge_cnt_str, err = self.issue_command(cmd=cmd)
         if err:
-            return None, True
-        if edge_count != None:
-            edge_count = int(edge_count)
-        return edge_count, False
+            return "0-", True
+        return edge_cnt_str, False
 
-    def get_payout_edge_count(self) -> (list[int], bool):
-        payout_1: int
-        payout_2: int
+    def get_payout_edge_count(self) -> Tuple[list[int], bool]:
+        payout_1: str
+        payout_2: str
         cmd = f'dio edge DI_G{self.PAYOUT1_PIN["group"]} {self.PAYOUT1_PIN["pin"]}\r'
         payout_1, err = self.issue_command(cmd=cmd)
         if err:
-            return None, True
+            return [], True
         if payout_1 != None:
-            payout_1 = int(payout_1)
+            p1 = int(payout_1)
 
         cmd = f'dio edge DI_G{self.PAYOUT2_PIN["group"]} {self.PAYOUT2_PIN["pin"]}\r'
         payout_2, err = self.issue_command(cmd=cmd)
         if err:
-            return None, True
+            return [],  True
         if payout_2 != None:
-            payout_2 = int(payout_2)
+            p2 = int(payout_2)
 
-        return [payout_1, payout_2], False
+        return [p1, p2], False
 
-    def get_winch_direction(self) -> (WinchDir, bool):
+    def get_winch_direction(self) -> Tuple[str, bool]:
         err: bool = False
         up_active: bool
         down_active: bool
         stop_active: bool
-        up_pin_query = f'dio get DO_G{self.UPCAST_PIN["group"]} output {self.UPCAST_PIN["pin"]}\r'.encode()
-        down_pin_query = f'dio get DO_G{self.DOWNCAST_PIN["group"]} output {self.DOWNCAST_PIN["pin"]}\r'.encode()
-        stop_pin_query = f'dio get DO_G{self.MOTOR_STOP_PIN["group"]} output {self.MOTOR_STOP_PIN["pin"]}\r'.encode()
+        up_pin_query = f'dio get DO_G{self.UPCAST_PIN["group"]} output {self.UPCAST_PIN["pin"]}\r'
+        down_pin_query = f'dio get DO_G{self.DOWNCAST_PIN["group"]} output {self.DOWNCAST_PIN["pin"]}\r'
+        stop_pin_query = f'dio get DO_G{self.MOTOR_STOP_PIN["group"]} output {self.MOTOR_STOP_PIN["pin"]}\r'
 
         up_pin_state, err = self.issue_command(up_pin_query)
         if err:
-            return None, True
+            return WinchDir.DIRECTION_NONE.value, True
         if up_pin_state != None:
             up_active = not bool(int(up_pin_state))  # "1" is active but in python 0 == True
 
         down_pin_state, err = self.issue_command(down_pin_query)
         if err:
-            return None, True
+            return WinchDir.DIRECTION_NONE.value, True
         if down_pin_state != None:
             down_active = not bool(int(down_pin_state))
 
         stop_pin_state, err = self.issue_command(stop_pin_query)
         if err:
-            return None, True
+            return WinchDir.DIRECTION_NONE.value, True
         if stop_pin_query != None:
             stop_active = not bool(int(stop_pin_state))
 
+        stop_active = stop_pin_state == "1"
+        down_active = down_pin_state == "1"
+        up_active = up_pin_state == "1"
         if stop_active:
-            return WinchDir.DIRECTION_NONE.value
+            return WinchDir.DIRECTION_NONE.value, False
 
         # stop not active...
         if up_active and not down_active: return WinchDir.DIRECTION_UP.value, err
         if not up_active and down_active: return WinchDir.DIRECTION_DOWN.value, err
         
         # either both direction lines HIGH or both LOW, either way winch not moving.
-        return WinchDir.DIRECTION_NONE, err
+        return WinchDir.DIRECTION_NONE.value, err
 
-    def issue_command(self, cmd : str) -> (str, bool):
+    def issue_command(self, cmd : str) -> Tuple[str, bool]:
 
         # cmd_bytes: bytes = self._dio_command_ddbytes(cmd)
         cmd_bytes: bytes = cmd.encode()
@@ -315,7 +264,7 @@ class DIOCommander():
         return self._send_bytes(cmd_bytes)
 
 
-    def _dio_command_bytes (self, cmd : str) -> (bytes or None):
+    def _dio_command_bytes (self, cmd : str) -> Union[bytes, None]:
 
         print(f'dio_cmds:dio_command_bytes: cmd: {cmd.strip()}')
         cmd_bytes = bytearray(0)
@@ -419,7 +368,7 @@ class DIOCommander():
 
         # return cmd_bytes
     
-    def _send_bytes(self, cmd_bytes: bytes) -> (str, bool):
+    def _send_bytes(self, cmd_bytes: bytes) -> Tuple[str, bool]:
            
         result: str = ""
         err: bool = False
@@ -432,7 +381,7 @@ class DIOCommander():
                 mcu.write(b"\r\n")
                 time.sleep(0.05)
                 # print(f'{mcu.read(mcu.inWaiting())}')  #get anything waiting in buffer and discard
-                mcu.read(mcu.inWaiting()) #get anything waiting in buffer and discard
+                mcu.read(mcu.in_waiting) #get anything waiting in buffer and discard
 
                 # cmd_bytes = dio_command_bytes(DIO_ACTION_NUMINPUTS_NAME, dir=DIO_DIRECTION_IN, group=0, pin=1)
                 written = mcu.write(cmd_bytes)
@@ -441,17 +390,17 @@ class DIOCommander():
                 #TODO LOG INFO
 
                 time.sleep(0.01)
-                res = mcu.read(mcu.inWaiting())
+                res = mcu.read(mcu.in_waiting)
                 res_array = res.split(b'\r\n')
                 #TODO LOG INFO
                 # print(f"RESPONSE: {res_array}")
                 if res_array:
                     # print(f'DIO RESPONSE: {res_array}')
                     # print(f"DIO RESPONSE: {res_array[1].decode()}")
-                    result = res_array[1]
+                    result = res_array[1].decode()
                     #TODO LOG INFO
                 else:
-                    result = None
+                    result = ""
                     err = True
                     #TODO log error
                     # print(f'DIO INVALID RESPONSE')
@@ -460,4 +409,4 @@ class DIOCommander():
 
         else:
             print(f'_send_bytes logging: "{cmd_bytes.decode().strip()}"')
-            return None, False
+            return "", False
