@@ -659,24 +659,8 @@ class Winch:
 
         cur_status = {}
 
-        self.update_payout_edge_counts()
-
-        cur_status["depth_m"] = round(self.depth_from_payout_edges_m(), 2)
-
-        # get latch sensor readings
-        latch_cnt, err = self.get_latch_edge_count()
-        if err:
-            print(f'states:winch ERROR get latch sensor edge count')
-            return {}, err
-
-        if self.cmndr.simulation:
-            latch_cnt = self._sim_latch_edge_count
-
-        cur_status["latch_cnt"] = latch_cnt
-
         # get winch direction, if any
         if self.cmndr.simulation:
-            _, _ = self.cmndr.get_winch_direction()
             if isinstance(self.state, (UpcastingState,)):
                 cur_status["dir"] = WinchDir.DIRECTION_UP.value
             elif isinstance(self.state, (DowncastingState, StagingState)):
@@ -689,6 +673,22 @@ class Winch:
             if err:
                 print(f'states:winch ERROR get winch direction')
                 return {}, err
+
+        if cur_status['dir'] != WinchDir.DIRECTION_NONE.value:
+            self.update_payout_edge_counts()
+
+        cur_status["depth_m"] = round(self.depth_from_payout_edges_m(), 2)
+
+        # # get latch sensor readings
+        # latch_cnt, err = self.get_latch_edge_count()
+        # if err:
+        #     print(f'states:winch ERROR get latch sensor edge count')
+        #     return {}, err
+
+        # if self.cmndr.simulation:
+        #     latch_cnt = self._sim_latch_edge_count
+
+        # cur_status["latch_cnt"] = latch_cnt
 
         cur_status["state"] = str(self.state)
         cur_status["ts"] = datetime.utcnow().isoformat()
