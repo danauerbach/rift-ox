@@ -5,7 +5,7 @@
 logs/
 etc/
 ops/
-
+.vscode
 
 ### CircuitPython ###
 .Trashes
