@@ -19,17 +19,15 @@ def pause_monitor(cfg: dict, quit_evt: Event):
 
     def _on_connect(client, userdata, flags, rc):
         if rc==0:
-            client.connected_flag=True #set flag
             print("winctl:pausemon: connected OK: {client}")
         else:
             print("winctl:pausemon: Bad connection for {client} Returned code: ", rc)
             client.loop_stop()
 
     def _on_disconnect(client, userdata, rc):
-        client.connected_flag=False #set flag
         print("winctl:pausemon: client disconnected ok")
 
-    def _on_ctl_publish(client, userdata, mid):
+    def _on_cmd_publish(client, userdata, mid):
         print("winctl:pausemon: {client} mid= "  ,mid)
 
     def _on_pause_message(client : mqtt.Client, userdata, message):
@@ -37,17 +35,15 @@ def pause_monitor(cfg: dict, quit_evt: Event):
         pause_q.put(payload)
 
 
-    mqtt_host : str = cfg["mqtt"]["HOST"]
-    mqtt_port : int = cfg["mqtt"]["PORT"]
-    pause_dur: int = int(cfg["winch"]["PAUSE_DURATION_SECS"])
-    pause_t = cfg["mqtt"]["WINCH_PAUSE_TOPIC"]
-    pause_q: queue.Queue = queue.Queue()
-    pause_active: bool = False
-
     CMD_START: dict = {
-        "command": WinchCmd.WINCH_CMD_START
+        "command": WinchCmd.WINCH_CMD_START.value
     }
 
+    pause_q: queue.Queue = queue.Queue()
+
+    mqtt_host : str = cfg["mqtt"]["HOST"]
+    mqtt_port : int = cfg["mqtt"]["PORT"]
+    pause_t = cfg["mqtt"]["WINCH_PAUSE_TOPIC"]
     pausemon_sub : mqtt.Client = mqtt.Client('pausemon-data-sub')
     pausemon_sub.on_connect = _on_connect
     pausemon_sub.on_disconnect = _on_disconnect
@@ -56,23 +52,30 @@ def pause_monitor(cfg: dict, quit_evt: Event):
     pausemon_sub.subscribe(pause_t, qos=2)
     pausemon_sub.loop_start()
 
-    wincmd_pub : mqtt.Client = mqtt.Client('pausemon-ctl-pub')
+    wincmd_pub : mqtt.Client = mqtt.Client('pausemon-cmd-pub')
     wincmd_pub.on_connect = _on_connect
     wincmd_pub.on_disconnect = _on_disconnect
-    wincmd_pub.on_publish = _on_ctl_publish
+    wincmd_pub.on_publish = _on_cmd_publish
     wincmd_pub.connect(mqtt_host, mqtt_port)
     wincmd_pub.loop_start()
 
+    pause_dur: float = float(cfg["winch"]["PAUSE_DURATION_SECS"])
+    pause_active: bool = False
+    pause_msg: str = ""
+    pause_start: float = 0
+    pause_end: float = 0
+
     while not quit_evt.is_set():
 
-        pause_msg: str = ""
+        # pause_dur: float = 0
 
         try:
-            pause_msg = pause_q.get(block=True, timeout=1)
+            pause_msg = pause_q.get(block=True, timeout= 0.15)
             pause_q.task_done()
         except queue.Empty as e:
-            pass
+            pause_msg = ''
         except Exception as e:
+            pause_msg = ''
             print(f'winctl:pausemon: ERROR receiving data msg: {e}')
             continue
 
@@ -90,7 +93,7 @@ def pause_monitor(cfg: dict, quit_evt: Event):
 
         if pause_active:
             # check modified date on pause flag file and add another pause_dur secs
-            print(f'winctl:pausemon: PAUSE active    t:{time.time()} dur={pause_dur} secs at={pause_start} ending={pause_end}')
+            # print(f'winctl:pausemon: PAUSE active    t:{time.time()} dur={pause_dur} secs at={pause_start} ending={pause_end}')
 
             if time.time() > pause_end:
                 print(f'winctl:pausemon: PAUSE ending t:{time.time()} over after {pause_end - pause_start} secs')
