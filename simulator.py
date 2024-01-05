@@ -24,36 +24,6 @@ parser.add_argument("--simulation", help="simulate RIFT-OX actions using MQTT me
 args = parser.parse_args()
 
 
-def connector(client : str, broker : str = 'localhost', port : int = 1883, keep_alive=True) -> bool:
-    """Attempts connection set delay to >1 to keep trying
-    but at longer intervals. If runforever flag is true then
-    it will keep trying to connect or reconnect indefinetly otherwise
-    gives up after 3 failed attempts"""
-
-    connflag : bool = False
-    delay : int = 5
-    badcount : int =0 # counter for bad connection attempts
-
-    while not connflag and (badcount < 3):
-        print("connecting to broker "+str(broker))
-        #print("connecting to broker "+str(broker)+":"+str(port))
-        print("Attempts ",str(badcount))
-        time.sleep(delay)
-        try:
-            client.connect(broker,port,keep_alive)
-            connflag=True
-            print(f"connection to {broker}:{port} successful ")
-
-        except:
-            client.badconnection_flag=True
-            print("connection failed "+str(badcount) + 'failed attempts.')
-            badcount +=1
-            connflag = False
-
-    return connflag            
-        
-
-
 def client_loop(client, broker, port, keepalive):
     t = threading.Thread(target = client_loop, args=(client,broker,port,60), name='simul:client')
     t.start()
@@ -79,7 +49,7 @@ def simulate_downcast(ctd_simul : mqtt.Client, monitor_client : mqtt.Client, cmd
     start_evt.wait()
 
 
-    cur_depth : int = 0  # current depth in meters
+    cur_depth : float = 0  # current depth in meters
     while (cur_depth < SEA_FLOOR_DEPTH) and cur_depth >= 0:
 
         try:
@@ -136,7 +106,6 @@ def create_pubber_client(client_name : str, broker : str = 'localhost', port : i
 def on_connect(client : mqtt.Client, userdata, flags, rc):
 
     if rc==0:
-        client.connected_flag=True #set flag
         print(f"connected OK: {client}")          
     else:
         print("Bad connection Returned code=",rc)
