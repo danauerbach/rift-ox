@@ -86,11 +86,13 @@ def wincmd_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
         # simulator_pub = winmqtt.winmon_pubber('winmon-simul-pub')
         # simulator_pub.loop_start
 
-    dio_cmndr: DIOCommander = DIOCommander(cfg, simulation=cfg["rift-ox-pi"]["SIMULATION"])
+    dio_cmndr: DIOCommander = DIOCommander(cfg)
     winch: Winch = Winch(dio_cmndr)
 
+    last_winch_state = ''
+
     # get initial winch status
-    init_status, err = share_new_winch_status(winch, Path("payouts"))
+    _, err = share_new_winch_status(winch, Path("payouts"))
     if err:
         print(f'winctl:winmon: ERROR getting initial winch status')
 
@@ -100,8 +102,10 @@ def wincmd_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
         if err:
             print(f'winctl:winmon: ERROR getting winch status')
 
-        state_json = json.dumps(status)
-        print(f'winctl:winmon: WINCH STATE: {state_json}')
+        if status['state'] != last_winch_state:
+            last_winch_state = status['state']
+            state_json = json.dumps(status)
+            print(f'winctl:winmon: WINCH STATE: {state_json}')
 
         cmd_msg = ""
         try:
@@ -140,58 +144,6 @@ def wincmd_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
 
         elif cmd == WinchCmd.WINCH_CMD_UPSTAGE.value:
             winch.up_stage()
-
-        # elif cmd == WinchCmd.WINCH_CMD_PARK.value:
-        #     """Parking is moving winch backwards until LATCH signal
-        #     is detected and then paying out for < 1sec so that bullet will latch.
-        #     This should leave the winch in the (physically) LATCHED position
-            
-        #     NOTE we are using dio_cmndr.<command> directly to control winch while bypassing the 
-        #     because WInch state machine because Parking requires multiple winch 
-        #     commands all while Parking and the Winch state machine can handle this."""
-
-        #     print(f'PARKING: STARTING')
-
-        #     # check current latch edge count
-        #     start_latch_edge_cnt, err = winch.get_latch_edge_count()
-        #     if err:
-        #         print('dio_cmds:park UNABLE to get LATCH SENSOR state when PARKING')
-        #         return
-
-        #     new_latch_edge_count = start_latch_edge_cnt
-        #     print(f'PARKING: LATCH EDGE CNT: {start_latch_edge_cnt}')
-        
-        #     print(f'PARKING: UP CASTING')
-        #     dio_cmndr.up_cast() #### NOT SURE THIS IS A GOOD IDEA
-        #     latch_found = (new_latch_edge_count > start_latch_edge_cnt)
-        #     print(f'PARKING: LATCH FOUND - INITIAL: {latch_found}')
-        #     while not latch_found:
-        #         # check fr new LATCH edge count
-        #         new_latch_edge_count, err = winch.get_latch_edge_count()
-        #         if err:
-        #             dio_cmndr.stop_winch() #### NOT SURE THIS IS A GOOD IDEA
-        #             print('dio_cmds:park UNABLE to get LATCH SENSOR state when PARKING')
-        #             return
-        #         latch_found = new_latch_edge_count > start_latch_edge_cnt
-        #         print(f'PARKING: LATCH FOUND - LOOP: {latch_found}')
-
-        #         # need a pretty fast loop here while up_casting
-        #         time.sleep(0.01)    
-
-        #     print(f'PARKING: LATCH FOUND: {latch_found}')
-        #     print(f'PARKING: STOPPING WINCH')
-        #     # latch has been found
-        #     dio_cmndr.stop_winch()
-        #     # presumably we are on the LATCH now. drop a fraction of a sec (an inch or two)
-        #     print(f'PARKING: RELEASING LATCH')
-        #     dio_cmndr.latch_release()
-        #     time.sleep(1) # REMOVE AFTER TESTING
-        #     print(f'PARKING: DOWNCASTING FOR {cfg["winch"]["PARKING_DOWNCAST_MS"]}ms')
-        #     dio_cmndr.down_cast(stop_after_ms=int(cfg["winch"]["PARKING_DOWNCAST_MS"]))
-        #     dio_cmndr.stop_winch()
-
-        # elif cmd == WinchCmd.WINCH_CMD_SETSTATE.value:
-        #     winch.set_state()
 
     
     status, err = share_new_winch_status(winch, Path("payouts"))
