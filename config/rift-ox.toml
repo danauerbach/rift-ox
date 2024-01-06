@@ -3,7 +3,7 @@ HOST = "localhost"
 PORT = 1883
 CTD_DATA_TOPIC = "rift-ox/ctdmon/ctddata"
 WINCH_CMD_TOPIC = "rift-ox/winch/cmd"
-WINCH_PAYOUTDATA_TOPIC = "rift-ox/winch/payoutdata"
+# WINCH_PAYOUTDATA_TOPIC = "rift-ox/winch/payoutdata"
 WINCH_LATCH_TOPIC = "rift-ox/winch/latch"
 WINCH_PAUSE_TOPIC = "rift-ox/winch/pause"
 
