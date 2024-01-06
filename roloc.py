@@ -90,7 +90,7 @@ def main():
             cmd_conf = input(f'Confirm Coammnd: ')
             cmd_conf = cmd_conf.upper()
 
-            if cmd == cmd:
+            if cmd_conf == cmd:
                 display.fill(0)
                 display.text(f'cmd: {cmd}', 0, 0, 1)
 
