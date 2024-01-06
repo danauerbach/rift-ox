@@ -92,7 +92,7 @@ def main():
                 display.fill(0)
                 display.text(f'cmd: {cmd.upper()}', 0, 0, 1)
 
-                rfm9x.send('asd')
+                rfm9x.send(f'CMD: {cmd.upper()}'.encode())
 
             else:
                 print(f'COMMAND CONFIRMATION FAILED ==> "{cmd_conf.upper()}" != "{cmd.upper()}"')                
