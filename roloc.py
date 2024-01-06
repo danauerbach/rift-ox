@@ -28,7 +28,7 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("command", help="Send command to RIFT-OX over LoRa radio (case insensitive)", 
-                        choices=["goscience", "quit", "kill33", "pause"], required=True)
+                        choices=["goscience", "quit", "kill33", "pause"])
     
     args = parser.parse_args()
 
