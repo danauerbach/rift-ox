@@ -77,8 +77,10 @@ while True:
 #        display.text(packet.decode('utf-8'))
 #    display.show()
         
-    cmd = sys.stdin.readline()
+    print(f'ENTER RIFT-OX CMD: ', end='')
+    cmd: str = sys.stdin.readline()
     while cmd.upper() != CMD_QUIT:
+        print(f'ENTER RIFT-OX CMD: ', end='')
         cmd = sys.stdin.readline()
 
     sys.exit(0)
