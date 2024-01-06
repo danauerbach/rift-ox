@@ -17,70 +17,11 @@ CMD_QUIT = "QUIT"
 
 def interrupt_handler(signum, frame):
 
-    display.fill(0)
-    display.text('roloc: shutting down', 0, 0, 1)
-
     sys.exit(0)
 
 
 def main():
 
-    while True:
-        # Clear the image
-        display.fill(0)
-
-        # Attempt to set up the RFM9x Module
-        try:
-            rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, 915.0)
-            display.text('RFM9x: Detected', 0, 0, 1)
-            print('RFM9x: Detected')
-        except RuntimeError as error:
-            # Thrown on version mismatch
-            display.text('RFM9x: ERROR', 0, 0, 1)
-            print('RFM9x Error: ', error)
-
-        # check for a packet
-    #    packet = rfm9x.receive(timeout=1.0)
-
-    #    if packet is None:
-    #      # Packet has not been received
-    #        display.text('no pck rcvd', 0, height-24, 1)
-    #    else:
-    #        display.text(packet.decode('utf-8'))
-    #    display.show()
-            
-        cmd = input(f'ENTER RIFT-OX CMD: ')
-        while cmd.upper() != CMD_QUIT:
-            cmd = input(f'ENTER RIFT-OX CMD: ')
-
-        display.fill(0)
-        display.text('roloc: shutting down', 0, 0, 1)
-        sys.exit(0)
-
-
-        # Check buttons
-        if not btnA.value:
-            # Button A Pressed
-            display.text('Ada', width-85, height-7, 1)
-            display.show()
-            rfm9x.send(bytes("Button A Pressed", "utf-8"))
-            time.sleep(0.1)
-        if not btnB.value:
-            # Button B Pressed
-            display.text('Fruit', width-75, height-7, 1)
-            display.show()
-            time.sleep(0.1)
-        if not btnC.value:
-            # Button C Pressed
-            display.text('Radio', width-65, height-7, 1)
-            display.show()
-            time.sleep(0.1)
-
-        display.show()
-        time.sleep(0.1)
-
-if __name__ == "__main__":
-    
     signal.signal(signal.SIGINT, interrupt_handler)
 
     # Button A
@@ -115,5 +56,74 @@ if __name__ == "__main__":
     RESET = DigitalInOut(board.D25)
     spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
 
+    # Clear the image
+    display.fill(0)
+
+    # Attempt to set up the RFM9x Module
+    rfm9x: adafruit_rfm9x.RFM9x
+    try_cnt = 0
+    while True:
+        # Clear the image
+        display.fill(0)
+
+        # Attempt to set up the RFM9x Module
+        try:
+            rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, 915.0)
+            display.text('RFM9x: Detected', 0, 0, 1)
+        except RuntimeError as error:
+            # Thrown on version mismatch
+            display.text('RFM9x: ERROR', 0, 0, 1)
+            print('RFM9x Error: ', error)
+            if try_cnt <= 5:
+                print('trying again in 5 secs...')
+                time.sleep(5)
+                pass
+            else:
+                print('Too many RFM9x initialization errors. Quitting.')
+                sys.exit(1)
+        
+        cmd:str = ''
+        while cmd.upper() != CMD_QUIT:
+            cmd = input(f'Enter RIFT-OX command: ')
+
+            cmd_conf = input(f'Confirm Coammnd: ')
+
+            if cmd.upper() == cmd.upper():
+                display.fill(0)
+                display.text(f'cmd: {cmd.upper()}', 0, 0, 1)
+
+                rfm9x.send('asd')
+
+            else:
+                print(f'COMMAND CONFIRMATION FAILED ==> "{cmd_conf.upper()}" != "{cmd.upper()}"')                
+                print('Please try again...')
+        
+
+    sys.exit(0)
+
+
+    # Check buttons
+    if not btnA.value:
+        # Button A Pressed
+        display.text('Ada', width-85, height-7, 1)
+        display.show()
+        rfm9x.send(bytes("Button A Pressed", "utf-8"))
+        time.sleep(0.1)
+    if not btnB.value:
+        # Button B Pressed
+        display.text('Fruit', width-75, height-7, 1)
+        display.show()
+        time.sleep(0.1)
+    if not btnC.value:
+        # Button C Pressed
+        display.text('Radio', width-65, height-7, 1)
+        display.show()
+        time.sleep(0.1)
+
+    display.show()
+    # time.sleep(0.1)
+
+if __name__ == "__main__":
+    
     main()
     
