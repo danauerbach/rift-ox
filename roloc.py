@@ -32,7 +32,7 @@ def main():
     
     args = parser.parse_args()
 
-    cmd: str = args.command
+    cmd: str = args.command.upper()
     
 
     # Button A
