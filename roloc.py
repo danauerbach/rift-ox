@@ -83,19 +83,22 @@ def main():
                 sys.exit(1)
         
         cmd:str = ''
-        while cmd.upper() != CMD_QUIT:
+        while cmd != CMD_QUIT:
             cmd = input(f'Enter RIFT-OX command: ')
+            cmd = cmd.upper()
 
             cmd_conf = input(f'Confirm Coammnd: ')
+            cmd_conf = cmd_conf.upper()
 
-            if cmd.upper() == cmd.upper():
+            if cmd == cmd:
                 display.fill(0)
-                display.text(f'cmd: {cmd.upper()}', 0, 0, 1)
+                display.text(f'cmd: {cmd}', 0, 0, 1)
 
-                rfm9x.send(f'CMD: {cmd.upper()}'.encode())
+                rfm9x.send(f'CMD: {cmd}'.encode())
+                print(f'Command sent: {cmd}')
 
             else:
-                print(f'COMMAND CONFIRMATION FAILED ==> "{cmd_conf.upper()}" != "{cmd.upper()}"')                
+                print(f'COMMAND CONFIRMATION FAILED ==> "{cmd_conf}" != "{cmd}"')                
                 print('Please try again...')
         
 
