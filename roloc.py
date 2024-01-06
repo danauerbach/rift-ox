@@ -87,10 +87,13 @@ def main():
             cmd = input(f'Enter RIFT-OX command: ')
             cmd = cmd.upper()
 
+
             cmd_conf = input(f'Confirm Coammnd: ')
             cmd_conf = cmd_conf.upper()
 
             if cmd_conf == cmd:
+                if cmd == CMD_QUIT:
+                    break
                 display.fill(0)
                 display.text(f'cmd: {cmd}', 0, 0, 1)
 
@@ -100,7 +103,7 @@ def main():
             else:
                 print(f'COMMAND CONFIRMATION FAILED ==> "{cmd_conf}" != "{cmd}"')                
                 print('Please try again...')
-        
+        break
 
     sys.exit(0)
 
