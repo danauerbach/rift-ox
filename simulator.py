@@ -11,8 +11,9 @@ import time
 
 import paho.mqtt.client as mqtt
 
-import msgbus
-
+import config
+# import msgbus
+# from winch import 
 
 SIMULATION_DOWNCAST = 'downcast'
 
@@ -28,7 +29,7 @@ def client_loop(client, broker, port, keepalive):
     t = threading.Thread(target = client_loop, args=(client,broker,port,60), name='simul:client')
     t.start()
 
-def simulate_downcast(ctd_simul : mqtt.Client, monitor_client : mqtt.Client, cmd_q : queue.Queue, start_evt : threading.Event) -> bool:
+def simulate_downcast(cfg: dict, ctd_simul : mqtt.Client, monitor_client : mqtt.Client, cmd_q : queue.Queue, start_evt : threading.Event) -> bool:
     """send CTD data and altimeter messages that 
     will simulate a downcast. Simulation leaves carousel 
     at simulated sea floor.
@@ -79,7 +80,7 @@ def simulate_downcast(ctd_simul : mqtt.Client, monitor_client : mqtt.Client, cmd
             'depth_m': round(cur_depth, 2),
             'altitude': round(SEA_FLOOR_DEPTH - cur_depth, 2)
         }
-        ctd_simul.publish(msgbus.TOPIC_CTD_SENSORS_DATA_SIMUL, json.dumps(payload), qos=2)
+        ctd_simul.publish(cfg["mqtt"]["CTD_DATA_TOPIC"], json.dumps(payload), qos=2)
         print(f'DOWNCAST SIMULATOR: Depth: {round(cur_depth, 2)}, Altitude: {round(SEA_FLOOR_DEPTH - cur_depth, 2)}')
 
             
@@ -121,16 +122,6 @@ def on_publish(client, userdata, mid):
 def on_subscribe(client, userdata, mid, granted_qos):
     print("Subscribed: "+str(mid)+" "+str(granted_qos))
 
-def simulation_monitor(client_id : str):
-
-    client = mqtt.Client(client_id)
-    # client.on_subscribe = on_subscribe
-    # client.on_connect = on_connect
-    # client.on_message = on_message
-
-    return client
-
-
 def interrupt_handler(signum, frame):
 
     # print(f'Handling signal {signum} ({signal.Signals(signum).name}).')
@@ -145,27 +136,30 @@ def interrupt_handler(signum, frame):
 def on_cmd_msg(client, userdata, message):
 
     # print(f"CMD Message on topic {message.topic}: ",str(message.payload.decode("utf-8")))
-    if (message.topic in [msgbus.TOPIC_COMMANDS,
-                          msgbus.TOPIC_WINCH_MOTION_COMMAND]):
-        msg_str = message.payload.decode("utf-8")
-        print(f'simulation:on_ctl_msg: {round(time.time(), 2)} received msg: {msg_str}')
-        msg_json = json.loads(msg_str)
-        if msg_json['command'] in ['gostart', 'stop', 'forward', 'reverse']:
-            cmd = {
-                "command": msg_json['command']
-            }
-            if msg_json["command"] == 'gostart':
-                start_evt.set()
-            else:
-                cmd_q.put(cmd)
-            # elif msg_json['command'] == 'stop':
-            # elif msg_json['command'] == 'forward':
-            # elif msg_json['command'] == 'reverse':
+    msg_str = message.payload.decode("utf-8")
+    print(f'simulation:on_cmd_msg: {round(time.time(), 2)} received msg: {msg_str}')
+    msg_json = json.loads(msg_str)
+    if msg_json['command'] in ['start', 'stop', 'forward', 'reverse']:
+        cmd = {
+            "command": msg_json['command']
+        }
+        if msg_json["command"] == 'gostart':
+            start_evt.set()
+        else:
+            cmd_q.put(cmd)
+        # elif msg_json['command'] == 'stop':
+        # elif msg_json['command'] == 'forward':
+        # elif msg_json['command'] == 'reverse':
 
 
 if __name__ == "__main__":
 
     signal.signal(signal.SIGINT, interrupt_handler)
+
+    cfg = config.read()
+    if cfg == None:
+        print(f'simulator: ERROR unable to read rift-ox.toml config file. Quitting.')
+        sys.exit(1)
 
     if args.simulation == SIMULATION_DOWNCAST:
 
@@ -175,11 +169,10 @@ if __name__ == "__main__":
 
         start_evt = threading.Event()
 
-        monitor_client = simulation_monitor('sim-mon')
+        monitor_client = mqtt.Client('sim-mon')
         monitor_client.on_message = on_cmd_msg
         monitor_client.connect('localhost', 1883)
-        monitor_client.subscribe([(msgbus.TOPIC_WINCH_MOTION_COMMAND, 2),
-                                  (msgbus.TOPIC_COMMANDS, 2)], qos=2)
+        monitor_client.subscribe([(cfg["mqtt"]["WINCH_CMD_TOPIC"], 2)], qos=2)
         monitor_client.loop_start()
         cmd_q = queue.Queue()
 
@@ -189,7 +182,7 @@ if __name__ == "__main__":
         simulator_client.connect('localhost', 1883)
         simulator_client.loop_start()
 
-        res = simulate_downcast(simulator_client, monitor_client, cmd_q, start_evt)
+        res = simulate_downcast(cfg, simulator_client, monitor_client, cmd_q, start_evt)
 
         monitor_client.loop_stop()
         simulator_client.loop_stop()
