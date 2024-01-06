@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import argparse
 import signal
 import sys
 import time
@@ -23,6 +24,16 @@ def interrupt_handler(signum, frame):
 def main():
 
     signal.signal(signal.SIGINT, interrupt_handler)
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("command", help="Send command to RIFT-OX over LoRa radio (case insensitive)", 
+                        choices=["goscience", "quit", "kill33", "pause"])
+    
+    args = parser.parse_args()
+
+    cmd: str = args.command
+    
 
     # Button A
     btnA = DigitalInOut(board.D5)
@@ -84,10 +95,6 @@ def main():
         
         cmd:str = ''
         while cmd != CMD_QUIT:
-            cmd = input(f'Enter RIFT-OX command: ')
-            cmd = cmd.upper()
-
-
             cmd_conf = input(f'Confirm Coammnd: ')
             cmd_conf = cmd_conf.upper()
 
