@@ -93,7 +93,6 @@ def main():
                 print('Too many RFM9x initialization errors. Quitting.')
                 sys.exit(1)
         
-        cmd:str = ''
         while cmd != CMD_QUIT:
             cmd_conf = input(f'Confirm Coammnd: ')
             cmd_conf = cmd_conf.upper()
