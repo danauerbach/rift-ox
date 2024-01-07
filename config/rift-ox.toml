@@ -46,4 +46,5 @@ DIO_LATCH_SENSOR_GROUP = 0
 DIO_LATCH_SENSOR_PIN = 2
 
 [bottles]
-FIRE_DEPTHS_FN = 'fire_depths'
+# file is in OPS_DIR
+PAUSE_DEPTHS_FN = 'pause_depths'
