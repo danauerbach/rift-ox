@@ -95,7 +95,8 @@ def main():
 
         if packet is None:
         # Packet has not been received
-            display.text('Nothing rcvd', 0, height-20, 1)
+            # display.text('Nothing rcvd', 0, height-20, 1)
+            pass
         else:
             packet_str = packet.decode()
             print(f'rcvd: {packet_str}')
