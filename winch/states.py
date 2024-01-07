@@ -651,10 +651,11 @@ class Winch:
             self.last_payout_cnt = payouts[0]
 
     def depth_from_payout_edges_m(self) -> float:
-        # assumes 5.25in radius wheel
-        #TODO THIS MUST BE REFINED TO INCLUDE CABLE RADIUS
-        dist_down: float = (self.down_edges / 12) * 2 * pi * 5.25 / 39.37008
-        dist_up: float = (self.up_edges / 12) * 2 * pi * 5.25 / 39.37008
+
+        # assumes 5.25in radius sheave/wheel
+        cable_radius_inches = self.cmndr.cfg["winch"]["SEA_CABLE_DIAMETER_INCH"] / 2.0
+        dist_down: float = (self.down_edges / 12) * 2 * pi * (5.25 + cable_radius_inches) / 39.37008
+        dist_up: float = (self.up_edges / 12) * 2 * pi * (5.25 + cable_radius_inches) / 39.37008
         return dist_down - dist_up
 
     def status(self) -> Tuple[dict, bool]:
