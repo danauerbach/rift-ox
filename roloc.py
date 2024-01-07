@@ -70,21 +70,21 @@ def main():
     cmd: str = ''
     cmd_conf: str =''
 
-    # Attempt to set up the RFM9x Module
-    try:
-        rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, 915.0)
-        # display.text('RFM9x: Detected', 0, 0, 1)
-        print('RFM9x: Detected')
-    except RuntimeError as error:
-        # Thrown on version mismatch
-        # display.text('RFM9x: ERROR', 0, 0, 1)
-        print(f'RFM9x Error: {error}. Quitting.')
-        sys.exit(1)
-
     while True:
         
         display.fill(0)
         display.text(f'Mode: {current_mode.value}', 0, 0, 1)
+
+        # Attempt to set up the RFM9x Module
+        try:
+            rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, 915.0)
+            # display.text('RFM9x: Detected', 0, 0, 1)
+            print('RFM9x: Detected')
+        except RuntimeError as error:
+            # Thrown on version mismatch
+            # display.text('RFM9x: ERROR', 0, 0, 1)
+            print(f'RFM9x Error: {error}. Quitting.')
+            sys.exit(1)
 
         if current_mode == IO_MODE.SEND:
 
@@ -129,7 +129,7 @@ def main():
         elif current_mode == IO_MODE.RECEIVE:
 
             # check for a packet
-            packet = rfm9x.receive(timeout=0.5, with_ack=True)
+            packet = rfm9x.receive(timeout=1.0, with_ack=True)
 
             if packet is None:
             # Packet has not been received
