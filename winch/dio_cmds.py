@@ -5,26 +5,6 @@ import time
 from typing import Tuple, Union
 
 from . import  WinchDir
-    # DIO_VALID_COMMANDS, \
-    # DIO_VALID_GROUPS, \
-    # DIO_VALID_PINS, \
-    # DIO_VALID_DIRECTIONS, \
-    # DIO_VALID_MODES, \
-    # DIO_ACTION_DEVICE_LIST_NAME, \
-    # DIO_ACTION_GET_NAME, \
-    # DIO_ACTION_SET_NAME, \
-    # DIO_ACTION_MODE_NAME, \
-    # DIO_ACTION_NUM_NAME, \
-    # DIO_ACTION_PWM_NAME, \
-    # DIO_ACTION_EDGE_NAME, \
-    # DIO_LONG_DIRECTION_DICT, \
-    # DIO_SHORT_DIRECTION_DICT, \
-    # DIO_DIRECTION_IN , \
-    # DIO_DIRECTION_OUT, \
-    # DIO_MODE_DRAIN, \
-    # DIO_MODE_SOURCE
-
-
 
 
 class DIOCommander():
@@ -271,110 +251,6 @@ class DIOCommander():
         return self._send_bytes(cmd_bytes)
 
 
-    def _dio_command_bytes (self, cmd : str) -> Union[bytes, None]:
-
-        print(f'dio_cmds:dio_command_bytes: cmd: {cmd.strip()}')
-        cmd_bytes = bytearray(0)
-
-        # def group_valid(group : int):
-        #     return group in DIO_VALID_GROUPS
-
-        # def pin_valid(group : int):
-        #     return group in DIO_VALID_PINS
-
-        # if 'dir' in kwargs:
-        #     if kwargs["dir"] in DIO_VALID_DIRECTIONS:
-        #         long_dir = DIO_LONG_DIRECTION_DICT[kwargs["dir"]]
-        #         dir = kwargs["dir"][0].upper()
-        #     else:
-        #         #TODO LOG error
-        #         return None
-
-        # if 'group' in kwargs:
-        #     group = int(kwargs["group"])
-        #     if not group_valid(group):
-        #         #TODO log error
-        #         print(f"invalid GROUP: {type(group)}. Should be in {DIO_VALID_GROUPS}")
-        #         return None
-
-        # if 'pin' in kwargs:
-        #     pin = int(kwargs["pin"])
-        #     if not pin_valid(pin):
-        #         #TODO log error
-        #         print(f"invalid PIN: {pin}. SHould be in {DIO_VALID_PINS}")
-        #         return None
-
-        # if 'value' in kwargs:
-        #     value = kwargs["value"]
-
-
-        # if cmd == DIO_ACTION_GET_NAME:
-
-        #     cmd_bytes = f'dio get D{dir}_G{group} {long_dir} {pin}\r'. encode()
-
-        # elif cmd == DIO_ACTION_SET_NAME:
-
-        #     if dir != DIO_DIRECTION_OUT[0].upper():
-        #         #TODO log error
-        #         print("can't SET INPUT pin")
-        #         return None
-
-        #     if not value:
-        #         #TODO log error
-        #         print("SET requires value= parameter")
-        #         return None
-            
-        #     if value not in ['high', 'low', 'true', 'false']:
-        #         #TODO log error
-        #         print("Invalid set value: {value}")
-        #         return None
-
-        #     cmd_bytes = f'dio set D{dir}_G{group} {pin} {value}\r'.encode()
-
-        # elif cmd == DIO_ACTION_MODE_NAME:
-
-        #     if dir != DIO_DIRECTION_OUT[0].upper():
-        #         #TODO log error
-        #         print("can't SET MODE on input group")
-        #         return None
-            
-        #     if value not in DIO_VALID_MODES:
-        #         #TODO log error
-        #         print("Invalid MODE {value}")
-        #         return None
-
-        #     cmd_bytes = f'dio mode D{dir}_G{group} {value}\r'.encode()
-
-        # elif cmd == DIO_ACTION_NUM_NAME:
-
-        #     if dir == DIO_DIRECTION_IN[0].upper():
-        #         cmd_bytes = f'dio num DI_G{group} inputs\r'.encode()
-        #     elif dir == DIO_DIRECTION_OUT[0].upper():
-        #         cmd_bytes = f'dio num DO_G{group} outputs\r'.encode()
-
-        # elif cmd == DIO_ACTION_DEVICE_LIST_NAME:
-
-        #     cmd_bytes = f'device list\r'. encode()
-
-        # elif cmd == DIO_ACTION_EDGE_NAME:
-
-        #     if dir != DIO_DIRECTION_IN[0].upper():
-        #         #TODO log error
-        #         print("can only get edges on input group pin")
-        #         return None
-            
-        #     cmd_bytes = f'dio edges D{dir}_G{group} {pin}\r'.encode()
-
-        # elif cmd == None:
-        #     print(f"No valid command string: cmd:{cmd.strip()}; params:{kwargs};")
-        #     cmd_bytes = None
-
-        # else:
-        #     print(f"Unsupported command: cmd:{cmd.strip()}; params:{kwargs};")
-        #     cmd_bytes = None
-
-        # return cmd_bytes
-    
     def _send_bytes(self, cmd_bytes: bytes) -> Tuple[str, bool]:
            
         result: str = ""
@@ -390,7 +266,6 @@ class DIOCommander():
                 # print(f'{mcu.read(mcu.inWaiting())}')  #get anything waiting in buffer and discard
                 mcu.read(mcu.in_waiting) #get anything waiting in buffer and discard
 
-                # cmd_bytes = dio_command_bytes(DIO_ACTION_NUMINPUTS_NAME, dir=DIO_DIRECTION_IN, group=0, pin=1)
                 written = mcu.write(cmd_bytes)
                 mcu.flush()
 
