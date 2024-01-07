@@ -84,7 +84,7 @@ def main():
         # Attempt to set up the RFM9x Module
         try:
             rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, 915.0)
-            print('RFM9x: Detected')
+            # print('RFM9x: Detected')
         except RuntimeError as error:
             # Thrown on version mismatch
             print(f'RFM9x Error: {error}. Quitting.')
@@ -103,19 +103,19 @@ def main():
 
             # publish cmd to mqtt winch cmd topic
             if packet_str in RIFTOX_CMDS:
-                if cmd_pubber.is_connected():
+                if not cmd_pubber.is_connected():
+                    print("Can't send command, cmd_pubber not connected")
+                    display.text(f"cmd_pubber not conn'd", 0, height-10, 1)
+                else:
                     if pub_winch_cmd(cmd_pubber, cmd_t, packet_str):
                         print(f"CMD PUB'D: {packet_str}")
                         display.text(f"CMD PUB'D: {packet_str}", 0, height-10, 1)
                     else:
                         print(f"ERR PUBBING CMD: {packet_str}")
                         display.text(f"ERR PUBBING CMD: {packet_str}", 0, height-10, 1)
-                else:
-                    print("Can't send command, cmd_pubber not connected")
-                    display.text(f"cmd_pubber not connected", 0, height-10, 1)
             else:
-                print(f"Pub ERROR: {packet_str}")
-                display.text(f"Pub ERROR: {packet_str}", 0, height-10, 1)
+                print(f"INV CMD: {packet_str}")
+                display.text(f"INV CMD: {packet_str}", 0, height-10, 1)
 
         display.show()
 
