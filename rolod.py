@@ -71,7 +71,7 @@ def main():
         res = cmd_pubber.connect(mqtt_host, mqtt_port)
     except OSError as e:
         print(f'OSError connecting to mqqt host {mqtt_host}: {e}')
-        print(f'pubber connected?: {cmd_pubber.is_connected}')
+        print(f'pubber connected?: {cmd_pubber.is_connected()}')
 
 
     cmd_pubber.loop_start()
