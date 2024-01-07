@@ -16,12 +16,14 @@ from winch import WinchCmd
 CMD_QUIT = "QUIT"
 
 
-def interrupt_handler(signum, frame):
-
-    sys.exit(0)
-
 
 def main():
+
+    def interrupt_handler(signum, frame):
+
+        display.fill(0)
+
+        sys.exit(0)
 
     signal.signal(signal.SIGINT, interrupt_handler)
 
@@ -73,43 +75,36 @@ def main():
     # Attempt to set up the RFM9x Module
     rfm9x: adafruit_rfm9x.RFM9x
     try_cnt = 0
-    while True:
+    # while True:
         # Clear the image
-        display.fill(0)
+    display.fill(0)
 
-        # Attempt to set up the RFM9x Module
-        try:
-            rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, 915.0)
-            display.text('RFM9x: Detected', 0, 0, 1)
-        except RuntimeError as error:
-            # Thrown on version mismatch
-            display.text('RFM9x: ERROR', 0, 0, 1)
-            print('RFM9x Error: ', error)
-            if try_cnt <= 5:
-                print('trying again in 5 secs...')
-                time.sleep(5)
-                pass
-            else:
-                print('Too many RFM9x initialization errors. Quitting.')
-                sys.exit(1)
+    # Attempt to set up the RFM9x Module
+    try:
+        rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, 915.0)
+        display.text('RFM9x: Detected', 0, 0, 1)
+    except RuntimeError as error:
+        # Thrown on version mismatch
+        display.text('RFM9x: ERROR', 0, 0, 1)
+        print(f'RFM9x Error: {error}. Quitting.')
+        sys.exit(1)
+    
+    cmd_conf = input(f'Confirm Coammnd: ')
+    cmd_conf = cmd_conf.upper()
+
+    if cmd_conf == cmd:
         
-        while cmd != CMD_QUIT:
-            cmd_conf = input(f'Confirm Coammnd: ')
-            cmd_conf = cmd_conf.upper()
+        rfm9x.send(f'CMD: {cmd}'.encode())
+        print(f'Command sent: {cmd}')
 
-            if cmd_conf == cmd:
-                
-                display.fill(0)
-                display.text(f'cmd: {cmd}', 0, 0, 1)
-                display.show()
+        display.fill(0)
+        display.text(f'cmd sent: {cmd}', 0, 0, 1)
+        display.show()
 
-                rfm9x.send(f'CMD: {cmd}'.encode())
-                print(f'Command sent: {cmd}')
 
-            else:
-                print(f'COMMAND CONFIRMATION FAILED ==> "{cmd_conf}" != "{cmd}"')                
-                print('Please try again...')
-        break
+    else:
+        print(f'COMMAND CONFIRMATION FAILED ==> "{cmd_conf}" != "{cmd}"')                
+        print('Please try again...')
 
     sys.exit(0)
 
