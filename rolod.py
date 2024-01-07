@@ -13,8 +13,6 @@ import time
 import busio
 from digitalio import DigitalInOut, Direction, Pull
 import board
-from adafruit_extended_bus import ExtendedI2C as I2C
-
 # Import the SSD1306 module.
 import adafruit_ssd1306
 # Import the RFM9x radio module.
