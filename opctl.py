@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 
+import cmd
 from pprint import pprint
 import serial
 import signal
 import sys
-import threading
 import time
-from typing import Tuple, Union
 
 # DIO_ACTION_GET_VAL           = 0x00    # Read the state and count of an input, or just the state of an output
 # DIO_ACTION_SET_VAL           = 0x01    # Set the logical state of a digital output
@@ -74,28 +73,34 @@ def interrupt_handler(signum, frame):
     time.sleep(1)
     sys.exit(0)
 
+class DIOShell(cmd.Cmd):
 
-if __name__ == "__main__":
+    prompt = 'Enter DIO Command: '
+    DIO_PORT = '/dev/ttyACM0'
 
-    signal.signal(signal.SIGINT, interrupt_handler)
+    def __init__(self):
+        super().__init__()
 
-    quit_evt = threading.Event()
+    def do_dio(self, arg):
+        cmd_s: str = f'dio {arg}'
+        self.send_dio_cmd(cmd_s)
 
-    dio_port = '/dev/ttyACM0'
+    def do_quit(self, arg):
+        pass
 
-    while not quit_evt.is_set():
+    # trigger exist of main cmdLoop
+    def postcmd(self, stop, line):
+        return line.upper() in ['QUIT', 'EXIT']
 
-        cmd = input('Enter DIO Command: ')
-        if cmd.lower().startswith('quit'):
-            quit_evt.set()
-            continue
-        elif not cmd:
-            print('no command entered, try again')
-            continue
-        cmd_bytes = f'{cmd}\r'.encode()
+    # do NOT use last cmd when empty line is input
+    def emptyline(self):
+        return ''
 
+    def send_dio_cmd(self, cmd):
+
+        cmd_bytes: bytes = cmd.encode()
         try:
-            with serial.Serial(dio_port) as mcu:
+            with serial.Serial(self.DIO_PORT) as mcu:
                 time.sleep(0.05)
                 mcu.write(b"\r\n")
                 time.sleep(0.05)
@@ -117,9 +122,13 @@ if __name__ == "__main__":
                     print(f'INVALID RESPONSE')
 
         except Exception as e:
-            print("Error")
             print(e)
 
-        print()
-        time.sleep(0.3)
+
+
+if __name__ == "__main__":
+
+    signal.signal(signal.SIGINT, interrupt_handler)
+
+    sys.exit(DIOShell().cmdloop())
 
