@@ -161,7 +161,8 @@ class StagingState():
         self.winch.pausemon_pub.publish(self.winch.pause_t, \
                                         "pause".encode(), qos=2)
         self.winch.cmndr.stop_winch()
-        self.winch.set_state(DownStagedState(self.winch))        
+        self.winch.set_state(DownStagedState(self.winch)) 
+        #TODO Need to send CMD to start ctdmon data acq (initlogging, etc)
 
     def stop_at_bottom(self):
         print(f'Can not stop-at-bottom when {self}')
@@ -244,6 +245,7 @@ class UpStagedState():
         print(f'Can not up-stage when {self}')
 
     def park(self):
+        #TODO send cmd to stop data acq in ctdmon
         if not self.winch.cmndr.cfg['winch']['NO_PARKING']:
             self.winch.set_state(ParkingState(self.winch))
             self.winch.park()
