@@ -1,5 +1,6 @@
 [mqtt]
 HOST = "localhost"
+REMOTE_HOST = "192.168.1.101"
 PORT = 1883
 CTD_DATA_TOPIC = "rift-ox/ctdmon/ctddata"
 WINCH_CMD_TOPIC = "rift-ox/winch/cmd"
