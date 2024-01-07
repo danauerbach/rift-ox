@@ -67,7 +67,14 @@ def main():
     cmd_pubber = mqtt.Client('rolod-cmd-pub')
     cmd_pubber.on_connect = _on_connect
     cmd_pubber.on_disconnect = _on_disconnect
-    cmd_pubber.connect(mqtt_host, mqtt_port)
+    try:
+        res = cmd_pubber.connect(mqtt_host, mqtt_port)
+        if res != mqtt.MQTT_ERR_SUCCESS:
+            print(f'ERROR connecting to mqqt broker at {mqtt_host}')
+    except OSError as e:
+        print('OSError connecting to mqqt host {mqtt_host}: {e}')
+
+
     cmd_pubber.loop_start()
 
     while True:
