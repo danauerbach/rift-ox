@@ -99,10 +99,10 @@ def main():
             cmd_conf = cmd_conf.upper()
 
             if cmd_conf == cmd:
-                if cmd == CMD_QUIT:
-                    break
+                
                 display.fill(0)
                 display.text(f'cmd: {cmd}', 0, 0, 1)
+                display.show()
 
                 rfm9x.send(f'CMD: {cmd}'.encode())
                 print(f'Command sent: {cmd}')
