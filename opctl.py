@@ -121,7 +121,8 @@ if __name__ == "__main__":
         print(f'winmon: ERROR unable to read rift-ox.toml config file. Quitting.')
         sys.exit(1)
 
-    print(f"\nEnter 'help dio' for help with the dio command syntax.\n")
+    print(f'{DIOShell.HELP_TEXT}')
+    print(f"\nEnter 'help dio' for dio command syntax help.\n")
 
     sys.exit(DIOShell(cfg).cmdloop())
 
