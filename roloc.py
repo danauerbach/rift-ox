@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 
-import argparse
-import enum
 import signal
 import sys
-import time
+# import time
 from typing import Tuple
 
 import busio
@@ -15,15 +13,10 @@ import adafruit_ssd1306
 # Import the RFM9x radio module.
 import adafruit_rfm9x
 
-from winch import WinchCmd
+# from winch import WinchCmd
+from lora import IO_MODE, RIFTOX_CMDS, LORA_MODE_CMDS
+
 CMD_QUIT = "QUIT"
-
-class IO_MODE(enum.Enum):
-    SEND = 'SEND'
-    RECEIVE = 'RECEIVE'
-
-RIFTOX_CMDS = ['GOSCIENCE', 'PAUSE', 'KILL33', 'QUIT']
-MODE_CMDS = [IO_MODE.SEND.value, IO_MODE.RECEIVE.value]
 
 def setup_buttons():
 
@@ -100,9 +93,9 @@ def main():
             if cmd == CMD_QUIT:
                 break
 
-            if cmd not in RIFTOX_CMDS + MODE_CMDS:
+            if cmd not in RIFTOX_CMDS + LORA_MODE_CMDS:
                 print(f'INVALID COMMAND: {cmd}')
-                cmd_list: str = ' '.join(RIFTOX_CMDS+MODE_CMDS)
+                cmd_list: str = ' '.join(RIFTOX_CMDS+LORA_MODE_CMDS)
                 print(f'Must be one of: "{cmd_list}"')
                 continue
 
@@ -136,7 +129,7 @@ def main():
         elif current_mode == IO_MODE.RECEIVE:
 
             # check for a packet
-            packet = rfm9x.receive(timeout=1.0, with_ack=True)
+            packet = rfm9x.receive(timeout=0.5, with_ack=True)
 
             if packet is None:
             # Packet has not been received

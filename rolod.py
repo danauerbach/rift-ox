@@ -63,6 +63,8 @@ def main():
             print(f'rcvd: {packet_str}')
             display.text(f'rcvd: {packet_str}', 0, height-20, 1)
 
+            #TODO: SEND COMMAND TO MQTT CMD Topic
+
         display.show()
 
         time.sleep(0.1)
