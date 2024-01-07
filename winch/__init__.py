@@ -2,8 +2,10 @@
 
 from collections import namedtuple
 from enum import Enum
-import os
+import json
 from pathlib import Path
+
+import paho.mqtt.client as mqtt
 
 home_dir = str(Path.home())
 
@@ -84,3 +86,15 @@ DIO_MODE_DRAIN                = 'open-drain'
 DIO_MODE_SOURCE               = 'source'
 DIO_VALID_MODES               = [DIO_MODE_DRAIN,
                                  DIO_MODE_SOURCE]
+
+def pub_winch_cmd(pubber: mqtt.Client, topic: str, command: str, **kwargs) -> bool:
+    cmd: dict = {
+        "command": command
+    }
+    for key, val in kwargs.items():
+        cmd[key] = val
+    msg_info = pubber.publish(topic, json.dumps(cmd).encode(), qos=2)
+    msg_info.wait_for_publish(1)
+    if not msg_info.is_published():
+        print(f'ERROR publishing msg {cmd} to topic {topic}')
+    return msg_info.is_published()
