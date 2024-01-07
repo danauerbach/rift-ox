@@ -94,7 +94,7 @@ def main():
 
     if cmd_conf == cmd:
         
-        rfm9x.send(f'CMD: {cmd}'.encode())
+        rfm9x.send(f'{cmd}'.encode())
         print(f'Command sent: {cmd}')
 
         display.fill(0)

@@ -9,6 +9,7 @@ Wiring Check, Pi Radio w/RFM9x
 Learn Guide: https://learn.adafruit.com/lora-and-lorawan-for-raspberry-pi
 Author: Brent Rubell for Adafruit Industries
 """
+import sys
 import time
 import busio
 from digitalio import DigitalInOut, Direction, Pull
@@ -62,7 +63,8 @@ while True:
     except RuntimeError as error:
         # Thrown on version mismatch
         display.text('RFM9x: ERROR', 0, 0, 1)
-        print('RFM9x Error: ', error)
+        print(f'RFM9x Error: {error}. Quitting.')
+        sys.exit(1)
 
     # check for a packet
     packet = rfm9x.receive(timeout=1.0)
@@ -71,27 +73,26 @@ while True:
       # Packet has not been received
         display.text('no pck rcvd', 0, height-24, 1)
     else:
-        print(packet.decode())
-        display.text(packet.decode(), 0, height-18, 1)
+        print(f'cmd rcvd: {packet.decode()}')
+        display.text(f'cmd rcvd: {packet.decode()}', 0, height-18, 1)
     display.show()
 
-    # Check buttons
-    if not btnA.value:
-        # Button A Pressed
-        display.text('Ada', width-85, height-7, 1)
-        display.show()
-#        rfm9x.send(bytes("Button A Pressed\r\n", "utf-8"))
-        time.sleep(0.1)
-    if not btnB.value:
-        # Button B Pressed
-        display.text('Fruit', width-75, height-7, 1)
-        display.show()
-        time.sleep(0.1)
-    if not btnC.value:
-        # Button C Pressed
-        display.text('Radio', width-65, height-7, 1)
-        display.show()
-        time.sleep(0.1)
+#     # Check buttons
+#     if not btnA.value:
+#         # Button A Pressed
+#         display.text('Ada', width-85, height-7, 1)
+#         display.show()
+# #        rfm9x.send(bytes("Button A Pressed\r\n", "utf-8"))
+#         time.sleep(0.1)
+#     if not btnB.value:
+#         # Button B Pressed
+#         display.text('Fruit', width-75, height-7, 1)
+#         display.show()
+#         time.sleep(0.1)
+#     if not btnC.value:
+#         # Button C Pressed
+#         display.text('Radio', width-65, height-7, 1)
+#         display.show()
+#         time.sleep(0.1)
 
-    display.show()
     time.sleep(0.1)
