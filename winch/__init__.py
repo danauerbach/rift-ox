@@ -88,6 +88,10 @@ DIO_VALID_MODES               = [DIO_MODE_DRAIN,
                                  DIO_MODE_SOURCE]
 
 def pub_winch_cmd(pubber: mqtt.Client, topic: str, command: str, **kwargs) -> bool:
+
+    if command.upper() == 'GOSCIENCE':
+        command = 'START'
+
     cmd: dict = {
         "command": command
     }
