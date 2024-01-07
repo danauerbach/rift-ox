@@ -103,7 +103,7 @@ def main():
 
             # publish cmd to mqtt winch cmd topic
             if packet_str in RIFTOX_CMDS:
-                if cmd_pubber.is_connected:
+                if cmd_pubber.is_connected():
                     if pub_winch_cmd(cmd_pubber, cmd_t, packet_str):
                         print(f"CMD PUB'D: {packet_str}")
                         display.text(f"CMD PUB'D: {packet_str}", 0, height-10, 1)
