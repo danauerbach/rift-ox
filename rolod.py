@@ -78,9 +78,6 @@ def main():
 
     while True:
 
-        # Clear the image
-        display.fill(0)
-
         # Attempt to set up the RFM9x Module
         try:
             rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, 915.0)
@@ -98,6 +95,9 @@ def main():
             # display.text('Nothing rcvd', 0, height-20, 1)
             pass
         else:
+            # Clear the image
+            display.fill(0)
+
             packet_str = packet.decode()
             print(f'rcvd: {packet_str}')
             display.text(f'rcvd: {packet_str}', 0, height-20, 1)
@@ -118,7 +118,7 @@ def main():
                 print(f"INV CMD: {packet_str}")
                 display.text(f"INV CMD: {packet_str}", 0, height-10, 1)
 
-        display.show()
+            display.show()
 
 
 if __name__ == "__main__":
