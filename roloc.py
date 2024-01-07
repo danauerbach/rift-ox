@@ -111,6 +111,7 @@ def main():
 
                         display.text(f"sent & ack'd: {cmd}", 0, 12, 1)
                     else:
+                        print(f"ERROR SENDING: {cmd}")
                         display.text(f"ERROR SENDING: {cmd}", 0, 12, 1)
 
                 elif cmd == IO_MODE.SEND.value:
@@ -133,7 +134,8 @@ def main():
 
             if packet is None:
             # Packet has not been received
-                display.text('Nothing rcvd', 0, height-10, 1)
+                # display.text('Nothing rcvd', 0, height-10, 1)
+                pass
             else:
                 packet_str = packet.decode()
                 print(f'rcvd: {packet_str}')
