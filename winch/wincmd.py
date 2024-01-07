@@ -11,7 +11,7 @@ from typing import Tuple, Union
 import paho.mqtt.client as mqtt
 
 from .dio_cmds import DIOCommander
-from .states import Winch
+from .winch import Winch
 
 from . import WINCH_CMD_LIST, WinchCmd
 
