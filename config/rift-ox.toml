@@ -11,10 +11,10 @@ WINCH_PAUSE_TOPIC = "rift-ox/winch/pause"
 [winch]
 # DEPTHS & ALTITUDE are in meters
 STAGING_DEPTH = 4
-MAX_DEPTH = 10
+MAX_DEPTH = 20
 MIN_ALTITUDE = 5
 # PAUSE TIMEOUT in SECS
-PAUSE_DURATION_SECS = 10
+PAUSE_DURATION_SECS = 15
 PARKING_DOWNCAST_MS = 250
 # Leave in UpStaged state if NO_PARKING is true
 NO_PARKING = true
@@ -24,7 +24,7 @@ SEA_CABLE_DIAMETER_INCH = 0.123
 REALTIME_CTD = false
 SIMULATION = true
 # DIRs are relative to rift-ox homedir
-OPS_DIR = 'dev/rift-ox/dev/ops'
+OPS_DIR = 'dev/ops'
 # PAYOUT_FN = 'payouts'
 DIO_PORT = '/dev/ttyACM0'
 # OUTPUT PINS
