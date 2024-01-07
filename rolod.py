@@ -11,6 +11,23 @@ import adafruit_ssd1306
 # Import the RFM9x radio module.
 import adafruit_rfm9x
 
+import paho.mqtt.client as mqtt
+
+import config
+from lora import RIFTOX_CMDS
+from winch import pub_winch_cmd
+
+
+def _on_connect(client, userdata, flags, rc):
+    if rc==0:
+        print("winctl:winmon: connected OK: {client}")
+    else:
+        print("winctl:winmon: Bad connection for {client} Returned code: ", rc)
+        client.loop_stop()
+
+def _on_disconnect(client, userdata, rc):
+    print("winctl:winmon: client disconnected ok")
+
 
 def main():
 
@@ -20,6 +37,10 @@ def main():
 
     signal.signal(signal.SIGINT, interrupt_handler)
 
+    cfg = config.read()
+    if cfg == None:
+        print(f'winmon: ERROR unable to read rift-ox.toml config file. Quitting.')
+        sys.exit(1)
 
     # Create the I2C interface.
     i2c = busio.I2C(board.SCL, board.SDA)
@@ -37,6 +58,17 @@ def main():
     CS = DigitalInOut(board.CE1)
     RESET = DigitalInOut(board.D25)
     spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
+
+    # set up mqtt pubber
+
+    cmd_t = cfg['mqtt']['WINCH_CMD_TOPIC']
+    mqtt_host = cfg['mqtt']['REMOTE_HOST']
+    mqtt_port = cfg['mqtt']['PORT']
+    cmd_pubber = mqtt.Client('rolod-cmd-pub')
+    cmd_pubber.on_connect = _on_connect
+    cmd_pubber.on_disconnect = _on_disconnect
+    cmd_pubber.connect(mqtt_host, mqtt_port)
+    cmd_pubber.loop_start()
 
     while True:
 
@@ -57,13 +89,20 @@ def main():
 
         if packet is None:
         # Packet has not been received
-            display.text('Nothing rcvd', 0, height-10, 1)
+            display.text('Nothing rcvd', 0, height-20, 1)
         else:
             packet_str = packet.decode()
             print(f'rcvd: {packet_str}')
             display.text(f'rcvd: {packet_str}', 0, height-20, 1)
 
-            #TODO: SEND COMMAND TO MQTT CMD Topic
+            # publish cmd to mqtt winch cmd topic
+            if packet_str in RIFTOX_CMDS:
+                if pub_winch_cmd(cmd_pubber, cmd_t, packet_str):
+                    print(f"CMD PUB'D: {packet_str}")
+                    display.text(f"CMD PUB'D: {packet_str}", 0, height-10, 1)
+            else:
+                print(f"Pub ERROR: {packet_str}")
+                display.text(f"Pub ERROR: {packet_str}", 0, height-10, 1)
 
         display.show()
 
