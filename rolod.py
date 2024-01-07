@@ -91,7 +91,7 @@ def main():
             sys.exit(1)
 
         # check for a packet
-        packet = rfm9x.receive(timeout=0.5, with_ack=True)
+        packet = rfm9x.receive(timeout=1.0, with_ack=True)
 
         if packet is None:
         # Packet has not been received
@@ -119,7 +119,6 @@ def main():
 
         display.show()
 
-        time.sleep(0.1)
 
 if __name__ == "__main__":
     
