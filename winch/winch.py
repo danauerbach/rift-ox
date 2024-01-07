@@ -253,7 +253,7 @@ class UpStagedState():
         else:
             print(f'Sorry, parking is disabled for today. STOPPING HERE')
             self.winch.cmndr.stop_winch()
-            self.winch.set_state(ParkedState(self.winch))
+            # self.winch.set_state(ParkedState(self.winch))
 
     def __str__(self):
         return WinchStateName.UP_STAGED.value
