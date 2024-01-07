@@ -260,7 +260,7 @@ class DIOCommander():
 
             with serial.Serial(self.dio_tty_port) as mcu:
 
-                print(f'_send_bytes issuing: "{cmd_bytes.decode().strip()}"')
+                # print(f'_send_bytes issuing: "{cmd_bytes.decode().strip()}"')
                 mcu.write(b"\r\n")
                 time.sleep(0.05)
                 # print(f'{mcu.read(mcu.inWaiting())}')  #get anything waiting in buffer and discard
@@ -288,5 +288,5 @@ class DIOCommander():
             return result, err
 
         else:
-            print(f'_send_bytes: logging: "{cmd_bytes.decode().strip()}"')
+            # print(f'_send_bytes: logging: "{cmd_bytes.decode().strip()}"')
             return "", False
