@@ -47,4 +47,4 @@ DIO_LATCH_SENSOR_PIN = 2
 
 [bottles]
 # file is in OPS_DIR
-PAUSE_DEPTHS_FN = 'pause_depths'
+PAUSE_DEPTHS_FN = 'pause_depths.toml'
