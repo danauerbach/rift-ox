@@ -3,16 +3,21 @@
 from enum import Enum, auto
 import json
 import logging
+from pathlib import Path
 import queue
 import threading
 import time
-from typing import Tuple
+from typing import Tuple, Union
 
 import paho.mqtt.client as mqtt
+import toml
 
 from winch import pausemon
 
 from . import WinchDir, WinchStateName, WinchCmd, pub_winch_cmd
+from .pause_depths import PauseDepths
+
+
 
 def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Event):
     """Listen to data_q queue for data records to check
@@ -59,13 +64,19 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
     
     data_q : queue.Queue = queue.Queue()
 
-        # STATIONARY_MAX_DIFF : float = float(cfg["winch"]["STATIONARY_MAX_DIFF"]) # meters. depth difference less than this is considered sattionary
-    MIN_ALTITUDE : float = float(cfg["winch"]["MIN_ALTITUDE"])                # meters. DOn't get any closer to the seafloor than this
-    MAX_DEPTH : float = float(cfg["winch"]["MAX_DEPTH"])                      # meters. GO NO FARTHER
-    STAGING_DEPTH : float = float(cfg["winch"]["STAGING_DEPTH"])              # meters. This is depth of initial pause at start of the downcast
+    MIN_ALTITUDE : float = float(cfg["winch"]["MIN_ALTITUDE"])    # meters. DOn't get any closer to the seafloor than this
+    MAX_DEPTH : float = float(cfg["winch"]["MAX_DEPTH"])          # meters. GO NO FARTHER
+    STAGING_DEPTH : float = float(cfg["winch"]["STAGING_DEPTH"])  # meters. This is depth of initial pause at start of the downcast
 
     data_t : str = cfg["mqtt"]["CTD_DATA_TOPIC"]
     winch_command_topic : str = cfg["mqtt"]["WINCH_CMD_TOPIC"]
+    ops_dir = Path(cfg['rift-ox-pi']['OPS_DIR'])
+
+    pause_depths_fn = Path(cfg['bottles']['PAUSE_DEPTHS_FN'])
+    if str(Path.home()).startswith('/Users/'):   # hack because dev dir path on Dan's computer is not th same as ~/dev on productionb Pi's
+        pause_depths: PauseDepths = PauseDepths(Path.home().joinpath('dev/rift-ox/dev/ops', pause_depths_fn))             # pause at these depths in meters
+    else:
+        pause_depths: PauseDepths = PauseDepths(Path.home().joinpath(ops_dir, pause_depths_fn))             # pause at these depths in meters
 
     mqtt_host : str = cfg["mqtt"]["HOST"]
     mqtt_port : int = cfg["mqtt"]["PORT"]
@@ -89,10 +100,12 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
     datamon_sub.loop_start()
 
     # assume we're at the surface, aka "Parked"
+    winch_status: dict = {}
     cur_direction  : str = WinchDir.DIRECTION_NONE.value
     cur_depth_ctd: float = 0
     cur_depth: float = 0
     cur_state: str = ""
+    last_state: str = ''
     cur_altitude: float = MAX_DEPTH
     MAX_DEPTH_REACHED = False
     MAX_DEPTH_PAYOUT_EDGES = -1
@@ -106,7 +119,13 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
             winch_status = status
             cur_direction = winch_status["dir"]
             cur_depth = float(winch_status["depth_m"])
+            last_state = cur_state
             cur_state = winch_status["state"]
+
+            if (last_state == WinchStateName.MAXDEPTH.value) and \
+                (cur_state == WinchStateName.UPCASTING.value):
+                # heading up from bottom, lets reread pause_depths...
+                pause_depths.refresh()
                 
         data_dict = {}
         try:
@@ -139,7 +158,7 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
                         # report difference if more than 0.5%
                         print(f'winctl:winmon: WARNING: winch PAYOUT reading differs from CTD DEPTH by {delta} meters at CTD depth of: {cur_depth_ctd}.')
 
-        # print(f'winctl:winmon: cur_depth: {cur_depth}')
+        print(f'winctl:winmon: winch status: {winch_status}')
         if (cur_direction == WinchDir.DIRECTION_DOWN.value):
 
             # print(f'cur_direction: {cur_direction}')
@@ -165,10 +184,19 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
 
         elif (cur_direction == WinchDir.DIRECTION_UP.value):
             
-            if (cur_depth < STAGING_DEPTH) and \
-                (cur_state in [WinchStateName.UPCASTING.value]):
-                # just hit stagin depth on way up, let's pause here]
-                pub_winch_cmd(wincmd_pub, winch_command_topic, WinchCmd.WINCH_CMD_UPSTAGE.value)
+            if (cur_state in [WinchStateName.UPCASTING.value]):
+
+                if (cur_depth < STAGING_DEPTH):
+                    # just hit stagin depth on way up, let's pause here]
+                    pub_winch_cmd(wincmd_pub, winch_command_topic, WinchCmd.WINCH_CMD_UPSTAGE.value)
+
+                else:
+                    next_pause = pause_depths.get_next_depth()
+                    if next_pause:
+                        if cur_depth < next_pause:
+                            pause_depths.use_next_depth()
+                            pub_winch_cmd(wincmd_pub, winch_command_topic, WinchCmd.WINCH_CMD_PAUSE.value)
+
 
         time.sleep(0.1)
 
