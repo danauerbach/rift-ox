@@ -8,25 +8,6 @@ import time
 
 import config
 
-# DIO_VALID_PARAMS              = ['dir', 'group', 'pin', 'value']
-# DIO_DIRECTION_IN              = "in"
-# DIO_DIRECTION_OUT             = "out"
-# DIO_VALID_DIRECTIONS          = [DIO_DIRECTION_IN,
-#                                  DIO_DIRECTION_OUT]
-# DIO_LONG_DIRECTION_DICT       = {
-#     DIO_DIRECTION_IN: 'input',
-#     DIO_DIRECTION_OUT: 'output'
-# }
-# DIO_SHORT_DIRECTION_DICT       = {
-#     DIO_DIRECTION_IN: 'I',
-#     DIO_DIRECTION_OUT: 'O'
-# }
-# DIO_VALID_GROUPS              = [0,1,2,3] #list(range(0,4))
-# DIO_VALID_PINS                = list(range(0,8))
-# DIO_MODE_DRAIN                = 'open-drain'
-# DIO_MODE_SOURCE               = 'source'
-# DIO_VALID_MODES               = [DIO_MODE_DRAIN,
-#                                  DIO_MODE_SOURCE]
 
 def interrupt_handler(signum, frame):
 
