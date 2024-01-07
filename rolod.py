@@ -69,10 +69,9 @@ def main():
     cmd_pubber.on_disconnect = _on_disconnect
     try:
         res = cmd_pubber.connect(mqtt_host, mqtt_port)
-        if res != mqtt.MQTT_ERR_SUCCESS:
-            print(f'ERROR connecting to mqqt broker at {mqtt_host}')
     except OSError as e:
-        print('OSError connecting to mqqt host {mqtt_host}: {e}')
+        print(f'OSError connecting to mqqt host {mqtt_host}: {e}')
+        print(f'pubber connected?: {cmd_pubber.is_connected}')
 
 
     cmd_pubber.loop_start()
@@ -104,9 +103,16 @@ def main():
 
             # publish cmd to mqtt winch cmd topic
             if packet_str in RIFTOX_CMDS:
-                if pub_winch_cmd(cmd_pubber, cmd_t, packet_str):
-                    print(f"CMD PUB'D: {packet_str}")
-                    display.text(f"CMD PUB'D: {packet_str}", 0, height-10, 1)
+                if cmd_pubber.is_connected:
+                    if pub_winch_cmd(cmd_pubber, cmd_t, packet_str):
+                        print(f"CMD PUB'D: {packet_str}")
+                        display.text(f"CMD PUB'D: {packet_str}", 0, height-10, 1)
+                    else:
+                        print(f"ERR PUBBING CMD: {packet_str}")
+                        display.text(f"ERR PUBBING CMD: {packet_str}", 0, height-10, 1)
+                else:
+                    print("Can't send command, cmd_pubber not connected")
+                    display.text(f"cmd_pubber not connected", 0, height-10, 1)
             else:
                 print(f"Pub ERROR: {packet_str}")
                 display.text(f"Pub ERROR: {packet_str}", 0, height-10, 1)
