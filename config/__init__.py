@@ -27,21 +27,3 @@ def read() -> Union[None, dict]:
         return None
 
     return cfg
-
-def read_pause_depths(pause_depth_fn : str) -> Union[list[float], None]:
-
-    pause_depth_path = Path(pause_depth_fn)
-    if not pause_depth_path.exists():
-        print(f'CONFIG ERROR: Config file {pause_depth_path} does not exist.')
-        return None
-
-    depths_cfg: Union[dict, None] = None
-    depths: Union[list[float], None] = []
-    with pause_depth_path.open(mode="rt") as cfg_fl:
-        depths_cfg = toml.load(cfg_fl)
-        depths = depths_cfg['DEPTHS']
-        if not isinstance(depths, list):
-            print(f'ERROR reading depths file {pause_depth_fn}')
-            depths = []
-
-    return depths
