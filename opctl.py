@@ -1,84 +1,57 @@
 #!/usr/bin/env python3
 
 import cmd
-from pprint import pprint
 import serial
 import signal
 import sys
 import time
 
-# DIO_ACTION_GET_VAL           = 0x00    # Read the state and count of an input, or just the state of an output
-# DIO_ACTION_SET_VAL           = 0x01    # Set the logical state of a digital output
-# DIO_ACTION_SETCOUNT_VAL      = 0x02    # Set the edge count of a digital input to the passed value
-# DIO_ACTION_SETMODE_VAL       = 0x03    # Switch between sink-source and open-collector drive mode on supported hardware
-# DIO_ACTION_NUMDEVICES_VAL    = 0x04    # Reports the number of DIO banks available on the device
-# DIO_ACTION_NUMOUTPUTS_VAL    = 0x05    # Reports the number of outputs available to the indicated device
-# DIO_ACTION_NUMINPUTS_VAL     = 0x06    # Reports the number of inputs available to the indicated device
-# DIO_ACTION_GETEDGECOUNT_VAL  = 0x07    # Reports the number of rising and failing edges detected by an input pin
+import config
 
-DIO_ACTION_GET_NAME          = "dio-get"        # Read the state and count of an input, or just the state of an output
-DIO_ACTION_SET_NAME          = "dio-set"        # Set the logical state of a digital output
-DIO_ACTION_SETMODE_NAME      = "dio-mode"    # Switch between sink-source and open-collector drive mode on supported hardware
-DIO_ACTION_NUMDEVICES_NAME   = "dio-numdev"     # Reports the number of DIO banks available on the device
-DIO_ACTION_NUMOUTPUTS_NAME   = "dio-numoutputs"     # Reports the number of outputs available to the indicated device
-DIO_ACTION_NUMINPUTS_NAME    = "dio-numinputs"     # Reports the number of inputs available to the indicated device
-DIO_ACTION_GETEDGECOUNT_NAME = 'dio-getedges'    # Reports the number of rising and failing edges detected by an input pin
-DIO_VALID_COMMANDS           = [DIO_ACTION_GET_NAME, 
-                                DIO_ACTION_SET_NAME, 
-                                DIO_ACTION_SETMODE_NAME, 
-                                DIO_ACTION_NUMDEVICES_NAME, 
-                                DIO_ACTION_NUMOUTPUTS_NAME, 
-                                DIO_ACTION_NUMINPUTS_NAME,
-                                DIO_ACTION_GETEDGECOUNT_NAME,
-                                "RAW:"]
-DIO_VALID_PARAMS              = ['dir', 'group', 'pin', 'value']
-DIO_DIRECTION_IN              = "in"
-DIO_DIRECTION_OUT             = "out"
-DIO_VALID_DIRECTIONS          = [DIO_DIRECTION_IN,
-                                 DIO_DIRECTION_OUT]
-DIO_LONG_DIRECTION_DICT       = {
-    DIO_DIRECTION_IN: 'input',
-    DIO_DIRECTION_OUT: 'output'
-}
-DIO_SHORT_DIRECTION_DICT       = {
-    DIO_DIRECTION_IN: 'I',
-    DIO_DIRECTION_OUT: 'O'
-}
-DIO_VALID_GROUPS              = [0,1,2,3] #list(range(0,4))
-DIO_VALID_PINS                = list(range(0,8))
-DIO_MODE_DRAIN                = 'open-drain'
-DIO_MODE_SOURCE               = 'source'
-DIO_VALID_MODES               = [DIO_MODE_DRAIN,
-                                 DIO_MODE_SOURCE]
-
-# CMD_RESPONOSE_SUCCESS         = 0x0000     # The last command was processed successfully    
-# CMD_RESPONOSE_INV_DEV         = 0x0001     # The device indicated by the command exceeded the number of devices available to the system
-# CMD_RESPONOSE_UNB_DEV         = 0x0002     # The device targetted exists, but the MCU was unable to attach to and communicate with it
-# CMD_RESPONOSE_DIO_INV_PIN     = 0x0003     # The target pin exceeded the number of inputs or outputs actually present
-# CMD_RESPONOSE_DIO_READ_FAIL   = 0x0004     # Reading the state of the targetted pin failed for an unknown reason
-# CMD_RESPONOSE_DIO_WRITE_FAIL  = 0x0005     # Writing the state of the targetted pin failed for an unknown reason
-# CMD_RESPONOSE_DIO_MODE_UNSUP  = 0x0006     # Setting the DIO mode to push-pull or sink-source is not supported
-# CMD_RESPONOSE_INVALID_CMD     = 0x0007     # The subcommand requested was outside of the valid range for the message kind
-# CMD_RESPONOSE_BAD_MSG_KIND    = 0x0008     # The message kind was not one of Valid Command Kinds
-# CMD_RESPONOSE_VER_READ_FAIL   = 0x0009     # Reading the application version failed for an unknown reason
-
-
+# DIO_VALID_PARAMS              = ['dir', 'group', 'pin', 'value']
+# DIO_DIRECTION_IN              = "in"
+# DIO_DIRECTION_OUT             = "out"
+# DIO_VALID_DIRECTIONS          = [DIO_DIRECTION_IN,
+#                                  DIO_DIRECTION_OUT]
+# DIO_LONG_DIRECTION_DICT       = {
+#     DIO_DIRECTION_IN: 'input',
+#     DIO_DIRECTION_OUT: 'output'
+# }
+# DIO_SHORT_DIRECTION_DICT       = {
+#     DIO_DIRECTION_IN: 'I',
+#     DIO_DIRECTION_OUT: 'O'
+# }
+# DIO_VALID_GROUPS              = [0,1,2,3] #list(range(0,4))
+# DIO_VALID_PINS                = list(range(0,8))
+# DIO_MODE_DRAIN                = 'open-drain'
+# DIO_MODE_SOURCE               = 'source'
+# DIO_VALID_MODES               = [DIO_MODE_DRAIN,
+#                                  DIO_MODE_SOURCE]
 
 def interrupt_handler(signum, frame):
 
-    quit_evt.set()
-
-    # do whatever...
-    # op_gpio_serial.close()
-    time.sleep(1)
     sys.exit(0)
+
 
 class DIOShell(cmd.Cmd):
 
-    prompt = 'Enter DIO Command: '
-    DIO_PORT = '/dev/ttyACM0'
+    DIO_CMDS = ['set', 'get', 'mode', 'edge']
 
-    def __init__(self):
+    HELP_TEXT = """\ndio  set   D{ I | O }_G<group-num>  <pin_num>  { active | inactive }   (Set the logical state of a digital output to active/high or inactive/low)
+dio  get   D{ I | O }_G<group-num>  output  <pin_num>                  (Get the current logical state of a digital input or ouput)
+dio  mode  DO_G<group-num>  { source | open-drain }                    (Set the digital output group to source or sink current)
+dio  mode  DO_G<group-num>                                             (Get the output mode for a digital output group)
+dio  edge  DI_G<group-num>  <pin-num>                                  (Get the number of rising and falling edges detected by a digital input)
+
+   <group-num>: 0-3
+   <pin-num>:   0-7
+
+Notes: commands are case sensitive
+       pin 0 is adjacent the VCC pin\n"""
+
+    def __init__(self, cfg):
+        self.dio_port = cfg['rift-ox-pi']['DIO_PORT']
+        self.prompt = 'Enter DIO Command: '
         super().__init__()
 
     def do_dio(self, arg):
@@ -88,6 +61,19 @@ class DIOShell(cmd.Cmd):
     def do_quit(self, arg):
         pass
 
+    def help_dio(self):
+        print(self.HELP_TEXT)
+
+    def precmd(self, line):
+        words = line.split()
+        if words[0].lower() == 'help':
+            return line
+        if len(words) > 1:
+            if words[1] not in self.DIO_CMDS:
+                print(f'*** Invalid "dio" command: {line}')
+                return ''
+        return line
+    
     # trigger exist of main cmdLoop
     def postcmd(self, stop, line):
         return line.upper() in ['QUIT', 'EXIT']
@@ -100,7 +86,7 @@ class DIOShell(cmd.Cmd):
 
         cmd_bytes: bytes = cmd.encode()
         try:
-            with serial.Serial(self.DIO_PORT) as mcu:
+            with serial.Serial(self.dio_port) as mcu:
                 time.sleep(0.05)
                 mcu.write(b"\r\n")
                 time.sleep(0.05)
@@ -119,7 +105,7 @@ class DIOShell(cmd.Cmd):
                     text = res_array[1]
                 else:
                     text=None
-                    print(f'INVALID RESPONSE')
+                    print(f'RESPONSE INVALID')
 
         except Exception as e:
             print(e)
@@ -130,5 +116,12 @@ if __name__ == "__main__":
 
     signal.signal(signal.SIGINT, interrupt_handler)
 
-    sys.exit(DIOShell().cmdloop())
+    cfg = config.read()
+    if cfg == None:
+        print(f'winmon: ERROR unable to read rift-ox.toml config file. Quitting.')
+        sys.exit(1)
+
+    print(f"\nEnter 'help dio' for help with the dio command syntax.\n")
+
+    sys.exit(DIOShell(cfg).cmdloop())
 
