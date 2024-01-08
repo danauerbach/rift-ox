@@ -108,7 +108,6 @@ def main():
                     
                     if rfm9x.send_with_ack(f'{cmd}'.encode()):
                         print(f"sent & ack'd: {cmd}")
-
                         display.text(f"sent & ack'd: {cmd}", 0, 12, 1)
                     else:
                         print(f"ERROR SENDING: {cmd}")
