@@ -32,6 +32,10 @@ class DIOCommander():
             "group": cfg["rift-ox-pi"]["DIO_LATCH_RELEASE_GROUP"],
             "pin": cfg["rift-ox-pi"]["DIO_LATCH_RELEASE_PIN"]
         }
+        self.KILL33_PIN = {
+            "group": cfg["rift-ox-pi"]["DIO_KILL33_GROUP"],
+            "pin": cfg["rift-ox-pi"]["DIO_KILL33_PIN"]
+        }
         self.PAYOUT1_PIN = {
             "group": cfg["rift-ox-pi"]["DIO_PAYOUT1_SENSOR_GROUP"],
             "pin": cfg["rift-ox-pi"]["DIO_PAYOUT1_SENSOR_PIN"],
@@ -152,6 +156,10 @@ class DIOCommander():
         if stop_after_ms > 0:
             time.sleep(stop_after_ms / 1000)
             self.stop_winch()
+
+    def kill33(self):
+        cmd: str = f'dio set DO_G{self.MOTOR_STOP_PIN["group"]} {self.MOTOR_STOP_PIN["pin"]} low\r'
+        self.issue_command(cmd=cmd)
 
     def get_latch_sensor_state(self) -> Tuple[int, bool]:
 
