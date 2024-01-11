@@ -108,12 +108,13 @@ def main():
                     print("Can't send command, cmd_pubber not connected")
                     display.text(f"cmd_pubber not conn'd", 0, height-10, 1)
                 else:
-                    if pub_winch_cmd(cmd_pubber, cmd_t, packet_str):
-                        print(f"CMD PUB'D: {packet_str}")
-                        display.text(f"CMD PUB'D: {packet_str}", 0, height-10, 1)
-                    else:
-                        print(f"ERR PUBBING CMD: {packet_str}")
-                        display.text(f"ERR PUBBING CMD: {packet_str}", 0, height-10, 1)
+                    if packet_str.upper() in ['GOSCIENCE', 'START']:
+                        if pub_winch_cmd(cmd_pubber, cmd_t, 'START'):
+                            print(f"CMD PUB'D: {packet_str}")
+                            display.text(f"CMD PUB'D: {packet_str}", 0, height-10, 1)
+                        else:
+                            print(f"ERR PUBBING CMD: {packet_str}")
+                            display.text(f"ERR PUBBING CMD: {packet_str}", 0, height-10, 1)
             else:
                 print(f"INV CMD: {packet_str}")
                 display.text(f"INV CMD: {packet_str}", 0, height-10, 1)
