@@ -158,7 +158,7 @@ class DIOCommander():
             self.stop_winch()
 
     def kill33(self):
-        cmd: str = f'dio set DO_G{self.MOTOR_STOP_PIN["group"]} {self.MOTOR_STOP_PIN["pin"]} low\r'
+        cmd: str = f'dio set DO_G{self.KILL33_PIN["group"]} {self.KILL33_PIN["pin"]} high\r'
         self.issue_command(cmd=cmd)
 
     def get_latch_sensor_state(self) -> Tuple[int, bool]:
