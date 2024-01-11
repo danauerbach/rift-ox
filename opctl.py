@@ -7,6 +7,7 @@ import sys
 import time
 
 import config
+from winch.dio_cmds import DIOCommander
 
 
 def interrupt_handler(signum, frame):
@@ -16,7 +17,7 @@ def interrupt_handler(signum, frame):
 
 class DIOShell(cmd.Cmd):
 
-    DIO_CMDS = ['set', 'get', 'mode', 'edge']
+    DIO_CMDS = ['set', 'get', 'mode', 'edge', 'upcast', 'downcast', 'stop', 'unlock', 'lock']
 
     HELP_TEXT = """\ndio  set   D{ I | O }_G<group-num>  <pin_num>  { active | inactive }   (Set the logical state of a digital output to active/high or inactive/low)
 dio  get   D{ I | O }_G<group-num>  output  <pin_num>                  (Get the current logical state of a digital input or ouput)
@@ -24,20 +25,55 @@ dio  mode  DO_G<group-num>  { source | open-drain }                    (Set the 
 dio  mode  DO_G<group-num>                                             (Get the output mode for a digital output group)
 dio  edge  DI_G<group-num>  <pin-num>                                  (Get the number of rising and falling edges detected by a digital input)
 
+where:
    <group-num>: 0-3
    <pin-num>:   0-7
 
-Notes: commands are case sensitive
-       pin 0 is adjacent the VCC pin\n"""
+upcast [ secs ]         (Send upcast winch command. IF 'secs' specified stop winch after 'secs' seconds)
+downcast [ secs ]       (Send downcast winch command. IF 'secs' specified stop winch after 'secs' seconds)
+stop                    (Send stop winch command)
+lock                    (Send latch-release winch command to allow latch solenoid to lock winch)
+unlock                  (Send unlock winch command to hold back the latching solenoid)
+
+Notes: 1) commands are case sensitive
+       2) pin 0 is adjacent the VCC pin\n"""
 
     def __init__(self, cfg):
         self.dio_port = cfg['rift-ox-pi']['DIO_PORT']
         self.prompt = 'Enter DIO Command: '
+        self.cmndr = DIOCommander(cfg)
         super().__init__()
 
     def do_dio(self, arg):
         cmd_s: str = f'dio {arg}'
         self.send_dio_cmd(cmd_s)
+
+    def do_upcast(self, arg):
+        try:
+            dur: float = float(arg)
+        except:
+            print(f'*** Invalid command: upcast {arg}')
+            self.help_dio()
+        else:
+            self.cmndr.up_cast(stop_after_ms=int(dur*1000))
+
+    def do_downcast(self, arg):
+        try:
+            dur: float = float(arg)
+        except:
+            print(f'*** Invalid command: downcast {arg}')
+            self.help_dio()
+        else:
+            self.cmndr.down_cast(stop_after_ms=int(dur*1000))
+
+    def do_stop(self, arg):
+        self.cmndr.stop_winch()
+
+    def do_unlock(self, arg):
+        self.cmndr.latch_hold()
+
+    def do_lock(self, arg):
+        self.cmndr.latch_release()
 
     def do_quit(self, arg):
         pass
@@ -45,13 +81,16 @@ Notes: commands are case sensitive
     def help_dio(self):
         print(self.HELP_TEXT)
 
+    def winch_init(self):
+        self.cmndr.init_dio_pins()
+
     def precmd(self, line):
         words = line.split()
         if words[0].lower() == 'help':
             return line
         if len(words) > 1:
             if words[1] not in self.DIO_CMDS:
-                print(f'*** Invalid "dio" command: {line}')
+                print(f'*** Invalid command: {line}')
                 self.help_dio()
                 return ''
         return line
