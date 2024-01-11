@@ -52,6 +52,7 @@ Notes: commands are case sensitive
         if len(words) > 1:
             if words[1] not in self.DIO_CMDS:
                 print(f'*** Invalid "dio" command: {line}')
+                self.help_dio()
                 return ''
         return line
     
