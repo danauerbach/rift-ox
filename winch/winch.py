@@ -114,6 +114,7 @@ class ParkedState():
         print(f'Can not stop when already {self}')
 
     def start(self):
+        self.winch.cmndr.latch_hold()
         self.winch.cmndr.stage()
         self.winch.set_state(StagingState(self.winch))
 
@@ -134,11 +135,7 @@ class ParkedState():
         print(f'Can not up_stage when {self}')
 
     def park(self):
-        # Handled directly in wincmd loop
         pass
-        # self.winch.set_state(ParkingState(self.winch))
-        # self.winch.cmndr.park()
-        # self.winch.set_state(ParkedState(self.winch))
 
     def __str__(self):
         return WinchStateName.PARKED.value
