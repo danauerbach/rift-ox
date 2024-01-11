@@ -12,31 +12,6 @@ import paho.mqtt.client as mqtt
 from .dio_cmds import DIOCommander
 from . import WinchStateName, WinchDir
 
-# STATE_PARKED_STR = 'parked'
-# STATE_STAGING_STR = 'staging'
-# STATE_STAGED_STR = 'staged'
-# STATE_DOWNCASTING_STR = 'downcasting'
-# STATE_UPCASTING_STR = 'upcasting'
-# STATE_ATLATCH_STR = 'atlatch'
-# STATE_ATMAXDEPTH_STR = 'atmaxdepth'
-# STATE_PARKING_STR = 'parking'
-# STATE_PAUSED_STR = 'paused'
-# STATE_STOPPED_STR = 'stopped'
-# STATE_UNKNOWN_STR = 'unknown'
-
-# parked
-# parking
-# atlatch (aka home)
-# staging
-# staged
-# paused
-# downcasting
-# upcasting
-# atmaxdepth
-# unknown
-
-
-
 
 class WinchState(Protocol):
 
