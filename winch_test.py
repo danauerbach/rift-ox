@@ -24,7 +24,7 @@ def main() -> None:
     parser.add_argument("--to-winch", help="Send commands to RIFT-OX Winch", action="store_true")
     parser.add_argument("--exercise-pin", type=str, 
                         help="cycle specified pin low/high three times",
-                        choices=["stop", "up", "down", "latch", "none"], default="none")
+                        choices=["stop", "upcast", "downcast", "latch", "none"], default="none")
     
     parser.add_argument("--stop-hi", help="set STOP pin HIGH at start of exercising pin", action="store_true")
     parser.add_argument("--up-hi", help="set UP pin HIGH at start of exercising pin", action="store_true")
@@ -33,7 +33,7 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    sim = not args.to_winch
+    # sim = not args.to_winch
     expin = args.exercise_pin
     stophi = args.stop_hi
     uphi = args.up_hi
@@ -46,7 +46,7 @@ def main() -> None:
         print(f'winch_test: ERROR unable to read rift-ox.toml config file. Quitting.')
         sys.exit(1)
 
-    cmndr = DIOCommander(cfg, sim)
+    cmndr = DIOCommander(cfg)
 
     if expin != "none":
 
@@ -84,7 +84,7 @@ def main() -> None:
         return
 
     else:
-        VALID_CMDS = ["down", "up", "stop", "pedgecnt", "ledgecnt", "lrelease", "lhold", "quit"]
+        VALID_CMDS = ["downcast", "upcast", "stop", "pedgecnt", "ledgecnt", "lock", "unlock", "quit"]
     
         done: bool = False
         while not done:
@@ -95,9 +95,9 @@ def main() -> None:
                 print(f'{cmd} is not a valid command.')
                 print(f'Valid commands: {VALID_CMDS}\n')
 
-            if cmd == "down":
+            if cmd == "downcast":
                 cmndr.down_cast()
-            elif cmd =="up":
+            elif cmd =="upcast":
                 cmndr.up_cast()
             elif cmd =="stop":
                 cmndr.stop_winch()
@@ -107,9 +107,9 @@ def main() -> None:
             elif cmd =="ledgecnt":
                 latchcnt = cmndr.get_latch_edge_count()
                 print(f'    LATCH SENSOR EDGE COUNT: {latchcnt}\n')
-            elif cmd =="lrelease":
+            elif cmd =="lock":
                 cmndr.latch_release()
-            elif cmd =="lhold":
+            elif cmd =="unlock":
                 cmndr.latch_hold()
             elif cmd == "quit":
                 done = True
