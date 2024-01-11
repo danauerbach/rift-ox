@@ -121,7 +121,6 @@ class DIOCommander():
 
     def stage(self):
         # fdist let's make sure latch pin is being held...
-        self.latch_hold()
         cmds = [
             f'dio set DO_G{self.UPCAST_PIN["group"]} {self.UPCAST_PIN["pin"]} low\r',
             f'dio set DO_G{self.DOWNCAST_PIN["group"]} {self.DOWNCAST_PIN["pin"]} high\r',
