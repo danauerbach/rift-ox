@@ -88,7 +88,7 @@ Notes: 1) commands are case sensitive
         words = line.split()
         if words[0].lower() == 'help':
             return line
-        if len(words) > 1:
+        if len(words) > 2:
             if words[1] not in self.DIO_CMDS:
                 print(f'*** Invalid command: {line}')
                 self.help_dio()
@@ -122,7 +122,7 @@ Notes: 1) commands are case sensitive
                 res_array = res.split(b'\r\n')
 
                 if res_array:
-                    print(f"RESPONSE: {res_array[1].decode()}")
+                    # print(f"RESPONSE: {res_array[1].decode()}")
                     text = res_array[1]
                 else:
                     text=None
