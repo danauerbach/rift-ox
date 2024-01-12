@@ -329,6 +329,10 @@ class MaxDepthState():
 
     def up_cast(self):
         self.winch.cmndr.kill33()
+        #TODO Is this enough?
+        #TODO Do we need to change the config of the CTD?
+        #TODO Want the CTD to save upcast data internally
+        #TODO AND bottles to fire upon upcast winch pauses
         time.sleep(1)
         self.winch.cmndr.up_cast()
         self.winch.set_state(UpcastingState(self.winch))
