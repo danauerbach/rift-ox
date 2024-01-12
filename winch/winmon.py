@@ -122,10 +122,13 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
             last_state = cur_state
             cur_state = winch_status["state"]
 
+            # heading up from bottom, lets reread pause_depths...
             if (last_state == WinchStateName.MAXDEPTH.value) and \
                 (cur_state == WinchStateName.UPCASTING.value):
-                # heading up from bottom, lets reread pause_depths...
                 pause_depths.refresh()
+                #TODO KILL33
+
+
                 
         data_dict = {}
         try:
