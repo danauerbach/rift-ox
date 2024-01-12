@@ -38,7 +38,7 @@ class WinchCmd(Enum):
     WINCH_CMD_UPCAST =            'UP-CAST'                 # Start upcast (from any state except HomeState)
     WINCH_CMD_UPSTAGE =           'UP-STAGE'                 # Start upcast (from any state except HomeState)
     WINCH_CMD_PARK =              'PARK'                     # go up past latch and down a little bit and release latch and drop down a little
-    WINCH_CMD_SETSTATE =          'SET-STATE'
+    WINCH_CMD_KILL33 =            'KILL33'            # this will disable the inverter powering the SBE-33 desk unit to shit it down.
 
 WINCH_CMD_LIST = {
     WinchCmd.WINCH_CMD_START.value, \
@@ -49,7 +49,7 @@ WINCH_CMD_LIST = {
     WinchCmd.WINCH_CMD_UPCAST.value, \
     WinchCmd.WINCH_CMD_UPSTAGE.value, \
     WinchCmd.WINCH_CMD_PARK.value, \
-    WinchCmd.WINCH_CMD_SETSTATE.value
+    WinchCmd.WINCH_CMD_KILL33.value
 }
 
 # # Orange Pi DIO
