@@ -586,9 +586,9 @@ class Winch:
         # presumably we are on the LATCH now. drop a fraction of a sec (an inch or two)
         print(f'PARKING: RELEASING LATCH')
         self.cmndr.latch_release()
-        time.sleep(1) # REMOVE AFTER TESTING
-        print(f'PARKING: DOWNCASTING FOR {self.cmndr.cfg["winch"]["PARKING_DOWNCAST_MS"]}ms')
-        self.cmndr.down_cast(stop_after_ms=int(self.cmndr.cfg["winch"]["PARKING_DOWNCAST_MS"]))
+        # time.sleep(1) # REMOVE AFTER TESTING
+        # print(f'PARKING: DOWNCASTING FOR {self.cmndr.cfg["winch"]["PARKING_DOWNCAST_MS"]}ms')
+        # self.cmndr.down_cast(stop_after_ms=int(self.cmndr.cfg["winch"]["PARKING_DOWNCAST_MS"]))
         self.cmndr.stop_winch()
 
     def set_state(self, state: WinchState):
