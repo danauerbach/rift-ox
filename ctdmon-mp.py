@@ -111,43 +111,6 @@ class SBE33SerialDataPort():
 
         # self.last_command : str = ''
 
-    # def init_comms(self):
-
-    #     if self.ctd_status[self.CTD_STATE] == self.CTD_STATE_UNKNOWN
-    #     self.enqueue_command('', '\r\n')
-    #     # while self.ctd_status[self.CTD_ACTIVE_DEVICE] not in [
-    #     #   self.CTD_ACTIVE_DEVICE_SBE33,
-    #     #   self.CTD_ACTIVE_DEVICE_SBE19PlusV2]:
-    #     #     time.sleep(0.25)
-    #     # time.sleep(3)
-
-    #     self.ctd_status[self.CTD_ACTIVE_DEVICE] = self.CTD_ACTIVE_DEVICE_SBE19PlusV2
-    #     self.ctd_status[self.CTD_STATE] = self.CTD_STATE_ACQUIRING_DATA
-    #     # if self.ctd_status[self.CTD_STATE] == self.CTD_STATE_ACQUIRING_DATA:
-    #     #     self.ctd_status[self.CTD_ACTIVE_DEVICE] = self.CTD_ACTIVE_DEVICE_SBE19PlusV2
-
-    #     # while self.ctd_status[self.CTD_ACTIVE_DEVICE] in [self.CTD_ACTIVE_DEVICE_UNK]:
-    #     #     time.sleep(0.25)
-
-    #     if self.ctd_status[self.CTD_ACTIVE_DEVICE] == self.CTD_ACTIVE_DEVICE_SBE19PlusV2:
-    #         self.toggle_sbe33_menu()
-    #         while self.ctd_status[self.CTD_ACTIVE_DEVICE] != self.CTD_ACTIVE_DEVICE_SBE33:
-    #             time.sleep(0.25)
-
-    #     if self.ctd_status[self.CTD_ACTIVE_DEVICE] == self.CTD_ACTIVE_DEVICE_SBE33:
-    #         if self.sbe33_mode != 2:
-    #             self.enqueue_command('2', eol='\n')
-
-    #     self.toggle_sbe33_menu() # go back to CTD
-
-    #     while self.ctd_status[self.CTD_ACTIVE_DEVICE] in [self.CTD_ACTIVE_DEVICE_SBE33]:
-    #         time.sleep(0.25)
-    #     # now get current CTD config
-    #     self.enqueue_command('getcd', '\r')
-
-    #     print('initcommands has run')
-
-
     def toggle_sbe33_menu(self):
 
         if self.ctd_status[self.CTD_ACTIVE_DEVICE] != self.CTD_ACTIVE_DEVICE_SBE33:
