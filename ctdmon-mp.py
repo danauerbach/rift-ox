@@ -370,7 +370,7 @@ class SBE33SerialDataPort():
             for cmd in cmdlist:
                 cmd += eol
                 ba = bytearray()
-                ba.extend(cmd.encode())
+                ba.extend(cmd)
                 self.cmd_q.put(ba)
                 # print(f'Command enqueued: [{ba}]')
 
