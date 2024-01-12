@@ -370,7 +370,7 @@ class SBE33SerialDataPort():
             for cmd in cmdlist:
                 cmd += eol
                 ba = bytearray()
-                ba.extend(cmd)
+                ba.extend(cmd.encode())
                 self.cmd_q.put(ba)
                 # print(f'Command enqueued: [{ba}]')
 
@@ -431,11 +431,11 @@ class SBE33SerialDataPort():
         print('serial port write thread shutting down...')
 
     
-    def send_command(self, cmd : str):
+    def send_command(self, cmd : bytes):
 
         try:
             self.lock.acquire()
-            self.ser_port.write(cmd.encode())
+            self.ser_port.write(cmd)
             self.ser_port.flush()
             self.lock.release()
             print(f'Command sent                   : [{cmd}]')
