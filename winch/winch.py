@@ -587,8 +587,8 @@ class Winch:
         print(f'PARKING: RELEASING LATCH')
         self.cmndr.latch_release()
         # time.sleep(1) # REMOVE AFTER TESTING
-        # print(f'PARKING: DOWNCASTING FOR {self.cmndr.cfg["winch"]["PARKING_DOWNCAST_MS"]}ms')
-        # self.cmndr.down_cast(stop_after_ms=int(self.cmndr.cfg["winch"]["PARKING_DOWNCAST_MS"]))
+        print(f'PARKING: DOWNCASTING FOR {self.cmndr.cfg["winch"]["PARKING_DOWNCAST_MS"]}ms')
+        self.cmndr.down_cast(stop_after_ms=int(self.cmndr.cfg["winch"]["PARKING_DOWNCAST_MS"]))
         self.cmndr.stop_winch()
 
     def set_state(self, state: WinchState):
@@ -632,8 +632,8 @@ class Winch:
 
         # assumes 5.25in radius sheave/wheel
         cable_radius_inches = self.cmndr.cfg["winch"]["SEA_CABLE_DIAMETER_INCH"] / 2.0
-        dist_down: float = (self.down_edges / 12) * 2 * pi * (5.25 + cable_radius_inches) / 39.37008
-        dist_up: float = (self.up_edges / 12) * 2 * pi * (5.25 + cable_radius_inches) / 39.37008
+        dist_down: float = (self.down_edges / 12) * 2 * pi * (self.cmndr.cfg["winch"]["SHEAVE_RADIUS_INCH"] + cable_radius_inches) / 39.37008
+        dist_up: float = (self.up_edges / 12) * 2 * pi * (self.cmndr.cfg["winch"]["SHEAVE_RADIUS_INCH"] + cable_radius_inches) / 39.37008
         return dist_down - dist_up
 
     def status(self) -> Tuple[dict, bool]:
