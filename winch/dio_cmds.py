@@ -204,13 +204,27 @@ class DIOCommander():
         up_pin_query = f'dio get DO_G{self.UPCAST_PIN["group"]} output {self.UPCAST_PIN["pin"]}\r'
         down_pin_query = f'dio get DO_G{self.DOWNCAST_PIN["group"]} output {self.DOWNCAST_PIN["pin"]}\r'
         stop_pin_query = f'dio get DO_G{self.MOTOR_STOP_PIN["group"]} output {self.MOTOR_STOP_PIN["pin"]}\r'
+        # stop_active = stop_pin_state == "1"
+        # down_active = down_pin_state == "1"
+        # up_active = up_pin_state == "1"
+
+        stop_pin_state, err = self.issue_command(stop_pin_query)
+        print(f'stop_pin_state: {stop_pin_state}')
+        if not err and stop_pin_state.isdigit():
+            stop_active = bool(int(stop_pin_state))
+        else:
+            return WinchDir.DIRECTION_NONE.value, True
+        print(f'stop_active: {stop_active}')
+
+        if stop_active:
+            return WinchDir.DIRECTION_NONE.value, False
 
         up_pin_state, err = self.issue_command(up_pin_query)
         print(f'up_pin_state: {up_pin_state}')
         if not err and up_pin_state.isdigit():
             up_active = bool(int(up_pin_state))
         else:
-            res = True
+            return WinchDir.DIRECTION_NONE.value, True
         print(f'up_active: {up_active}')
 
         down_pin_state, err = self.issue_command(down_pin_query)
@@ -218,25 +232,8 @@ class DIOCommander():
         if not err and down_pin_state.isdigit():
             down_active = bool(int(down_pin_state))
         else:
-            res = True
+            return WinchDir.DIRECTION_NONE.value, True
         print(f'down_active: {down_active}')
-
-        stop_pin_state, err = self.issue_command(stop_pin_query)
-        print(f'stop_pin_state: {stop_pin_state}')
-        if not err and stop_pin_state.isdigit():
-            stop_active = bool(int(stop_pin_state))
-        else:
-            res = True
-        print(f'stop_active: {stop_active}')
-
-        if res:
-            return WinchDir.DIRECTION_NONE.value, res
-
-        # stop_active = stop_pin_state == "1"
-        # down_active = down_pin_state == "1"
-        # up_active = up_pin_state == "1"
-        if stop_active:
-            return WinchDir.DIRECTION_NONE.value, res
 
         # stop not active...
         if up_active and not down_active: return WinchDir.DIRECTION_UP.value, res
