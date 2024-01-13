@@ -10,9 +10,9 @@ from . import  WinchDir
 class DIOCommander():
 
     def __init__(self, cfg: dict):
-        self.cfg = cfg
-        self.dio_tty_port = cfg["rift-ox-pi"]["DIO_PORT"]
-        self.simulation = cfg["rift-ox-pi"]["SIMULATION"]
+        self.cfg: dict = cfg
+        self.dio_tty_port: str = cfg["rift-ox-pi"]["DIO_PORT"]
+        self.simulation: bool = cfg["rift-ox-pi"]["SIMULATION"]
 
         print(f"SIMULATION: {self.simulation}")
 
