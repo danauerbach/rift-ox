@@ -154,7 +154,7 @@ class DIOCommander():
 
     def get_latch_sensor_state(self) -> Tuple[int, bool]:
 
-        cmd = f'dio get DI_G{self.LATCH_SENSOR_PIN["group"]}\r'
+        cmd = f'dio get DI_G{self.LATCH_SENSOR_PIN["group"]} input {self.LATCH_SENSOR_PIN["pin"]}\r'
         result, err = self.issue_command(cmd=cmd)
         if self.simulation:  # SIMULATION: fake latch LOW signal
             result = 0
@@ -178,22 +178,22 @@ class DIOCommander():
         payout_2: str = ''
         p1: int = 0
         p2: int = 0
-        res: bool = False
+
         cmd = f'dio edge DI_G{self.PAYOUT1_PIN["group"]} {self.PAYOUT1_PIN["pin"]}\r'
         payout_1, err = self.issue_command(cmd=cmd)
         if not err and payout_1.isdigit():
             p1 = int(payout_1)
         else:
-            res = True
+            return [0, 0], True
 
         cmd = f'dio edge DI_G{self.PAYOUT2_PIN["group"]} {self.PAYOUT2_PIN["pin"]}\r'
         payout_2, err = self.issue_command(cmd=cmd)
         if not err and payout_2.isdigit():
             p2 = int(payout_2)
         else:
-            res = True
+            return [0, 0], True
 
-        return [p1, p2], res
+        return [p1, p2], False
 
     def get_winch_direction(self) -> Tuple[str, bool]:
         err: bool = False
