@@ -55,7 +55,7 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
     def get_winch_status(q: queue.Queue) -> Tuple[dict, bool]:
         status: dict
         try:
-            status = q.get()
+            status = q.get(block=True, timeout=0.1)
         except queue.Empty as em:
             return {}, True
         else:
