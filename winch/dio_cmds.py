@@ -283,7 +283,7 @@ class DIOCommander():
                 # print(f"RESPONSE: {res_array}")
                 if res_array:
                     # print(f'DIO RESPONSE: {res_array}')
-                    print(f"DIO RESPONSE: {res_array[1].decode()}")
+                    # print(f"DIO RESPONSE: {res_array[1].decode()}")
                     result = res_array[1].decode()
                     #TODO LOG INFO
                 else:
