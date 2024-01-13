@@ -101,11 +101,11 @@ def wincmd_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
         status, err = share_new_winch_status(winch, Path("payouts"))
         if err:
             print(f'winctl:winmon: ERROR getting winch status')
-
-        if status['state'] != last_winch_state:
-            last_winch_state = status['state']
-            state_json = json.dumps(status)
-            print(f'winctl:winmon: WINCH STATE: {state_json}')
+        else:
+            if status['state'] != last_winch_state:
+                last_winch_state = status['state']
+                state_json = json.dumps(status)
+                print(f'winctl:winmon: WINCH STATE: {state_json}')
 
         cmd_msg = ""
         try:
