@@ -18,7 +18,7 @@ def interrupt_handler(signum, frame):
 class DIOShell(cmd.Cmd):
 
     DIO_CMDS = ['set', 'get', 'mode', 'edge']
-    RIFT_OX_CMNDS = ['upcast', 'downcast', 'stop', 'unlock', 'lock']
+    RIFT_OX_CMNDS = ['upcast', 'downcast', 'stop', 'unlock', 'lock', 'quit']
 
     HELP_TEXT = """\ndio  set   D{ I | O }_G<group-num>  <pin_num>  { active | inactive }   (Set the logical state of a digital output to active/high or inactive/low)
 dio  get   D{ I | O }_G<group-num>  output  <pin_num>                  (Get the current logical state of a digital input or ouput)
@@ -89,7 +89,7 @@ Notes: 1) commands are case sensitive
 
     def precmd(self, line):
         words = line.split()
-        if words[0].lower() == 'help':
+        if words[0].lower() in 'help':
             return line
         elif words[0].lower() == 'dio':
             if len(words) > 2:
