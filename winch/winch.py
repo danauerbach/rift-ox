@@ -516,6 +516,9 @@ class Winch:
         self.pausemon_pub.connect(mqtt_host, mqtt_port)
         self.pausemon_pub.loop_start()
 
+        print(f"SEA_CABLE_DIAMETER: {self.cmndr.cfg['winch']['SEA_CABLE_DIAMETER_INCH']}")
+        print(f"SHEAVE_RADIUS_INCH: {self.cmndr.cfg['winch']['SHEAVE_RADIUS_INCH']}")
+
     def stop(self):
         self.state.stop()
 
