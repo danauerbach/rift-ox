@@ -17,7 +17,8 @@ def interrupt_handler(signum, frame):
 
 class DIOShell(cmd.Cmd):
 
-    DIO_CMDS = ['set', 'get', 'mode', 'edge', 'upcast', 'downcast', 'stop', 'unlock', 'lock']
+    DIO_CMDS = ['set', 'get', 'mode', 'edge']
+    RIFT_OX_CMNDS = ['upcast', 'downcast', 'stop', 'unlock', 'lock']
 
     HELP_TEXT = """\ndio  set   D{ I | O }_G<group-num>  <pin_num>  { active | inactive }   (Set the logical state of a digital output to active/high or inactive/low)
 dio  get   D{ I | O }_G<group-num>  output  <pin_num>                  (Get the current logical state of a digital input or ouput)
@@ -90,11 +91,21 @@ Notes: 1) commands are case sensitive
         words = line.split()
         if words[0].lower() == 'help':
             return line
-        if (len(words) > 2) and (words[0] == 'dio'):
-            if words[1] not in self.DIO_CMDS:
+        elif words[0].lower() == 'dio':
+            if len(words) > 2:
+                if words[1] not in self.DIO_CMDS:
+                    print(f'*** Invalid command: {line}')
+                    self.help_dio()
+                    return ''
+            else:
                 print(f'*** Invalid command: {line}')
                 self.help_dio()
                 return ''
+        elif words[0].lower() not in self.RIFT_OX_CMNDS:
+            print(f'*** Invalid command: {line}')
+            self.help_dio()
+            return ''
+
         return line
     
     # trigger exist of main cmdLoop
