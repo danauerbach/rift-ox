@@ -45,7 +45,7 @@ Notes: 1) commands are case sensitive
         super().__init__()
 
     def do_dio(self, arg):
-        cmd_s: str = f'dio {arg}'
+        cmd_s: str = f'dio {arg}\r'
         self.send_dio_cmd(cmd_s)
 
     def do_upcast(self, arg):
