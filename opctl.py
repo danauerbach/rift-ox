@@ -30,11 +30,11 @@ where:
    <group-num>: 0-3
    <pin-num>:   0-7
 
-upcast [ secs ]         (Send upcast winch command. IF 'secs' specified stop winch after 'secs' seconds)
-downcast [ secs ]       (Send downcast winch command. IF 'secs' specified stop winch after 'secs' seconds)
-stop                    (Send stop winch command)
-lock                    (Send latch-release winch command to allow latch solenoid to lock winch)
-unlock                  (Send unlock winch command to hold back the latching solenoid)
+upcast [ secs ]     : Send upcast winch command. IF 'secs' specified stop winch after 'secs' seconds
+downcast [ secs ]   : Send downcast winch command. IF 'secs' specified stop winch after 'secs' seconds
+stop                : Send stop winch command
+lock                : Release the latch solenoid to prevent the cable bullet from downcasting
+unlock              : Hold the latch solenoid to allow the cable bullet to downcast
 
 Notes: 1) commands are case sensitive
        2) pin 0 is adjacent the VCC pin\n"""
@@ -83,6 +83,21 @@ Notes: 1) commands are case sensitive
 
     def help_dio(self):
         print(self.HELP_TEXT)
+
+    def help_upcast(self):
+        print("upcast [ secs ]  : Send upcast winch command. IF 'secs' specified stop winch after 'secs' seconds")
+
+    def help_downcast(self):
+        print("downcast [ secs ]  : Send downcast winch command. IF 'secs' specified stop winch after 'secs' seconds")
+
+    def help_stop(self):
+        print("stop                    (Send stop winch command)")
+
+    def help_unlock(self):
+        print("Hold the latch solenoid to allow the cable bullet to downcast")
+
+    def help_lock(self):
+        print("Release the latch solenoid to prevent the cable bullet from downcasting")
 
     def winch_init(self):
         self.cmndr.init_dio_pins()
