@@ -189,6 +189,7 @@ class DIOCommander():
 
         cmd = f'dio edge DI_G{self.PAYOUT2_PIN["group"]} {self.PAYOUT2_PIN["pin"]}\r'
         payout_2, err = self.issue_command(cmd=cmd)
+        print(f'payout2: {payout_2}, err: {err}')
         if not err and payout_2.isdigit():
             p2 = int(payout_2)
         else:
@@ -214,8 +215,8 @@ class DIOCommander():
         if not err and stop_pin_state.isdigit():
             stop_active = bool(int(stop_pin_state))
         else:
+            print(f'dio_mnds:get-winch_dir: ERROR querying stop_pin state')
             return WinchDir.DIRECTION_NONE.value, True
-        print(f'stop_active: {stop_active}')
 
         if stop_active:
             return WinchDir.DIRECTION_NONE.value, False
@@ -225,23 +226,23 @@ class DIOCommander():
         if not err and up_pin_state.isdigit():
             up_active = bool(int(up_pin_state))
         else:
+            print(f'dio_mnds:get-winch_dir: ERROR querying up_pin state')
             return WinchDir.DIRECTION_NONE.value, True
-        print(f'up_active: {up_active}')
 
         down_pin_state, err = self.issue_command(down_pin_query)
         print(f'down_pin_state: {down_pin_state}')
         if not err and down_pin_state.isdigit():
             down_active = bool(int(down_pin_state))
         else:
+            print(f'dio_mnds:get-winch_dir: ERROR querying down_pin state')
             return WinchDir.DIRECTION_NONE.value, True
-        print(f'down_active: {down_active}')
 
         # stop not active...
-        if up_active and not down_active: return WinchDir.DIRECTION_UP.value, res
-        if not up_active and down_active: return WinchDir.DIRECTION_DOWN.value, res
+        if up_active and not down_active: return WinchDir.DIRECTION_UP.value, False
+        if not up_active and down_active: return WinchDir.DIRECTION_DOWN.value, False
         
         # either both direction lines HIGH or both LOW, either way winch not moving.
-        return WinchDir.DIRECTION_NONE.value, res
+        return WinchDir.DIRECTION_NONE.value, False
 
     def issue_command(self, cmd : str) -> Tuple[str, bool]:
 
