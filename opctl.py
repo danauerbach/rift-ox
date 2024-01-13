@@ -46,7 +46,9 @@ Notes: 1) commands are case sensitive
 
     def do_dio(self, arg):
         cmd_s: str = f'dio {arg}\r'
-        self.send_dio_cmd(cmd_s)
+        # self.send_dio_cmd(cmd_s)
+        resp, err = self.cmndr.issue_command(cmd_s)
+        print(f'DIO RESPONSE: {resp} (err: {err})')
 
     def do_upcast(self, arg):
         try:
