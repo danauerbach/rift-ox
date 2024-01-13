@@ -208,7 +208,7 @@ class DIOCommander():
         up_pin_state, err = self.issue_command(up_pin_query)
         print(f'up_pin_state: {up_pin_state}')
         if not err and up_pin_state.isdigit():
-            up_active = not bool(int(up_pin_state))  # "1" is active but in python 0 == True
+            up_active = bool(int(up_pin_state))
         else:
             res = True
         print(f'up_active: {up_active}')
@@ -216,7 +216,7 @@ class DIOCommander():
         down_pin_state, err = self.issue_command(down_pin_query)
         print(f'down_pin_state: {down_pin_state}')
         if not err and down_pin_state.isdigit():
-            down_active = not bool(int(down_pin_state))
+            down_active = bool(int(down_pin_state))
         else:
             res = True
         print(f'down_active: {down_active}')
@@ -224,7 +224,7 @@ class DIOCommander():
         stop_pin_state, err = self.issue_command(stop_pin_query)
         print(f'stop_pin_state: {stop_pin_state}')
         if not err and stop_pin_state.isdigit():
-            stop_active = not bool(int(stop_pin_state))
+            stop_active = bool(int(stop_pin_state))
         else:
             res = True
         print(f'stop_active: {stop_active}')
