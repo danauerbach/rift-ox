@@ -652,6 +652,8 @@ class Winch:
         cable_radius_inches = self.cmndr.cfg["winch"]["SEA_CABLE_DIAMETER_INCH"] / 2.0
         dist_down: float = (self.down_edges / 12) * 2 * pi * (self.cmndr.cfg["winch"]["SHEAVE_RADIUS_INCH"] + cable_radius_inches) / 39.37008
         dist_up: float = (self.up_edges / 12) * 2 * pi * (self.cmndr.cfg["winch"]["SHEAVE_RADIUS_INCH"] + cable_radius_inches) / 39.37008
+        print(f'cable radius {cable_radius_inches}; SHEAVE_RADIUS {self.cmndr.cfg["winch"]["SHEAVE_RADIUS_INCH"]}; downedges: {self.down_edges}; upedges: {self.up_edges}')
+        print(f'down depth: {dist_down};  up depth: {dist_up}')
         return dist_down - dist_up
 
     def status(self) -> Tuple[dict, bool]:
