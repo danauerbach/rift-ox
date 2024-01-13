@@ -88,7 +88,7 @@ Notes: 1) commands are case sensitive
         words = line.split()
         if words[0].lower() == 'help':
             return line
-        if len(words) > 2:
+        if (len(words) > 2) and (words[0] == 'dio'):
             if words[1] not in self.DIO_CMDS:
                 print(f'*** Invalid command: {line}')
                 self.help_dio()
