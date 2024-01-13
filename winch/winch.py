@@ -89,9 +89,9 @@ class ParkedState():
         print(f'Can not stop when already {self}')
 
     def start(self):
-        self.winch.cmndr.up_cast(stop_after_ms=0.5)
+        self.winch.cmndr.up_cast(stop_after_ms=500)
         self.winch.cmndr.latch_hold()
-        self.winch.cmndr.down_cast(stop_after_ms=1)
+        self.winch.cmndr.down_cast(stop_after_ms=1000)
         self.winch.cmndr.stage()
         self.winch.set_state(StagingState(self.winch))
 
