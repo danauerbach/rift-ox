@@ -64,7 +64,7 @@ class DIOCommander():
         ]
         for command in cmds:
             self.issue_command(cmd=command)
-            time.sleep(0.03)
+            # time.sleep(0.01)
 
     def pin_low(self, pin: str):
         cmd: str = ''
@@ -101,23 +101,15 @@ class DIOCommander():
         ]
         for cmd in cmds:
             self.issue_command(cmd=cmd)
-            time.sleep(0.03)
+            # time.sleep(0.03)
 
     def latch_release(self):
-        cmds = [
-            f'dio set DO_G{self.LATCH_RELEASE_PIN["group"]} {self.LATCH_RELEASE_PIN["pin"]} low\r',
-        ]
-        for cmd in cmds:
-            self.issue_command(cmd=cmd)
-            time.sleep(0.03)
+        cmd = f'dio set DO_G{self.LATCH_RELEASE_PIN["group"]} {self.LATCH_RELEASE_PIN["pin"]} low\r'
+        self.issue_command(cmd=cmd)
 
     def latch_hold(self):
-        cmds = [
-            f'dio set DO_G{self.LATCH_RELEASE_PIN["group"]} {self.LATCH_RELEASE_PIN["pin"]} high\r',
-        ]
-        for cmd in cmds:
-            self.issue_command(cmd=cmd)
-            time.sleep(0.03)
+        cmd = f'dio set DO_G{self.LATCH_RELEASE_PIN["group"]} {self.LATCH_RELEASE_PIN["pin"]} high\r'
+        self.issue_command(cmd=cmd)
 
     def stage(self):
         # fdist let's make sure latch pin is being held...
@@ -128,7 +120,7 @@ class DIOCommander():
         ]
         for cmd in cmds:
             self.issue_command(cmd=cmd)
-            time.sleep(0.03)
+            # time.sleep(0.03)
 
     def down_cast(self, stop_after_ms: int =0):
         cmds = [
@@ -138,7 +130,7 @@ class DIOCommander():
         ]
         for cmd in cmds:
             self.issue_command(cmd=cmd)
-            time.sleep(0.03)
+            # time.sleep(0.03)
         if stop_after_ms > 0:
             time.sleep(stop_after_ms / 1000)
             self.stop_winch()
@@ -151,7 +143,7 @@ class DIOCommander():
         ]
         for cmd in cmds:
             self.issue_command(cmd=cmd)
-            time.sleep(0.03)
+            # time.sleep(0.03)
         if stop_after_ms > 0:
             time.sleep(stop_after_ms / 1000)
             self.stop_winch()
