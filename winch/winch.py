@@ -133,6 +133,7 @@ class StagingState():
         self.winch.pausemon_pub.publish(self.winch.pause_t, \
                                         "pause".encode(), qos=2)
         self.winch.cmndr.stop_winch()
+        self.winch.cmndr.latch_release()
         self.winch.set_state(DownStagedState(self.winch)) 
         #TODO Need to send CMD to start ctdmon data acq (initlogging, etc)
 
@@ -220,6 +221,10 @@ class UpStagedState():
         #TODO send cmd to stop data acq in ctdmon
         if not self.winch.cmndr.cfg['winch']['NO_PARKING']:
             self.winch.set_state(ParkingState(self.winch))
+            # winch moving at ~ 2/3 meter per sec. Upcast for STGAING_DEPTH secs
+            # to get most of the way back to the winch latch
+            # park() takes it the rest of the way in small/short moves
+            self.winch.cmndr.up_cast(stop_after_ms=int(self.winch.cmndr.cfg['winch']['STAGING_DEPTH']))
             self.winch.park()
             self.winch.set_state(ParkedState(self.winch))
         else:
@@ -559,13 +564,12 @@ class Winch:
             return
 
         new_latch_edge_count = start_latch_edge_cnt
-        print(f'PARKING: LATCH EDGE CNT: {start_latch_edge_cnt}')
+        print(f'PARKING: EDGE CNT: starting: {start_latch_edge_cnt}; now: {new_latch_edge_count}')
     
-        print(f'PARKING: UP CASTING')
-        self.cmndr.up_cast() #### NOT SURE THIS IS A GOOD IDEA
         latch_found = (new_latch_edge_count > start_latch_edge_cnt)
-        print(f'PARKING: LATCH FOUND - INITIAL: {latch_found}')
+        print(f'PARKING: LATCH FOUND? - INITIAL: {latch_found}')
         while not latch_found:
+
             # check fr new LATCH edge count
             new_latch_edge_count, err = self.get_latch_edge_count()
             print(f'PARKING: NEW LATCH EDGE CNT: {new_latch_edge_count}')
@@ -573,23 +577,27 @@ class Winch:
                 self.cmndr.stop_winch() #### NOT SURE THIS IS A GOOD IDEA
                 print('PARKING UNABLE to get LATCH SENSOR state when PARKING')
                 return
+            
             latch_found = new_latch_edge_count > start_latch_edge_cnt
-            print(f'PARKING: LATCH FOUND - LOOP: {latch_found}')
+            print(f'PARKING: LATCH FOUND? - LOOP: {latch_found}')
+            if latch_found:
+                break
 
+            print(f'PARKING: UP CASTING')
+            self.cmndr.up_cast(int(self.cmndr.cfg["winch"]["PARKING_UPCAST_INC_MS"]))
             # need a pretty fast loop here while up_casting
-            time.sleep(0.05)    
+            time.sleep(1)    
 
+        self.cmndr.stop_winch()
         print(f'PARKING: LATCH FOUND: {latch_found}')
         print(f'PARKING: STOPPING WINCH')
         # latch has been found
-        self.cmndr.stop_winch()
         # presumably we are on the LATCH now. drop a fraction of a sec (an inch or two)
         print(f'PARKING: RELEASING LATCH')
         self.cmndr.latch_release()
-        # time.sleep(1) # REMOVE AFTER TESTING
+        time.sleep(1)
         print(f'PARKING: DOWNCASTING FOR {self.cmndr.cfg["winch"]["PARKING_DOWNCAST_MS"]}ms')
         self.cmndr.down_cast(stop_after_ms=int(self.cmndr.cfg["winch"]["PARKING_DOWNCAST_MS"]))
-        self.cmndr.stop_winch()
 
     def set_state(self, state: WinchState):
         if self.cmndr.simulation:
