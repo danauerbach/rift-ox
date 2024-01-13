@@ -137,10 +137,10 @@ class StagingState():
         print(f'Can not down-cast when {self}')
 
     def pause(self):
-        self.winch.pausemon_pub.publish(self.winch.pause_t, \
-                                        "pause".encode(), qos=2)
         self.winch.cmndr.stop_winch()
         self.winch.cmndr.latch_release()
+        self.winch.pausemon_pub.publish(self.winch.pause_t, \
+                                        "pause".encode(), qos=2)
         self.winch.set_state(DownStagedState(self.winch)) 
         #TODO Need to send CMD to start ctdmon data acq (initlogging, etc)
 
@@ -258,15 +258,15 @@ class DowncastingState():
         print(f'Can not downcast when {self}.')
 
     def pause(self):
+        self.winch.cmndr.stop_winch()
         self.winch.pausemon_pub.publish(self.winch.pause_t, \
                                         "pause".encode(), qos=2)
-        self.winch.cmndr.stop_winch()
         self.winch.set_state(DownPausedState(self.winch))        
 
     def stop_at_bottom(self):
+        self.winch.cmndr.stop_winch()
         self.winch.pausemon_pub.publish(self.winch.pause_t, \
                                         "pause".encode(), qos=2)
-        self.winch.cmndr.stop_winch()
         self.winch.set_state(MaxDepthState(self.winch))
 
     def up_cast(self):
@@ -296,9 +296,9 @@ class UpcastingState():
         print(f'Can not downcast when {self}.')
 
     def pause(self):
+        self.winch.cmndr.stop_winch()
         self.winch.pausemon_pub.publish(self.winch.pause_t, \
                                         "pause".encode(), qos=2)
-        self.winch.cmndr.stop_winch()
         self.winch.set_state(UpPausedState(self.winch))        
 
     def stop_at_bottom(self):
@@ -308,9 +308,9 @@ class UpcastingState():
         print(f'Can not upcast when {self}')
 
     def up_stage(self):
+        self.winch.cmndr.stop_winch()
         self.winch.pausemon_pub.publish(self.winch.pause_t, \
                                         "pause".encode(), qos=2)
-        self.winch.cmndr.stop_winch()
         self.winch.set_state(UpStagedState(self.winch))        
 
     def park(self):
@@ -576,17 +576,16 @@ class Winch:
         new_latch_edge_count = start_latch_edge_cnt
         print(f'PARKING: EDGE CNT: starting: {start_latch_edge_cnt}; now: {new_latch_edge_count}')
     
-        latch_found = (new_latch_edge_count > start_latch_edge_cnt)
-        print(f'PARKING: LATCH FOUND? - INITIAL: {latch_found}')
-        while not latch_found:
+        latch_found: bool = new_latch_edge_count > start_latch_edge_cnt
+        while not (latch_found):
 
             # check fr new LATCH edge count
             new_latch_edge_count, err = self.get_latch_edge_count()
-            print(f'PARKING: NEW LATCH EDGE CNT: {new_latch_edge_count}')
             if err:
                 self.cmndr.stop_winch() #### NOT SURE THIS IS A GOOD IDEA
                 print('PARKING UNABLE to get LATCH SENSOR state when PARKING')
                 return
+            print(f'PARKING: NEW LATCH EDGE CNT: {new_latch_edge_count}')
             
             latch_found = new_latch_edge_count > start_latch_edge_cnt
             print(f'PARKING: LATCH FOUND? - LOOP: {latch_found}')
@@ -602,10 +601,11 @@ class Winch:
         print(f'PARKING: LATCH FOUND: {latch_found}')
         print(f'PARKING: STOPPING WINCH')
         # latch has been found
-        # presumably we are on the LATCH now. drop a fraction of a sec (an inch or two)
+        # presumably we are above the LATCH now.
         print(f'PARKING: RELEASING LATCH')
         self.cmndr.latch_release()
         time.sleep(1)
+        # drop a fraction of a sec (an inch or two) so bullet rests on latch
         print(f'PARKING: DOWNCASTING FOR {self.cmndr.cfg["winch"]["PARKING_DOWNCAST_MS"]}ms')
         self.cmndr.down_cast(stop_after_ms=int(self.cmndr.cfg["winch"]["PARKING_DOWNCAST_MS"]))
 
