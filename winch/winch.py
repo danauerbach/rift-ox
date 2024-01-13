@@ -657,8 +657,6 @@ class Winch:
     def status(self) -> Tuple[dict, bool]:
 
         cur_status = {}
-        cur_status["state"] = ''
-        cur_status["ts"] = datetime.utcnow().isoformat()
 
         # get winch direction, if any
         if self.cmndr.simulation:
@@ -673,7 +671,7 @@ class Winch:
             cur_status["dir"], err = self.cmndr.get_winch_direction()
             if err:
                 print(f'states:winch ERROR get winch direction')
-                # return {}, err
+                return {}, err
 
         if cur_status['dir'] != WinchDir.DIRECTION_NONE.value:
             self.update_payout_edge_counts()
