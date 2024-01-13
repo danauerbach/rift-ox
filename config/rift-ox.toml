@@ -19,6 +19,7 @@ PARKING_DOWNCAST_MS = 450
 # Leave in UpStaged state if NO_PARKING is true
 NO_PARKING = false
 SEA_CABLE_DIAMETER_INCH = 0.123
+SHEAVE_RADIUS_INCH = 5.0
 
 [rift-ox-pi]
 REALTIME_CTD = false
