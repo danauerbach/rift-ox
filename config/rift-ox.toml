@@ -15,14 +15,14 @@ MAX_DEPTH = 15
 MIN_ALTITUDE = 5
 # PAUSE TIMEOUT in SECS
 PAUSE_DURATION_SECS = 30
-PARKING_DOWNCAST_MS = 250
+PARKING_DOWNCAST_MS = 450
 # Leave in UpStaged state if NO_PARKING is true
 NO_PARKING = false
 SEA_CABLE_DIAMETER_INCH = 0.123
 
 [rift-ox-pi]
 REALTIME_CTD = false
-SIMULATION = true
+SIMULATION = false
 # DIRs are relative to rift-ox homedir
 OPS_DIR = 'dev/ops'
 # PAYOUT_FN = 'payouts'
