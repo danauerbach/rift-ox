@@ -140,7 +140,7 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
             if cfg["rift-ox-pi"]["REALTIME_CTD"]:
                 empty_count += 1
                 if empty_count > 60:
-                    print('winctl:winmon: still NO CTD, PAYOUT or LATCH data')
+                    print('winctl:winmon: still NO CTD data')
                     empty_count = 0
         except Exception as e:
             print(f'winctl:winmon: ERROR receiving data msg: {e}')

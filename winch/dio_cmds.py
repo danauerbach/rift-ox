@@ -181,6 +181,7 @@ class DIOCommander():
 
         cmd = f'dio edge DI_G{self.PAYOUT1_PIN["group"]} {self.PAYOUT1_PIN["pin"]}\r'
         payout_1, err = self.issue_command(cmd=cmd)
+        print(f'payout1: {payout_1}, err: {err}')
         if not err and payout_1.isdigit():
             p1 = int(payout_1)
         else:
