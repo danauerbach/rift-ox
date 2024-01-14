@@ -33,7 +33,7 @@ parser.add_argument("-s", "--serialport", help="serial port to connect to",
 parser.add_argument("-b", "--baud", help="baud rate", 
                     default="9600", type=str)
 parser.add_argument('--max-alt-voltage', help="VA500 full range voltage in Volts", 
-                    default=10, type=int)
+                    default=5, type=int)
 
 args = parser.parse_args()
 
