@@ -273,7 +273,7 @@ class DIOCommander():
                 written = mcu.write(cmd_bytes)
                 mcu.flush()
 
-                time.sleep(0.01)
+                time.sleep(0.03)
                 res = mcu.read(mcu.in_waiting)
                 res_array = res.split(b'\r\n')
                 #TODO LOG INFO
