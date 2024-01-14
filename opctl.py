@@ -20,11 +20,12 @@ class DIOShell(cmd.Cmd):
     DIO_CMDS = ['set', 'get', 'mode', 'edge']
     RIFT_OX_CMNDS = ['upcast', 'downcast', 'stop', 'unlock', 'lock', 'quit']
 
-    HELP_TEXT = """\ndio  set   D{ I | O }_G<group-num>  <pin_num>  { active | inactive }   (Set the logical state of a digital output to active/high or inactive/low)
-dio  get   D{ I | O }_G<group-num>  output  <pin_num>                  (Get the current logical state of a digital input or ouput)
-dio  mode  DO_G<group-num>  { source | open-drain }                    (Set the digital output group to source or sink current)
-dio  mode  DO_G<group-num>                                             (Get the output mode for a digital output group)
-dio  edge  DI_G<group-num>  <pin-num>                                  (Get the number of rising and falling edges detected by a digital input)
+    HELP_TEXT = """\n
+dio set  D{ I | O }_G<group-num>  <pin_num>  { active | inactive }   (Set pin to active/high or inactive/low)
+dio get  D{ I | O }_G<group-num>  output  <pin_num>                  (Get state of a pin)
+dio mode DO_G<group-num>  { source | open-drain }                    (Set output group to source or open-drain (sink) current)
+dio mode DO_G<group-num>                                             (Get output mode for a digital output group)
+dio edge DI_G<group-num>  <pin-num>                                  (Get the number of edges detected by a digital input)
 
 where:
    <group-num>: 0-3
