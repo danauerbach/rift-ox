@@ -89,11 +89,13 @@ class ParkedState():
         print(f'Can not stop when already {self}')
 
     def start(self):
-        self.winch.cmndr.up_cast(stop_after_ms=500)
+        unpark_up: int = self.winch.cmndr.cfg['winch']['UNPARKING_UPCAST_MS']
+        unpark_down: int = self.winch.cmndr.cfg['winch']['UNPARKING_DOWNCAST_MS']
+        self.winch.cmndr.up_cast(stop_after_ms=unpark_up)
         time.sleep(2)
         self.winch.cmndr.latch_hold()
         time.sleep(2)
-        self.winch.cmndr.down_cast(stop_after_ms=1000)
+        self.winch.cmndr.down_cast(stop_after_ms=unpark_down)
         time.sleep(2)
         self.winch.cmndr.latch_release()
         time.sleep(2)
