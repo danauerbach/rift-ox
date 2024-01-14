@@ -92,7 +92,6 @@ class DIOCommander():
 
         self.issue_command(cmd=cmd)
 
-        cmd: str = ''
     def stop_winch(self):
         cmds = [
             f'dio set DO_G{self.MOTOR_STOP_PIN["group"]} {self.MOTOR_STOP_PIN["pin"]} high\r',
@@ -101,7 +100,7 @@ class DIOCommander():
         ]
         for cmd in cmds:
             self.issue_command(cmd=cmd)
-            time.sleep(0.03)
+            time.sleep(0.01)
 
     def latch_release(self):
         cmd = f'dio set DO_G{self.LATCH_RELEASE_PIN["group"]} {self.LATCH_RELEASE_PIN["pin"]} low\r'
@@ -120,7 +119,7 @@ class DIOCommander():
         ]
         for cmd in cmds:
             self.issue_command(cmd=cmd)
-            time.sleep(0.03)
+            time.sleep(0.01)
 
     def down_cast(self, stop_after_ms: int =0):
         cmds = [
@@ -130,7 +129,7 @@ class DIOCommander():
         ]
         for cmd in cmds:
             self.issue_command(cmd=cmd)
-            time.sleep(0.03)
+            time.sleep(0.01)
         if stop_after_ms > 0:
             time.sleep(stop_after_ms / 1000)
             self.stop_winch()
@@ -143,7 +142,7 @@ class DIOCommander():
         ]
         for cmd in cmds:
             self.issue_command(cmd=cmd)
-            time.sleep(0.03)
+            time.sleep(0.01)
         if stop_after_ms > 0:
             time.sleep(stop_after_ms / 1000)
             self.stop_winch()
