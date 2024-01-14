@@ -101,7 +101,7 @@ class DIOCommander():
         ]
         for cmd in cmds:
             self.issue_command(cmd=cmd)
-            # time.sleep(0.03)
+            time.sleep(0.03)
 
     def latch_release(self):
         cmd = f'dio set DO_G{self.LATCH_RELEASE_PIN["group"]} {self.LATCH_RELEASE_PIN["pin"]} low\r'
@@ -120,7 +120,7 @@ class DIOCommander():
         ]
         for cmd in cmds:
             self.issue_command(cmd=cmd)
-            # time.sleep(0.03)
+            time.sleep(0.03)
 
     def down_cast(self, stop_after_ms: int =0):
         cmds = [
@@ -130,7 +130,7 @@ class DIOCommander():
         ]
         for cmd in cmds:
             self.issue_command(cmd=cmd)
-            # time.sleep(0.03)
+            time.sleep(0.03)
         if stop_after_ms > 0:
             time.sleep(stop_after_ms / 1000)
             self.stop_winch()
@@ -143,7 +143,7 @@ class DIOCommander():
         ]
         for cmd in cmds:
             self.issue_command(cmd=cmd)
-            # time.sleep(0.03)
+            time.sleep(0.03)
         if stop_after_ms > 0:
             time.sleep(stop_after_ms / 1000)
             self.stop_winch()
