@@ -278,16 +278,14 @@ class DIOCommander():
                 res_array = res.split(b'\r\n')
                 #TODO LOG INFO
                 # print(f"RESPONSE: {res_array}")
-                if res_array:
-                    # print(f'DIO RESPONSE: {res_array}')
-                    # print(f"DIO RESPONSE: {res_array[1].decode()}")
+                try:
                     result = res_array[1].decode()
                     #TODO LOG INFO
-                else:
+                except:
                     result = ""
                     err = True
                     #TODO log error
-                    # print(f'DIO INVALID RESPONSE')
+                    print(f'DIO: ERROR PARSING RESPONSE: {res}')
 
             return result, err
 
