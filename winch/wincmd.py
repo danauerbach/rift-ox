@@ -45,8 +45,15 @@ def wincmd_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
 
     def get_payout_fn(name: Path) -> Path:
         ops_dir = Path(cfg['rift-ox-pi']['OPS_DIR'])
-        Path.mkdir(ops_dir, parents = True, exist_ok = True)
-        return ops_dir.joinpath(name)
+
+        payout_fpath: Path
+        if str(Path.home()).startswith('/Users/'):   # hack because dev dir path on Dan's computer is not th same as ~/dev on productionb Pi's
+            payout_fpath = Path.home().joinpath('dev/rift-ox', ops_dir, name)             # pause at these depths in meters
+        else:
+            payout_fpath = Path.home().joinpath(ops_dir, name)             # pause at these depths in meters
+
+        Path.mkdir(payout_fpath, parents = True, exist_ok = True)
+        return payout_fpath
     
     def save_payout(status: dict, fn: Path):
         ts = status["ts"]
@@ -66,6 +73,7 @@ def wincmd_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
 
     mqtt_host : str = cfg["mqtt"]["HOST"]
     mqtt_port : int = cfg["mqtt"]["PORT"]
+    payout_log_file: str = cfg['rift-ox-pi']['PAYOUT_FN']
     cmd_q = queue.Queue()
 
     wincmd_sub = mqtt.Client('wincmd-sub')
@@ -92,13 +100,13 @@ def wincmd_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
     last_winch_state = ''
 
     # get initial winch status
-    _, err = share_new_winch_status(winch, Path("payouts"))
+    _, err = share_new_winch_status(winch, Path(payout_log_file))
     if err:
         print(f'winctl:winmon: ERROR getting initial winch status')
 
     while not quit_evt.is_set():
 
-        status, err = share_new_winch_status(winch, Path("payouts"))
+        status, err = share_new_winch_status(winch, Path(payout_log_file))
         if err:
             print(f'winctl:winmon: ERROR getting winch status')
         else:
@@ -146,7 +154,7 @@ def wincmd_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
             winch.up_stage()
 
     
-    status, err = share_new_winch_status(winch, Path("payouts"))
+    status, err = share_new_winch_status(winch, Path(payout_log_file))
     if err:
         print(f'winctl:winmon: ERROR getting final winch status')
 
