@@ -163,10 +163,10 @@ class SBE33SerialDataPort():
         self.enqueue_command('getcd', '\r')
         self.getcd_read_event.wait()
         # wait until config commands all been issued
-        # time.sleep(2)
-        # self.enqueue_command('initlogging', '\r')
-        # time.sleep(2)
-        # self.enqueue_command('initlogging', '\r')
+        time.sleep(2)
+        self.enqueue_command('initlogging', '\r')
+        time.sleep(2)
+        self.enqueue_command('initlogging', '\r')
         self.cmd_q.join()
 
     def init_state(self):
