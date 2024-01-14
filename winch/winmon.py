@@ -203,8 +203,8 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
 
         time.sleep(0.1)
 
-    wincmd_pub.loop_stop()
-    datamon_sub.loop_stop()
+    # wincmd_pub.loop_stop()
+    # datamon_sub.loop_stop()
 
 # def pub_winch_cmd(pubber: mqtt.Client, topic: str, command: str, **kwargs) -> bool:
 #     cmd: dict = {

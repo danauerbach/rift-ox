@@ -165,4 +165,4 @@ def wincmd_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
     # if err:
     #     print(f"winctl:wincmd: ERROR GET LAST Payout Edge Counts")
 
-    wincmd_sub.loop_stop()
+    # wincmd_sub.loop_stop()
