@@ -48,11 +48,13 @@ def wincmd_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
 
         payout_fpath: Path
         if str(Path.home()).startswith('/Users/'):   # hack because dev dir path on Dan's computer is not th same as ~/dev on productionb Pi's
-            payout_fpath = Path.home().joinpath('dev/rift-ox', ops_dir, name)             # pause at these depths in meters
+            payout_fpath = Path.home().joinpath('dev/rift-ox', ops_dir)             # pause at these depths in meters
         else:
-            payout_fpath = Path.home().joinpath(ops_dir, name)             # pause at these depths in meters
-
+            payout_fpath = Path.home().joinpath(ops_dir)             # pause at these depths in meters
+        
         Path.mkdir(payout_fpath, parents = True, exist_ok = True)
+        payout_fpath = payout_fpath.joinpath(name)
+
         return payout_fpath
     
     def save_payout(status: dict, fn: Path):
