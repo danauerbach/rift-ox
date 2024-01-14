@@ -106,7 +106,7 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
     cur_depth: float = 0
     cur_state: str = ""
     last_state: str = ''
-    cur_altitude: float = MAX_DEPTH
+    cur_altitude: float = 100  # meters, limit of alt range
     MAX_DEPTH_REACHED = False
     MAX_DEPTH_PAYOUT_EDGES = -1
 
