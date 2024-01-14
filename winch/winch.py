@@ -96,7 +96,7 @@ class ParkedState():
         self.winch.cmndr.latch_hold()
         time.sleep(2)
         self.winch.cmndr.down_cast(stop_after_ms=unpark_down)
-        time.sleep(2)
+        time.sleep(5)
         self.winch.cmndr.latch_release()
         time.sleep(2)
         self.winch.cmndr.stage()
