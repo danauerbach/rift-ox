@@ -476,7 +476,7 @@ class SBE33SerialDataPort():
 
         # print(f'line len: {len(line_str)}')
 
-        has_gps : bool = len(line_str) == 36  # OUTPUTFORMAT == 1 ONLY - it's 22 without
+        has_gps : bool = len(line_str) == 40  # OUTPUTFORMAT == 1 ONLY - it's 26 without
         if self.data_len_correct(line, has_gps):
 
             if self.ctd_config.output_format == self.ctd_config.output_format.OUTPUT_FORMAT_1:
