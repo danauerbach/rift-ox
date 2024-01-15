@@ -68,7 +68,9 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
     MAX_DEPTH : float = float(cfg["winch"]["MAX_DEPTH"])          # meters. GO NO FARTHER
     STAGING_DEPTH : float = float(cfg["winch"]["STAGING_DEPTH"])  # meters. This is depth of initial pause at start of the downcast
 
-    data_t : str = cfg["mqtt"]["CTD_DATA_TOPIC"]
+
+    cdt_cmd_t : str = cfg["mqtt"]["CTD_CMD_TOPIC"]
+    cdt_data_t : str = cfg["mqtt"]["CTD_DATA_TOPIC"]
     winch_command_topic : str = cfg["mqtt"]["WINCH_CMD_TOPIC"]
     
     pause_depths_fn = Path(cfg['bottles']['PAUSE_DEPTHS_FN'])
@@ -95,7 +97,7 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
     datamon_sub.on_subscribe = _on_data_subscribe
     datamon_sub.on_message = _on_data_message
     datamon_sub.connect(mqtt_host, mqtt_port)
-    datamon_sub.subscribe(data_t, qos=2)
+    datamon_sub.subscribe(cdt_data_t, qos=2)
     datamon_sub.loop_start()
 
     # assume we're at the surface, aka "Parked"
@@ -166,6 +168,7 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
                 (cur_state == WinchStateName.STAGING.value):
                     # just hit stagin depth on way down, call winch.state.pause() pause
                 pub_cmd(cmd_pub, winch_command_topic, WinchCmd.WINCH_CMD_PAUSE.value)
+                pub_cmd(cmd_pub, cdt_cmd_t, "startnow")
 
             if (cur_altitude < MIN_ALTITUDE):
                 print(f'winctl:winmon: Winch is stopping within {MIN_ALTITUDE}m of the seafloor.')
@@ -186,6 +189,7 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
                 if (cur_depth < STAGING_DEPTH):
                     # just hit stagin depth on way up, let's pause here]
                     pub_cmd(cmd_pub, winch_command_topic, WinchCmd.WINCH_CMD_UPSTAGE.value)
+                    pub_cmd(cmd_pub, cdt_cmd_t, "stop")
 
                 else:
                     next_pause = pause_depths.get_next_depth(max_depth=max_depth_reached)
