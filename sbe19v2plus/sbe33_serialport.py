@@ -46,9 +46,19 @@ class SBE33SerialDataPort():
     GETCD_CONFIG_XML_END = '</ConfigurationData>'
     SBE33_MODE_START = 'the current mode = '
     CTD_TIMED_OUT_INDICATORS = ['time out', 'S>time out']
+    CTD_CMD_INITLOGGING = 'initlogging'
+    CTD_CMD_STARTNOW = 'startnow'
+    CTD_CMD_STOP = 'stop'
+    CTD_CMD_LIST = [
+        CTD_CMD_INITLOGGING,
+        CTD_CMD_STARTNOW,
+        CTD_CMD_STOP,
+    ]
 
     
-    def __init__(self, logfile : str, quit_evt : threading.Event, data_q : queue.Queue, serialport: str, baud: int, alt_volt_range: int):
+    def __init__(self, logfile : str, quit_evt : threading.Event, 
+                 data_q, ext_cmd_q : queue.Queue, serialport: str, baud: int, 
+                 alt_volt_range: int):
 
         # this config will reflect the state of the CTD via the getcd/getsd command responses
         self.ctd_config = sbe19v2plus.config.Config()
@@ -63,13 +73,15 @@ class SBE33SerialDataPort():
         self.GetCD_str = ''
 
         self.quit_evt = quit_evt
-        self.cmd_q = queue.Queue(maxsize=1)
+        self.serial_port_cmd_q = queue.Queue(maxsize=1)
         self.data_q = data_q
+        self.ext_cmd_q = ext_cmd_q
         self.ser_port = serial.serial_for_url(serialport, baud, timeout=0.5, write_timeout=1, parity=serial.PARITY_EVEN, bytesize=7)
         self.altimeter_max_volts = alt_volt_range
         
-        self.read_thr = threading.Thread(target=self.read_loop, name="ctdmon:read")
-        self.write_thr = threading.Thread(target=self.write_loop, name="ctdmon:read")
+        self.read_thr = threading.Thread(target=self.read_loop, name="ctdmon:read_loop")
+        self.write_thr = threading.Thread(target=self.write_loop, name="ctdmon:write_loop")
+        self.ext_cmd_thr = threading.Thread(target=self.external_command_monitor, name="ctdmon:ext_cmd_loop")
         self.threads_started = False
         self.lock = threading.Lock()
         self.sbe19_active_event = threading.Event()
@@ -94,7 +106,7 @@ class SBE33SerialDataPort():
             self.enqueue_command('@', eol='\n')
             self.sbe19_active_event.wait()
             self.sbe19_active_event.clear()
-        self.cmd_q.join()
+        self.serial_port_cmd_q.join()
 
 
     def ctd_configure(self):
@@ -135,7 +147,7 @@ class SBE33SerialDataPort():
         self.enqueue_command('getcd', '\r')
         self.getcd_read_event.wait()
         # wait until config commands all been issued
-        self.cmd_q.join()
+        self.serial_port_cmd_q.join()
 
     def init_logging(self):
         # Clear CTD onboard storage and start CTD data acq
@@ -213,6 +225,8 @@ class SBE33SerialDataPort():
         self.read_thr.start()
         time.sleep(0.5)
         self.write_thr.start()
+        time.sleep(0.5)
+        self.ext_cmd_thr.start()
         self.threads_started = True
         
         self.init_state()
@@ -309,7 +323,7 @@ class SBE33SerialDataPort():
                 cmd += eol
                 ba = bytearray()
                 ba.extend(cmd.encode())
-                self.cmd_q.put(ba)
+                self.serial_port_cmd_q.put(ba)
                 # print(f'Command enqueued: [{ba}]')
 
 
@@ -355,9 +369,9 @@ class SBE33SerialDataPort():
 
         while not self.quit_evt.is_set():
             try:
-                cmd = self.cmd_q.get(block=True, timeout=1)
+                cmd = self.serial_port_cmd_q.get(block=True, timeout=1)
                 self.send_command(cmd)
-                self.cmd_q.task_done()
+                self.serial_port_cmd_q.task_done()
             except queue.Empty as e:
                 pass
             else:
@@ -366,6 +380,21 @@ class SBE33SerialDataPort():
                 cmd = ''
 
         print('serial port write thread shutting down...')
+
+    def external_command_monitor(self):
+
+        while not self.quit_evt.is_set():
+            try:
+                cmd = self.ext_cmd_q.get(block=True, timeout=0.5)
+                self.ext_cmd_q.task_done()
+            except queue.Empty as e:
+                continue
+
+            cmd = cmd.lower()
+            if cmd in self.CTD_CMD_LIST:
+                print(f'SBE33SerialPort: sending ext cmd: {cmd}')
+                self.enqueue_command(cmd.encode(), eol='\r')
+
 
     
     def send_command(self, cmd : bytes):
@@ -388,6 +417,7 @@ class SBE33SerialDataPort():
     def quit(self):
         self.read_thr.join()
         self.write_thr.join()
+        self.ext_cmd_thr.join()
         print('closing serial port...')
         self.ser_port.close()
 
