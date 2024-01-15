@@ -15,7 +15,7 @@ import paho.mqtt.client as mqtt
 
 import config
 from lora import RIFTOX_CMDS
-from winch import pub_winch_cmd
+from winch import pub_cmd
 
 
 def _on_connect(client, userdata, flags, rc):
@@ -109,7 +109,7 @@ def main():
                     display.text(f"cmd_pubber not conn'd", 0, height-10, 1)
                 else:
                     if packet_str.upper() in ['GOSCIENCE', 'START']:
-                        if pub_winch_cmd(cmd_pubber, cmd_t, 'START'):
+                        if pub_cmd(cmd_pubber, cmd_t, 'START'):
                             print(f"CMD PUB'D: {packet_str}")
                             display.text(f"CMD PUB'D: {packet_str}", 0, height-10, 1)
                         else:
