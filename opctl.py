@@ -8,6 +8,7 @@ import time
 
 import config
 from winch.dio_cmds import DIOCommander
+from winch.winch import Winch
 
 
 def interrupt_handler(signum, frame):
@@ -18,7 +19,7 @@ def interrupt_handler(signum, frame):
 class DIOShell(cmd.Cmd):
 
     DIO_CMDS = ['set', 'get', 'mode', 'edge']
-    RIFT_OX_CMNDS = ['upcast', 'downcast', 'stop', 'unlock', 'lock', 'quit']
+    RIFT_OX_CMNDS = ['upcast', 'downcast', 'stop', 'unlock', 'lock', 'park', 'quit']
 
     HELP_TEXT = """\n
 dio set  D{ I | O }_G<group-num>  <pin_num>  { active | inactive }   (Set pin to active/high or inactive/low)
@@ -44,6 +45,7 @@ Notes: 1) commands are case sensitive
         self.dio_port = cfg['rift-ox-pi']['DIO_PORT']
         self.prompt = 'Enter DIO Command: '
         self.cmndr = DIOCommander(cfg)
+        self.winch = Winch(self.cmndr)
         super().__init__()
 
     def do_dio(self, arg):
@@ -51,6 +53,9 @@ Notes: 1) commands are case sensitive
         # self.send_dio_cmd(cmd_s)
         resp, err = self.cmndr.issue_command(cmd_s)
         print(f'DIO RESPONSE: {resp} (err: {err})')
+
+    def do_park(self, arg):
+        self.winch.park()
 
     def do_upcast(self, arg):
         try:

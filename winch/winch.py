@@ -584,7 +584,7 @@ class Winch:
             # check fr new LATCH edge count
             new_latch_edge_count, err = self.get_latch_edge_count()
             if err:
-                self.cmndr.stop_winch() #### NOT SURE THIS IS A GOOD IDEA
+                self.cmndr.stop_winch()
                 print('PARKING UNABLE to get LATCH SENSOR state when PARKING')
                 return
             print(f'PARKING: NEW LATCH EDGE CNT: {new_latch_edge_count}')
@@ -592,6 +592,7 @@ class Winch:
             latch_found = new_latch_edge_count > start_latch_edge_cnt
             print(f'PARKING: LATCH FOUND? - LOOP: {latch_found}')
             if latch_found:
+                self.cmndr.pin_hi('stop')  # stop ASAP
                 break
 
             print(f'PARKING: UP CASTING')
@@ -654,6 +655,7 @@ class Winch:
         cable_radius_inches = self.cmndr.cfg["winch"]["SEA_CABLE_DIAMETER_INCH"] / 2.0
         dist_down: float = (self.down_edges / 12) * 2 * pi * (self.cmndr.cfg["winch"]["SHEAVE_RADIUS_INCH"] + cable_radius_inches) / 39.37008
         dist_up: float = (self.up_edges / 12) * 2 * pi * (self.cmndr.cfg["winch"]["SHEAVE_RADIUS_INCH"] + cable_radius_inches) / 39.37008
+        print(f'cnt/Down/Up edges: {self.last_payout_cnt}/{self.down_edges}/{self.up_edges} : dist_m dopwn/up: {dist_down}/{dist_up}')
         return dist_down - dist_up
 
     def status(self) -> Tuple[dict, bool]:
