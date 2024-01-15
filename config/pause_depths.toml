@@ -1,0 +1,4 @@
+# Winch will pause at these depths (meters based on payout sensors)
+DEPTHS = [40, 20, 60, 80]
+#DEPTHS = [6, 8, 10, 15]
+# DEPTHS = [50, 250, 500, 700]
