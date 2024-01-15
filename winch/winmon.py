@@ -70,8 +70,7 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
 
     data_t : str = cfg["mqtt"]["CTD_DATA_TOPIC"]
     winch_command_topic : str = cfg["mqtt"]["WINCH_CMD_TOPIC"]
-    ops_dir = Path(cfg['rift-ox-pi']['OPS_DIR'])
-
+    
     pause_depths_fn = Path(cfg['bottles']['PAUSE_DEPTHS_FN'])
     if str(Path.home()).startswith('/Users/'):   # hack because dev dir path on Dan's computer is not th same as ~/dev on productionb Pi's
         pause_depths: PauseDepths = PauseDepths(Path.home().joinpath('dev/rift-ox/dev/config', pause_depths_fn))             # pause at these depths in meters

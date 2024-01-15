@@ -29,7 +29,7 @@ SHEAVE_RADIUS_INCH = 2.5
 REALTIME_CTD = false
 SIMULATION = false
 # DIRs are relative to rift-ox homedir
-OPS_DIR = 'dev/ops'
+LOG_DIR = 'dev/logs'
 PAYOUT_FN = 'payouts'
 DIO_PORT = '/dev/ttyACM0'
 # OUTPUT PINS
@@ -52,5 +52,5 @@ DIO_LATCH_SENSOR_GROUP = 0
 DIO_LATCH_SENSOR_PIN = 2
 
 [bottles]
-# file is in OPS_DIR
+# file is in ./config dir
 PAUSE_DEPTHS_FN = 'pause_depths.toml'
