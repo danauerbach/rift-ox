@@ -593,9 +593,10 @@ def process_commands(ctd : SBE33SerialDataPort):
 
         elif cmd =='help':
             print('Commands:')
-            print('stop: Stop current streaming request')
-            print('startnow: Start CTD data acquisition')
-            print('quit: quit application (does NOT stop CTD data acq)')
+            print('stop: Stop CTD and data acq')
+            print('initlogging: erase CTD internal storage and prep for data acq')
+            print('startnow: Start CTD and data acquisition')
+            print('quit: quit application (DOES NOT stop CTD data acq)')
     
         # elif cmd == 'ds':
         #     ctd.enqueue_command(cmd, eol='\r')
