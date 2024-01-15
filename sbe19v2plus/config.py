@@ -192,35 +192,35 @@ class Config:
             self.mode = SBE19Mode.PROFILE_MODE
             child = profile_el.find('ScansToAverage')
             if child is not None:
-                self.profile_scans_to_average = int(child.text.strip())
+                self.profile_scans_to_average = int(str(child.text).strip())
             else:
                 print('no ScansToAverage') #TODO LOG Error
                 #TODO LOG Error
                 return False 
             child = profile_el.find('MinimumCondFreq')
             if child is not None:
-                self.profile_min_cond_freq = int(child.text.strip())
+                self.profile_min_cond_freq = int(str(child.text).strip())
             else:
                 print('no mincondfreq') #TODO LOG Error
                 #TODO LOG Error
                 return False 
             child = profile_el.find('PumpDelay')
             if child is not None:
-                self.profile_pump_delay = int(child.text.strip())
+                self.profile_pump_delay = int(str(child.text).strip())
             else:
                 print('no pumpdelay') #TODO LOG Error
                 #TODO LOG Error
                 return False 
             child = profile_el.find('AutoRun')
             if child is not None:
-                self.profile_auto_run = child.text.strip().lower() in ['y','yes']
+                self.profile_auto_run = str(child.text).strip().lower() in ['y','yes']
             else:
                 print('no autorun') #TODO LOG Error
                 #TODO LOG Error
                 return False 
             child = profile_el.find('IgnoreSwitch')
             if child is not None:
-                self.profile_ignore_switch = child.text.strip().lower() in ['y','yes']
+                self.profile_ignore_switch = str(child.text).strip().lower() in ['y','yes']
             else:
                 print('no ignoreswitch') #TODO LOG Error
                 #TODO LOG Error
@@ -232,37 +232,37 @@ class Config:
             self.mode = SBE19Mode.MOORED_MODE
             child = moored_el.find('SampleInterval')
             if child is not None:
-                self.moored_sample_interval = int(child.text.strip())
+                self.moored_sample_interval = int(str(child.text).strip())
             else:
                 #TODO LOG Error
                 return False 
             child = moored_el.find('MeasurementsPerSample')
             if child is not None:
-                self.moored_ncycles = int(child.text.strip())
+                self.moored_ncycles = int(str(child.text).strip())
             else:
                 #TODO LOG Error
                 return False 
             child = moored_el.find('Pump')
             if child is not None:
-                self.moored_pump_mode = int(child.text.strip())
+                self.moored_pump_mode = int(str(child.text).strip())
             else:
                 #TODO LOG Error
                 return False 
             child = moored_el.find('SampleInterval')
             if child is not None:
-                self.moored_delay_before = float(child.text.strip())
+                self.moored_delay_before = float(str(child.text).strip())
             else:
                 #TODO LOG Error
                 return False 
             child = moored_el.find('SampleInterval')
             if child is not None:
-                self.moored_delay_after = float(child.text.strip())
+                self.moored_delay_after = float(str(child.text).strip())
             else:
                 #TODO LOG Error
                 return False 
             child = moored_el.find('SampleInterval')
             if child is not None:
-                self.moored_transmit_realtime = child.text.strip().lower() in ['y','yes']
+                self.moored_transmit_realtime = str(child.text).strip().lower() in ['y','yes']
             else:
                 #TODO LOG Error
                 return False 
@@ -271,13 +271,13 @@ class Config:
         if battery_el is not None:
             child = battery_el.find('Type')
             if child is not None:
-                self.battery_type = child.text.strip()
+                self.battery_type = str(child.text).strip()
             else:
                 #TODO LOG Error
                 return False 
             child = battery_el.find('CutOff')
             if child is not None:
-                self.battery_cutoff = child.text.strip()
+                self.battery_cutoff = str(child.text).strip()
             else:
                 #TODO LOG Error
                 return False 
@@ -290,42 +290,42 @@ class Config:
         if data_el is not None:
             child = data_el.find('ExtVolt0')
             if child is not None:
-                self.volt0 = child.text.strip().lower() in ['y','yes']
+                self.volt0 = str(child.text).strip().lower() in ['y','yes']
             else:
                 print('ExtVolt0')
                 #TODO LOG Error
                 return False 
             child = data_el.find('ExtVolt1')
             if child is not None:
-                self.volt1 = child.text.strip().lower() in ['y','yes']
+                self.volt1 = str(child.text).strip().lower() in ['y','yes']
             else:
                 print('ExtVolt1')
                 #TODO LOG Error
                 return False 
             child = data_el.find('ExtVolt2')
             if child is not None:
-                self.volt2 = child.text.strip().lower() in ['y','yes']
+                self.volt2 = str(child.text).strip().lower() in ['y','yes']
             else:
                 print('ExtVolt2')
                 #TODO LOG Error
                 return False 
             child = data_el.find('ExtVolt3')
             if child is not None:
-                self.volt3 = child.text.strip().lower() in ['y','yes']
+                self.volt3 = str(child.text).strip().lower() in ['y','yes']
             else:
                 print('ExtVolt3')
                 #TODO LOG Error
                 return False 
             child = data_el.find('ExtVolt4')
             if child is not None:
-                self.volt4 = child.text.strip().lower() in ['y','yes']
+                self.volt4 = str(child.text).strip().lower() in ['y','yes']
             else:
                 print('ExtVolt4')
                 #TODO LOG Error
                 return False 
             child = data_el.find('ExtVolt5')
             if child is not None:
-                self.volt5 = child.text.strip().lower() in ['y','yes']
+                self.volt5 = str(child.text).strip().lower() in ['y','yes']
             else:
                 print('ExtVolt5')
                 #TODO LOG Error
@@ -333,41 +333,41 @@ class Config:
 
             child = data_el.find('SBE38')
             if child is not None:
-                self.sbe38 = child.text.strip().lower() in ['y','yes']
+                self.sbe38 = str(child.text).strip().lower() in ['y','yes']
             else:
                 print('sbe38')
                 #TODO LOG Error
                 return False 
             child = data_el.find('WETLABS')
             if child is not None:
-                self.wetlabs = child.text.strip().lower() in ['y','yes']
+                self.wetlabs = str(child.text).strip().lower() in ['y','yes']
             else:
                 print('WETLABS')
                 #TODO LOG Error
                 return False 
             child = data_el.find('OPTODE')
             if child is not None:
-                self.GTD = child.text.strip().lower() in ['y','yes']
+                self.GTD = str(child.text).strip().lower() in ['y','yes']
             else:
                 print('optode')
                 #TODO LOG Error
                 return False 
             child = data_el.find('SBE63')
             if child is not None:
-                self.DualGTD = child.text.strip().lower() in ['y','yes']
+                self.DualGTD = str(child.text).strip().lower() in ['y','yes']
             else:
                 print('optode')
                 #TODO LOG Error
                 return False 
             child = data_el.find('SBE38')
             if child is not None:
-                self.optode = child.text.strip().lower() in ['y','yes']
+                self.optode = str(child.text).strip().lower() in ['y','yes']
             else:
                 #TODO LOG Error
                 return False 
             child = data_el.find('SBE38')
             if child is not None:
-                self.sbe63 = child.text.strip().lower() in ['y','yes']
+                self.sbe63 = str(child.text).strip().lower() in ['y','yes']
             else:
                 #TODO LOG Error
                 return False 
@@ -379,30 +379,30 @@ class Config:
         
         child = config_el.find('EchoCharacters')
         if child is not None:
-            self.echo = child.text.strip().lower() in ['y','yes']
+            self.echo = str(child.text).strip().lower() in ['y','yes']
         else:
             pass #TODO LOG Error
         child = config_el.find('OutputExecutedTag')
         if child is not None:
-            self.output_executed_tag = child.text.strip().lower() in ['y','yes']
+            self.output_executed_tag = str(child.text).strip().lower() in ['y','yes']
         else:
             pass #TODO LOG Error
 
         child = config_el.find('OutputFormat')
         if child is not None:
-            self.output_format = self.OUTPUT_FORMATS[child.text.strip()]
+            self.output_format = self.OUTPUT_FORMATS[str(child.text).strip()]
         else:
             pass #TODO LOG Error
 
         child = config_el.find('OutputSalinity')
         if child is not None:
-            self.output_sal = child.text.strip().lower() in ['y','yes']
+            self.output_sal = str(child.text).strip().lower() in ['y','yes']
         child = config_el.find('OutputSoundVelocity')
         if child is not None:
-            self.output_sv = child.text.strip().lower() in ['y','yes']
+            self.output_sv = str(child.text).strip().lower() in ['y','yes']
         child = config_el.find('OutputSigma_T')
         if child is not None:
-            self.output_ucsd = child.text.strip().lower() in ['y','yes']
+            self.output_ucsd = str(child.text).strip().lower() in ['y','yes']
 
         # print(f"All done parding") 
         #TODO Logging
