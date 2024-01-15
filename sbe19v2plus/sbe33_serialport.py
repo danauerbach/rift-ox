@@ -149,17 +149,7 @@ class SBE33SerialDataPort():
         # wait until config commands all been issued
         self.serial_port_cmd_q.join()
 
-    def init_logging(self):
-        # Clear CTD onboard storage and start CTD data acq
-        self.enqueue_command('initlogging', '\r')
-        time.sleep(2)
-        self.enqueue_command('initlogging', '\r')
-
-    def stop(self):
-        # Stop CTD and data acq
-        self.enqueue_command('stop', '\r')
-
-
+    
     def init_state(self):
 
         # let's tkae a few secs to see if we can discern the current STATE and DEVICE
