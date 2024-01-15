@@ -645,7 +645,7 @@ def process_commands(ctd : SBE33SerialDataPort):
 
         elif cmd.lower() == 'startnow':
             ctd.enqueue_command(cmd, eol='\r')
-            ctd.cmd_q.join()
+            ctd.serial_port_cmd_q.join()
             ctd.ctd_status[ctd.CTD_STATE] = ctd.CTD_STATE_ACQUIRING_DATA
 
         elif cmd.lower() == 'stop':
@@ -746,8 +746,36 @@ def main(quit_evt : threading.Event):
     data_relay_thr = threading.Thread(target=data_relay_loop, args=(cfg, data_q, quit_evt), name="ctdmon:datarelay")
     data_relay_thr.start()
 
-    ctd_io = SBE33SerialDataPort("serialport.log", quit_evt, data_q, serialport, baud, altimeter_max_volts)
+    ext_cmd_q: queue.Queue = queue.Queue()
+    ctd_io = SBE33SerialDataPort("serialport.log", quit_evt, data_q, ext_cmd_q, serialport, baud, altimeter_max_volts)
     ctd_io.start()
+
+    def _on_connect(client, userdata, flags, rc):
+        if rc==0:
+            print("winctl:winmon: connected OK: {client}")
+        else:
+            print("winctl:winmon: Bad connection for {client} Returned code: ", rc)
+            client.loop_stop()
+
+    def _on_disconnect(client, userdata, rc):
+        print("winctl:winmon: client disconnected ok")
+
+    def _on_message(client : mqtt.Client, userdata, message):
+        payload = message.payload.decode("utf-8")
+        ext_cmd_q.put(payload)
+
+    mqtt_host = cfg['mqtt']['HOST']
+    mqtt_port = cfg['mqtt']['PORT']
+    cmd_t = cfg['mqtt']['CTD_CMD_TOPIC']
+    external_cmd_client = mqtt.Client('ctdmon-ext-cmd')
+    external_cmd_client.on_connect = _on_connect
+    external_cmd_client.on_disconnect = _on_disconnect
+    external_cmd_client.on_message = _on_message
+    external_cmd_client.connect(mqtt_host, mqtt_port)
+    external_cmd_client.subscribe(cmd_t, qos=2)
+    external_cmd_client.loop_start()
+
+
 
     # set_config(ctd_io)
 
