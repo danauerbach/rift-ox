@@ -34,12 +34,20 @@ class PauseDepths:
     def refresh(self):
         self._depths = sorted(self._read_pause_depths(self._filepath), reverse=True)
 
-    def get_next_depth(self) -> Union[float, None]:
+    def get_next_depth(self, max_depth: Union[float, None]) -> Union[float, None]:
 
-        if len(self._depths) > 0:
-            return self._depths[0]
-        else:
-            return None
+        while len(self._depths) > 0:
+            if max_depth:
+                if self._depths[0] < max_depth:
+                    return self._depths[0]
+                else:
+                    del self._depths[0]
+                    continue
+
+            if len(self._depths) > 0:
+                return self._depths[0]
+            else:
+                return None
 
     def use_next_depth(self) -> None:
 

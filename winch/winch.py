@@ -682,6 +682,6 @@ class Winch:
 
         cur_status["depth_m"] = round(self.depth_from_payout_edges_m(), 2)
         cur_status["state"] = str(self.state)
-        cur_status["ts"] = datetime.utcnow().isoformat()
+        cur_status["ts"] = round(datetime.utcnow().timestamp(), 2)
 
         return cur_status, False
