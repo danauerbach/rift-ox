@@ -2,13 +2,9 @@
 
 #import readline
 import argparse
-from enum import Enum
-import os
-import pickle
-
+from datetime import datetime
 import json
-
-from pprint import pprint
+import os
 import queue
 import re
 import shlex
@@ -16,13 +12,11 @@ import serial
 import signal
 import sys
 import threading
-from datetime import datetime
 import time
 
 import paho.mqtt.client as mqtt
 import gsw
 
-# import msgbus
 import config
 import sbe19v2plus.config
 
@@ -358,7 +352,6 @@ class SBE33SerialDataPort():
                         of.write(f"{line_utf8} {sample_dict}\n")
                         self.data_q.put(sample_dict)
 
-                        # pprint(sample_dict, sys.stdout)
                     else:
                         of.write(f"{line_utf8}\n")
 
@@ -590,7 +583,6 @@ class SBE33SerialDataPort():
         res["lat"] = lat
         res["lon"] = lon
 
-        # pprint(res, sys.stdout)
         return res
 
 def process_commands(ctd : SBE33SerialDataPort):
