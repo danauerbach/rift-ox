@@ -203,16 +203,3 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
 
     # wincmd_pub.loop_stop()
     # datamon_sub.loop_stop()
-
-# def pub_winch_cmd(pubber: mqtt.Client, topic: str, command: str, **kwargs) -> bool:
-#     cmd: dict = {
-#         "command": command
-#     }
-#     for key, val in kwargs.items():
-#         cmd[key] = val
-#     msg_info = pubber.publish(topic, json.dumps(cmd).encode(), qos=2)
-#     msg_info.wait_for_publish(1)
-#     if not msg_info.is_published():
-#         print(f'winctl:winmon: ERROR publishing msg {cmd} to topic {topic}')
-#     return msg_info.is_published()
-
