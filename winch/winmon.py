@@ -168,7 +168,7 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
                 (cur_state == WinchStateName.STAGING.value):
                     # just hit stagin depth on way down, call winch.state.pause() pause
                 pub_cmd(cmd_pub, winch_command_topic, WinchCmd.WINCH_CMD_PAUSE.value)
-                pub_cmd(cmd_pub, cdt_cmd_t, "startnow")
+                pub_cmd(cmd_pub, cdt_cmd_t, "init")
 
             if (cur_altitude < MIN_ALTITUDE):
                 print(f'winctl:winmon: Winch is stopping within {MIN_ALTITUDE}m of the seafloor.')
