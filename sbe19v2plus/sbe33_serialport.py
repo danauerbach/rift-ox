@@ -135,11 +135,18 @@ class SBE33SerialDataPort():
         self.enqueue_command('getcd', '\r')
         self.getcd_read_event.wait()
         # wait until config commands all been issued
-        time.sleep(0.5)
+        self.cmd_q.join()
+
+    def init_logging(self):
+        # Clear CTD onboard storage and start CTD data acq
         self.enqueue_command('initlogging', '\r')
         time.sleep(2)
         self.enqueue_command('initlogging', '\r')
-        self.cmd_q.join()
+
+    def stop(self):
+        # Stop CTD and data acq
+        self.enqueue_command('stop', '\r')
+
 
     def init_state(self):
 
@@ -191,7 +198,8 @@ class SBE33SerialDataPort():
             self.ctd_configure()
         
         else:
-            # self.enqueue_command('stop')
+            # CTD is already running and acquiring data
+            # for some reason ctdmon was restarted after starting the CTD
             # now read config from device
             self.enqueue_command('stop', '\r')
             time.sleep(0.5)
@@ -205,7 +213,6 @@ class SBE33SerialDataPort():
         self.read_thr.start()
         time.sleep(0.5)
         self.write_thr.start()
-        time.sleep(0.5)
         self.threads_started = True
         
         self.init_state()
