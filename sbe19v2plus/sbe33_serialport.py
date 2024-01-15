@@ -134,6 +134,9 @@ class SBE33SerialDataPort():
         self.getcd_read_event.wait()
         # wait until config commands all been issued
         time.sleep(2)
+        t = datetime.utcnow()
+        self.enqueue_command(f'DateTime={t.strftime("%m%d%Y%H%M%S")}', '\r')
+        time.sleep(1)
         self.enqueue_command('initlogging', '\r')
         time.sleep(2)
         self.enqueue_command('initlogging', '\r')
