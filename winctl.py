@@ -14,7 +14,6 @@ import threading
 import winch.pausemon
 import winch.winmon
 import winch.wincmd
-import ctd
 
 import config
 
