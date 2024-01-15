@@ -1,24 +1,17 @@
 #!/usr/bin/env python3
 
-#import readline
 import argparse
-from datetime import datetime
 import json
-import os
 import queue
-import re
 import shlex
-import serial
 import signal
 import sys
 import threading
 import time
 
 import paho.mqtt.client as mqtt
-import gsw
 
 import config
-import sbe19v2plus.config
 from sbe19v2plus.sbe33_serialport import SBE33SerialDataPort
 
 SBE33_MENU_TOGGLE_CMD = '@'
