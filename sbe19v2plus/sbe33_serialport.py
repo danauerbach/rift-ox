@@ -107,6 +107,8 @@ class SBE33SerialDataPort():
         self.enqueue_command('ignoreswitch=yes', '\r')
         self.enqueue_command('echo=no', '\r')
         self.enqueue_command('outputexecutedtag=no', '\r')
+        t = datetime.utcnow()
+        self.enqueue_command(f'DateTime={t.strftime("%m%d%Y%H%M%S")}', '\r')
 
         # these commands need to be confirmed with a second issuance
         time.sleep(2)
@@ -133,10 +135,7 @@ class SBE33SerialDataPort():
         self.enqueue_command('getcd', '\r')
         self.getcd_read_event.wait()
         # wait until config commands all been issued
-        time.sleep(2)
-        t = datetime.utcnow()
-        self.enqueue_command(f'DateTime={t.strftime("%m%d%Y%H%M%S")}', '\r')
-        time.sleep(1)
+        time.sleep(0.5)
         self.enqueue_command('initlogging', '\r')
         time.sleep(2)
         self.enqueue_command('initlogging', '\r')
