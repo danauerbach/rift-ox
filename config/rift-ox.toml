@@ -3,6 +3,7 @@ HOST = "localhost"
 REMOTE_HOST = "192.168.1.101"
 PORT = 1883
 CTD_DATA_TOPIC = "rift-ox/ctdmon/ctddata"
+CTD_CMD_TOPIC = "rift-ox/ctdmon/cmd"
 WINCH_CMD_TOPIC = "rift-ox/winch/cmd"
 # WINCH_PAYOUTDATA_TOPIC = "rift-ox/winch/payoutdata"
 WINCH_LATCH_TOPIC = "rift-ox/winch/latch"
