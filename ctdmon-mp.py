@@ -652,6 +652,10 @@ def process_commands(ctd : SBE33SerialDataPort):
             ctd.ctd_status[ctd.CTD_STATE] = ctd.CTD_STATE_COMMAND_PROMPT
             ctd.enqueue_command(cmd, eol='\r')
 
+        elif cmd.lower() == 'ctlc':
+            ctd.ctd_status[ctd.CTD_STATE] = ctd.CTD_STATE_COMMAND_PROMPT
+            ctd.enqueue_command("\x03", eol='\r')
+
         elif cmd.lower() in COMMANDS_CTD:
             ctd.enqueue_command(cmd, eol='\r')
 
