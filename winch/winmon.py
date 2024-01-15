@@ -170,7 +170,9 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
                 pub_cmd(cmd_pub, winch_command_topic, WinchCmd.WINCH_CMD_PAUSE.value)
                 pub_cmd(cmd_pub, cdt_cmd_t, "init")
 
-            if (cur_altitude < (MIN_ALTITUDE + DEPTH_OFFSET_M)):
+            if (cur_depth > STAGING_DEPTH) and (cur_altitude < (MIN_ALTITUDE + DEPTH_OFFSET_M)):
+                # only check altimeter when below staging depth
+                # this avoids issues with invalid (and low numbers) in the first few samples
                 print(f'winctl:winmon: Winch is stopping within {MIN_ALTITUDE}m of the seafloor.')
                 pub_cmd(cmd_pub, winch_command_topic, WinchCmd.WINCH_CMD_STOP_AT_MAX_DEPTH.value)
                 stop_and_pause_at_bottom()
