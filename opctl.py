@@ -11,11 +11,6 @@ from winch.dio_cmds import DIOCommander
 from winch.winch import Winch
 
 
-def interrupt_handler(signum, frame):
-
-    sys.exit(0)
-
-
 class DIOShell(cmd.Cmd):
 
     DIO_CMDS = ['set', 'get', 'mode', 'edge']
@@ -169,6 +164,11 @@ Notes: 1) commands are case sensitive
 
 if __name__ == "__main__":
 
+    def interrupt_handler(signum, frame):
+
+        sys.exit(0)
+
+
     signal.signal(signal.SIGINT, interrupt_handler)
 
     cfg = config.read()
@@ -176,7 +176,7 @@ if __name__ == "__main__":
         print(f'winmon: ERROR unable to read rift-ox.toml config file. Quitting.')
         sys.exit(1)
 
-    print(f'{DIOShell.HELP_TEXT}')
+    # print(f'{DIOShell.HELP_TEXT}')
     print(f"\nEnter 'help dio' for dio command syntax help.\n")
 
     sys.exit(DIOShell(cfg).cmdloop())
