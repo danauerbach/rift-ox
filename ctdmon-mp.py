@@ -16,6 +16,7 @@ import serial
 import signal
 import sys
 import threading
+from datetime import datetime
 import time
 
 import paho.mqtt.client as mqtt
@@ -63,9 +64,6 @@ class SBE33SerialDataPort():
     CTD_STATE_TIMEOUT = 'timeout'
     CTD_STATE_SBE33_MENU = 'sbe33 menu'
     CTD_STATE_ACQUIRING_DATA = 'acquiring data'
-    # CTD_DATAACQ = 'data_acq_active'
-    # CTD_DATAACCQ_ACTIVE = 'active'
-    # CTD_DATAACCQ_INACTIVE = 'inactive'
     CTD_ACTIVE_INDICATORS = ['S>',
                             "<ERROR type=\'INVALID COMMAND\' msg=\'RCVD:wake\'/>",
                             "SBE 19plus",
@@ -109,7 +107,6 @@ class SBE33SerialDataPort():
         self.logfile = os.path.normpath(logfile)
         print(f'Initializing CTD Reader with path {self.logfile}')  
 
-        # self.last_command : str = ''
 
     def toggle_sbe33_menu(self):
 
@@ -237,11 +234,6 @@ class SBE33SerialDataPort():
         
         self.init_state()
 
-        # # self.init_comms()
-        # time.sleep(2)
-        # self.ctd_configure()
-        # time.sleep(1)
-
 
     def process_getcd_response(self) -> bool:
 
@@ -350,7 +342,7 @@ class SBE33SerialDataPort():
                 line = self.ser_port.readline()
                 self.lock.release()
                 if line:
-                    timestamp = round(time.time(), 2)
+                    timestamp = round(datetime.utcnow().timestamp(), 2)
                     line_utf8 = line.decode(encoding='utf-8').strip()
 
                     self.update_state(line_utf8.strip())
@@ -462,8 +454,6 @@ class SBE33SerialDataPort():
 
     def data_len_correct(self, line : str, has_gps : bool):
 
-        # print(f'data_len_correct: has_gps: {has_gps}')
-
         return len(line) == self.expected_sample_line_length(has_gps)
         
 
@@ -476,7 +466,7 @@ class SBE33SerialDataPort():
 
         # print(f'line len: {len(line_str)}')
 
-        has_gps : bool = len(line_str) == 40  # OUTPUTFORMAT == 1 ONLY - it's 26 without
+        has_gps : bool = len(line_str) == 40  # OUTPUTFORMAT == 1 ONLY - it's 26 without gps
         if self.data_len_correct(line, has_gps):
 
             if self.ctd_config.output_format == self.ctd_config.output_format.OUTPUT_FORMAT_1:
@@ -509,7 +499,7 @@ class SBE33SerialDataPort():
         cfg = self.ctd_config
         res = {}
 
-        # 2BC30D 103CA5 018861 A67E 000000 19138B5974E941
+        # 2BC30D 103CA5 018861 A67E ACBD 19138B5974E941
         pos = 0
         tempstr = line[pos:pos+6]; pos += 6
         res["temp_c"] = round((int(tempstr, 16) / 100000) - 10, 4)
@@ -727,8 +717,6 @@ def data_relay_loop(cfg: dict, data_q : queue.Queue, quit_evt : threading.Event)
 
     client.loop_stop()
     client.disconnect()
-
-
 
 
 def interrupt_handler(signum, frame):
