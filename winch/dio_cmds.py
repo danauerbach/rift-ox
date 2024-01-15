@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from pathlib import Path
 import serial
 import time
 from typing import Tuple, Union
@@ -12,6 +13,7 @@ class DIOCommander():
     def __init__(self, cfg: dict):
         self.cfg: dict = cfg
         self.dio_tty_port: str = cfg["rift-ox-pi"]["DIO_PORT"]
+        self.dio_tty_port_exists = Path.exists(Path(self.dio_tty_port))
         self.simulation: bool = cfg["rift-ox-pi"]["SIMULATION"]
 
         print(f"SIMULATION: {self.simulation}")
@@ -261,32 +263,37 @@ class DIOCommander():
 
         if not self.simulation:
 
-            with serial.Serial(self.dio_tty_port) as mcu:
+            if self.dio_tty_port_exists:
 
-                # print(f'_send_bytes issuing: "{cmd_bytes.decode().strip()}"')
-                mcu.write(b"\r\n")
-                time.sleep(0.05)
-                # print(f'{mcu.read(mcu.inWaiting())}')  #get anything waiting in buffer and discard
-                mcu.read(mcu.in_waiting) #get anything waiting in buffer and discard
+                with serial.Serial(self.dio_tty_port) as mcu:
 
-                written = mcu.write(cmd_bytes)
-                mcu.flush()
+                    # print(f'_send_bytes issuing: "{cmd_bytes.decode().strip()}"')
+                    mcu.write(b"\r\n")
+                    time.sleep(0.05)
+                    # print(f'{mcu.read(mcu.inWaiting())}')  #get anything waiting in buffer and discard
+                    mcu.read(mcu.in_waiting) #get anything waiting in buffer and discard
 
-                time.sleep(0.03)
-                res = mcu.read(mcu.in_waiting)
-                res_array = res.split(b'\r\n')
-                #TODO LOG INFO
-                # print(f"RESPONSE: {res_array}")
-                try:
-                    result = res_array[1].decode()
+                    written = mcu.write(cmd_bytes)
+                    mcu.flush()
+
+                    time.sleep(0.03)
+                    res = mcu.read(mcu.in_waiting)
+                    res_array = res.split(b'\r\n')
                     #TODO LOG INFO
-                except:
-                    result = ""
-                    err = True
-                    #TODO log error
-                    print(f'DIO: ERROR PARSING RESPONSE: {res}')
+                    # print(f"RESPONSE: {res_array}")
+                    try:
+                        result = res_array[1].decode()
+                        #TODO LOG INFO
+                    except:
+                        result = ""
+                        err = True
+                        #TODO log error
+                        print(f'DIO: ERROR PARSING RESPONSE: {res}')
 
-            return result, err
+                return result, err
+            else:
+                print(f'NO SERIAL PORT ({self.dio_tty_port}) for cmd: {cmd_bytes.decode()}')
+                return "", True
 
         else:
             # print(f'_send_bytes: logging: "{cmd_bytes.decode().strip()}"')
