@@ -12,8 +12,6 @@ import time
 import paho.mqtt.client as mqtt
 
 import config
-# import msgbus
-# from winch import 
 
 SIMULATION_DOWNCAST = 'downcast'
 
@@ -29,7 +27,7 @@ def client_loop(client, broker, port, keepalive):
     t = threading.Thread(target = client_loop, args=(client,broker,port,60), name='simul:client')
     t.start()
 
-def simulate_downcast(cfg: dict, ctd_simul : mqtt.Client, monitor_client : mqtt.Client, cmd_q : queue.Queue, start_evt : threading.Event) -> bool:
+def simulate_downcast(cfg: dict, ctd_simul : mqtt.Client, monitor_client : mqtt.Client, cmd_q : queue.Queue, start_evt : threading.Event):
     """send CTD data and altimeter messages that 
     will simulate a downcast. Simulation leaves carousel 
     at simulated sea floor.
@@ -84,8 +82,6 @@ def simulate_downcast(cfg: dict, ctd_simul : mqtt.Client, monitor_client : mqtt.
         print(f'DOWNCAST SIMULATOR: Depth: {round(cur_depth, 2)}, Altitude: {round(SEA_FLOOR_DEPTH - cur_depth, 2)}')
 
             
-
-
 def create_pubber_client(client_name : str, broker : str = 'localhost', port : int = 1883) -> mqtt.Client:
 
     client_id = client_name
@@ -94,15 +90,6 @@ def create_pubber_client(client_name : str, broker : str = 'localhost', port : i
     client.on_disconnect = on_disconnect
 
     return client
-
-# def on_message(client, userdata, message):
-#     print("Message received: ",str(message.payload.decode("utf-8")))
-#     if (message.topic == msgbus.TOPIC_COMMANDS):
-#         msg_str = message.payload.decode("utf-8")
-#         msg_json = json.loads(msg_str)
-#         if msg_json["command"] == 'gostart':
-#             print(f'starting simulation with "gostart"')
-#             start_evt.set()
 
 def on_connect(client : mqtt.Client, userdata, flags, rc):
 
