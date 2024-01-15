@@ -67,7 +67,7 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
     MIN_ALTITUDE : float = float(cfg["winch"]["MIN_ALTITUDE"])    # meters. DOn't get any closer to the seafloor than this
     MAX_DEPTH : float = float(cfg["winch"]["MAX_DEPTH"])          # meters. GO NO FARTHER
     STAGING_DEPTH : float = float(cfg["winch"]["STAGING_DEPTH"])  # meters. This is depth of initial pause at start of the downcast
-
+    DEPTH_OFFSET_M: float = float(cfg["winch"]["DEPTH_OFFSET_M"])  # amount to adjust target depths by to account for slight delay in winch response
 
     cdt_cmd_t : str = cfg["mqtt"]["CTD_CMD_TOPIC"]
     cdt_data_t : str = cfg["mqtt"]["CTD_DATA_TOPIC"]
@@ -164,19 +164,19 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
 
             max_depth_reached = cur_depth if cur_depth > max_depth_reached else max_depth_reached
 
-            if (cur_depth > STAGING_DEPTH) and \
-                (cur_state == WinchStateName.STAGING.value):
+            if (cur_depth > (STAGING_DEPTH - DEPTH_OFFSET_M) and \
+                (cur_state == WinchStateName.STAGING.value)):
                     # just hit stagin depth on way down, call winch.state.pause() pause
                 pub_cmd(cmd_pub, winch_command_topic, WinchCmd.WINCH_CMD_PAUSE.value)
                 pub_cmd(cmd_pub, cdt_cmd_t, "init")
 
-            if (cur_altitude < MIN_ALTITUDE):
+            if (cur_altitude < (MIN_ALTITUDE + DEPTH_OFFSET_M)):
                 print(f'winctl:winmon: Winch is stopping within {MIN_ALTITUDE}m of the seafloor.')
                 pub_cmd(cmd_pub, winch_command_topic, WinchCmd.WINCH_CMD_STOP_AT_MAX_DEPTH.value)
                 stop_and_pause_at_bottom()
                 continue
 
-            elif (cur_depth > MAX_DEPTH):
+            elif (cur_depth > (MAX_DEPTH - DEPTH_OFFSET_M)):
                 pub_cmd(cmd_pub, winch_command_topic, WinchCmd.WINCH_CMD_STOP_AT_MAX_DEPTH.value)
                 stop_and_pause_at_bottom()
                 print(f'winctl:winmon: Winch is stopping at MAX depth {MAX_DEPTH} meters.')
@@ -186,7 +186,7 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
             
             if (cur_state in [WinchStateName.UPCASTING.value]):
 
-                if (cur_depth < STAGING_DEPTH):
+                if (cur_depth < (STAGING_DEPTH + DEPTH_OFFSET_M)):
                     # just hit stagin depth on way up, let's pause here]
                     pub_cmd(cmd_pub, winch_command_topic, WinchCmd.WINCH_CMD_UPSTAGE.value)
                     pub_cmd(cmd_pub, cdt_cmd_t, "stop")
@@ -194,9 +194,9 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
                 else:
                     next_pause = pause_depths.get_next_depth(max_depth=max_depth_reached)
                     if next_pause:
-                        if cur_depth < next_pause:
-                            pause_depths.use_next_depth()
+                        if cur_depth < (next_pause + DEPTH_OFFSET_M):
                             pub_cmd(cmd_pub, winch_command_topic, WinchCmd.WINCH_CMD_PAUSE.value)
+                            pause_depths.use_next_depth()
 
 
         time.sleep(0.1)
