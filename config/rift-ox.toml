@@ -8,6 +8,13 @@ WINCH_CMD_TOPIC = "rift-ox/winch/cmd"
 # WINCH_PAYOUTDATA_TOPIC = "rift-ox/winch/payoutdata"
 WINCH_LATCH_TOPIC = "rift-ox/winch/latch"
 WINCH_PAUSE_TOPIC = "rift-ox/winch/pause"
+AWS_ENDPOINT = "aobtoeln2b95i-ats.iot.us-east-2.amazonaws.com"
+AWS_PORT = 8883
+AWS_ROOT_CA_FILE = '~/aws/root-CA.crt'
+AWS_CERT_FILE = '~/aws/rift-ox-cert.pem'
+AWS_PRIV_KEY_FILE = '~/aws/rift-ox.private.key'
+AWS_DATA_TOPIC = "rift-ox/ctd/data"
+AWS_RIFT_OX_CLIENT_ID = 'rift-ox-1'
 
 [winch]
 # DEPTHS & ALTITUDE are in meters
@@ -31,6 +38,7 @@ SHEAVE_RADIUS_INCH = 2.5
 [rift-ox-pi]
 REALTIME_CTD = false
 SIMULATION = false
+SKIP_AWS = true
 # DIRs are relative to rift-ox homedir
 LOG_DIR = 'dev/logs'
 PAYOUT_FN = 'payouts'

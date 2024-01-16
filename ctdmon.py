@@ -2,6 +2,7 @@
 
 import argparse
 import json
+from os.path import abspath, expanduser
 import queue
 import shlex
 import signal
@@ -10,6 +11,8 @@ import threading
 import time
 
 import paho.mqtt.client as mqtt
+from awscrt import mqtt as awsmqtt
+from awsiot import mqtt_connection_builder
 
 import config
 from sbe19v2plus.sbe33_serialport import SBE33SerialDataPort
@@ -131,6 +134,41 @@ def data_relay_loop(cfg: dict, data_q : queue.Queue, quit_evt : threading.Event)
     client.connect('localhost', 1883)
     client.loop_start()
 
+    # Callback when connection is accidentally lost.
+    def on_connection_interrupted(connection, error, **kwargs):
+        print("Connection interrupted. error: {}".format(error))
+
+    # Callback when an interrupted connection is re-established.
+    def on_connection_resumed(connection, return_code, session_present, **kwargs):
+        print("Connection resumed. return_code: {} session_present: {}".format(return_code, session_present))
+
+    skip_aws: bool = cfg['rift-ox']['SKIP_AWS']
+    client_id = cfg['mqtt']['AWS_RIFT_OX_CLIENT_ID']
+    endpoint = cfg['mqtt']['AWS_ENDPOINT']
+    aws_topic = cfg['mqtt']['AWS_DATA_TOPIC']
+    port = cfg['mqtt']['AWS_PORT']
+    rootca_fn = abspath(expanduser(cfg['mqtt']['AWS_ROOT_CA_FILE']))
+    cert_fn = abspath(expanduser(cfg['mqtt']['AWS_CERT_FILE']))
+    privkey_fn = abspath(expanduser(cfg['mqtt']['AWS_PRIV_KEY_FILE']))
+    if not skip_aws:
+       # Create a MQTT connection using AWS SDK
+        awsclient = mqtt_connection_builder.mtls_from_path(
+            endpoint=endpoint,
+            port=port,
+            cert_filepath=cert_fn,
+            pri_key_filepath=privkey_fn,
+            ca_filepath=rootca_fn,
+            on_connection_interrupted=on_connection_interrupted,
+            on_connection_resumed=on_connection_resumed,
+            client_id=client_id,
+            clean_session=False,
+            keep_alive_secs=30)
+
+        connect_future = awsclient.connect()
+        # Future.result() waits until a result is available
+        connect_future.result()
+        print("awsclient connected!")
+
     while not quit_evt.is_set():
 
         try:
@@ -138,16 +176,25 @@ def data_relay_loop(cfg: dict, data_q : queue.Queue, quit_evt : threading.Event)
             data_q.task_done()
 
             # Convert the dictionary to bytes
-            bytes_data = json.dumps(msg).encode("utf-8")
+            json_str = json.dumps(msg)
+            bytes_data = json_str.encode("utf-8")
             # Print the bytes data
             client.publish(cfg["mqtt"]["CTD_DATA_TOPIC"], bytes_data, qos=2)
+            if not skip_aws:
+                awsclient.publish(
+                    topic=aws_topic,
+                    payload=json_str,
+                    qos=awsmqtt.QoS.AT_LEAST_ONCE)
 
         except queue.Empty as e:
-            pass
+            continue
         else:
             pass
-        finally:
-            msg = ''
+            #TODO put pucloish to AWS here...
+
+    if not skip_aws:
+        disconnect_future = awsclient.disconnect()
+        disconnect_future.result()
 
     client.loop_stop()
     client.disconnect()
