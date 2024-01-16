@@ -1,4 +1,6 @@
 [mqtt]
+####################################
+# SHOULD NEVER NEED TO CHANGE THESE
 HOST = "localhost"
 REMOTE_HOST = "192.168.1.101"
 PORT = 1883
@@ -15,35 +17,45 @@ AWS_CERT_FILE = '~/aws/rift-ox.cert.pem'
 AWS_PRIV_KEY_FILE = '~/aws/rift-ox.private.key'
 AWS_DATA_TOPIC = "rift-ox/ctd/data"
 AWS_RIFT_OX_CLIENT_ID = 'rift-ox-1'
+####################################
 
 [winch]
 # DEPTHS & ALTITUDE are in meters
 STAGING_DEPTH = 4
+# HOW DEEP DO YOU WANT TO GO?
 MAX_DEPTH = 100
 # MIN_ALTITUDE MUST be <=100m
 MIN_ALTITUDE = 10
+# TO HELP COMPENSATE for OVER SHOOT at ALL STOPPING DEPTHS
 DEPTH_OFFSET_M = 0.1
 
-# PAUSE TIMEOUT in SECS
+# PAUSE TIMEOUT in SECS. USED FOR STAGING and BOTTLE FIRING PAUSE_DEPTHS
 PAUSE_DURATION_SECS = 120
 PARKING_DOWNCAST_MS = 450
 PARKING_UPCAST_INC_MS = 500
 UNPARKING_UPCAST_MS = 1000
 UNPARKING_DOWNCAST_MS = 1200
-# Leave in UpStaged state if NO_PARKING is true
+# Leave in UpStaged state at ASTAGING_DEPTH if NO_PARKING == true
 NO_PARKING = true
+# For PAYOUT DEPTH CALCULATION
 SEA_CABLE_DIAMETER_INCH = 0.123
 SHEAVE_RADIUS_INCH = 2.5
 
 [rift-ox-pi]
+# IF 'true', will output a log message if no CTD data is received in ~60 secs
 REALTIME_CTD = false
+# FOR SIMULATION TESTING. LEAVE THIS 'false'
 SIMULATION = false
+# WHEN 'true' this ENABLES the DATA RELAY TO AWS IoT
 SKIP_AWS = true
 # DIRs are relative to rift-ox homedir
 LOG_DIR = 'dev/logs'
 PAYOUT_FN = 'payouts'
 DIO_PORT = '/dev/ttyACM0'
-# OUTPUT PINS
+
+#############################
+# OUTPUT PINS: DO NOT CHANGE UNLESS GPIO CONNECTIONS 
+# OF WINCH CTL LINES HAVE CHANGED
 DIO_MOTOR_STOP_GROUP = 0
 DIO_MOTOR_STOP_PIN = 0
 DIO_DOWNCAST_GROUP = 0
@@ -54,13 +66,16 @@ DIO_LATCH_RELEASE_GROUP = 0
 DIO_LATCH_RELEASE_PIN = 3
 DIO_KILL33_GROUP = 2
 DIO_KILL33_PIN = 0
-# INPUT PINS
+#############################
+# INPUT PINS: DO NOT CHANGE UNLESS GPIO CONNECTIONS 
+# OF WINCH CTL LINES HAVE CHANGED
 DIO_PAYOUT1_SENSOR_GROUP = 0
 DIO_PAYOUT1_SENSOR_PIN = 0
 DIO_PAYOUT2_SENSOR_GROUP = 0
 DIO_PAYOUT2_SENSOR_PIN = 1
 DIO_LATCH_SENSOR_GROUP = 0
 DIO_LATCH_SENSOR_PIN = 2
+#############################
 
 [bottles]
 # file is in ./config dir
