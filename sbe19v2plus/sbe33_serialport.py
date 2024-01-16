@@ -383,7 +383,7 @@ class SBE33SerialDataPort():
             cmd = cmd.lower()
             if cmd in self.CTD_CMD_LIST:
                 print(f'SBE33SerialPort: sending ext cmd: {cmd}')
-                self.enqueue_command(cmd.encode(), eol='\r')
+                self.enqueue_command(cmd, '\r')
 
 
     
