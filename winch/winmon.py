@@ -137,7 +137,7 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
             # print('winctl:winmon: NO CTDDATA message in data_q queue')
             if cfg["rift-ox-pi"]["REALTIME_CTD"]:
                 empty_count += 1
-                if empty_count > 60:
+                if empty_count > 600:
                     print('winctl:winmon: still NO CTD data')
                     empty_count = 0
         except Exception as e:
