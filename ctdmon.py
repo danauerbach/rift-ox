@@ -142,7 +142,7 @@ def data_relay_loop(cfg: dict, data_q : queue.Queue, quit_evt : threading.Event)
     def on_connection_resumed(connection, return_code, session_present, **kwargs):
         print("Connection resumed. return_code: {} session_present: {}".format(return_code, session_present))
 
-    skip_aws: bool = cfg['rift-ox']['SKIP_AWS']
+    skip_aws: bool = cfg['rift-ox-pi']['SKIP_AWS']
     client_id = cfg['mqtt']['AWS_RIFT_OX_CLIENT_ID']
     endpoint = cfg['mqtt']['AWS_ENDPOINT']
     aws_topic = cfg['mqtt']['AWS_DATA_TOPIC']
@@ -249,7 +249,7 @@ def main(quit_evt : threading.Event):
 
     def _on_connect(client, userdata, flags, rc):
         if rc==0:
-            print("winctl:winmon: connected OK: {client}")
+            print("ctdmon: connected OK: {client}")
         else:
             print("winctl:winmon: Bad connection for {client} Returned code: ", rc)
             client.loop_stop()
@@ -259,6 +259,7 @@ def main(quit_evt : threading.Event):
 
     def _on_message(client : mqtt.Client, userdata, message):
         payload = message.payload.decode("utf-8")
+        print(f'Ext CTD Command rcvd: {payload}')
         ext_cmd_q.put(payload)
 
     mqtt_host = cfg['mqtt']['HOST']
