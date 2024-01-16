@@ -38,7 +38,7 @@ SHEAVE_RADIUS_INCH = 2.5
 [rift-ox-pi]
 REALTIME_CTD = false
 SIMULATION = false
-SKIP_AWS = false
+SKIP_AWS = true
 # DIRs are relative to rift-ox homedir
 LOG_DIR = 'dev/logs'
 PAYOUT_FN = 'payouts'
