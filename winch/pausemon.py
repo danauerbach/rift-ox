@@ -59,7 +59,9 @@ def pause_monitor(cfg: dict, quit_evt: Event):
     wincmd_pub.connect(mqtt_host, mqtt_port)
     wincmd_pub.loop_start()
 
-    pause_dur: float = float(cfg["winch"]["PAUSE_DURATION_SECS"])
+    default_pause_dur: float = float(cfg["winch"]["PAUSE_DURATION_SECS"])
+    bottle_pause_dur = float(cfg["winch"]["BOTTLE_PAUSE_DURATION_SECS"])
+    pause_dur: float = 0.0
     pause_active: bool = False
     pause_msg: str = ""
     pause_start: float = 0
@@ -79,7 +81,14 @@ def pause_monitor(cfg: dict, quit_evt: Event):
 
         # ignore pause if pause already active
         t = time.time()
-        if (pause_msg == "pause"):
+        pause_msg = pause_msg.lower()
+        if (pause_msg in ["pause", "bottle-pause"]):
+            
+            if pause_msg == "pause":
+                pause_dur = default_pause_dur
+            elif pause_msg == "bottle-pause":
+                pause_dur = bottle_pause_dur
+
             if not pause_active:
                 pause_active = True
                 pause_start = t

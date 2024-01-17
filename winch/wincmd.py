@@ -141,6 +141,11 @@ def wincmd_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
         #     winch.stop()
 
         elif cmd == WinchCmd.WINCH_CMD_PAUSE.value:
+            # winch.pause(WinchCmd.WINCH_CMD_PAUSE.value)
+            winch.pause()
+
+        elif cmd == WinchCmd.WINCH_CMD_BOTTLE_PAUSE.value:
+            # winch.pause(WinchCmd.WINCH_CMD_BOTTLE_PAUSE.value)
             winch.pause()
 
         elif cmd == WinchCmd.WINCH_CMD_DOWNCAST.value:

@@ -197,7 +197,7 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
                     next_pause = pause_depths.get_next_depth(max_depth=max_depth_reached)
                     if next_pause:
                         if cur_depth < (next_pause + DEPTH_OFFSET_M):
-                            pub_cmd(cmd_pub, winch_command_topic, WinchCmd.WINCH_CMD_PAUSE.value)
+                            pub_cmd(cmd_pub, winch_command_topic, WinchCmd.WINCH_CMD_BOTTLE_PAUSE.value)
                             pause_depths.use_next_depth()
 
 

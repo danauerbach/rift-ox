@@ -33,6 +33,7 @@ class WinchCmd(Enum):
     WINCH_CMD_START =             'START'                   # go to staging depth (see config file). Only valid when ParkedState
     WINCH_CMD_DOWNCAST =          'DOWN-CAST'             # start downcast (from StagedState)
     WINCH_CMD_PAUSE =             'PAUSE'             # stop winch and wait for PAUSE_DURATION_SECS timeout
+    WINCH_CMD_BOTTLE_PAUSE =      'BOTTLE-PAUSE'             # stop winch and wait for BOTTLE_PAUSE_DURATION_SECS timeout
     WINCH_CMD_STOP =              'STOP'              # essentially an alias for 'pause'
     WINCH_CMD_STOP_AT_MAX_DEPTH = 'STOP-AT-MAX-DEPTH' # stop winch motion and wait for next command
     WINCH_CMD_UPCAST =            'UP-CAST'                 # Start upcast (from any state except HomeState)
@@ -44,6 +45,7 @@ WINCH_CMD_LIST = {
     WinchCmd.WINCH_CMD_START.value, \
     WinchCmd.WINCH_CMD_DOWNCAST.value, \
     WinchCmd.WINCH_CMD_PAUSE.value, \
+    WinchCmd.WINCH_CMD_BOTTLE_PAUSE.value, \
     WinchCmd.WINCH_CMD_STOP.value, \
     WinchCmd.WINCH_CMD_STOP_AT_MAX_DEPTH.value, \
     WinchCmd.WINCH_CMD_UPCAST.value, \

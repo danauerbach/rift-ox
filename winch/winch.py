@@ -10,7 +10,7 @@ from typing import Protocol, Tuple, Union
 import paho.mqtt.client as mqtt
 
 from .dio_cmds import DIOCommander
-from . import WinchStateName, WinchDir
+from . import WinchStateName, WinchDir, WinchCmd
 
 
 class WinchState(Protocol):
@@ -24,7 +24,7 @@ class WinchState(Protocol):
     def down_cast(self):
         ...
 
-    def pause(self):
+    def pause(self, pause_cmd: str = WinchCmd.WINCH_CMD_PAUSE.value):
         ...
 
     def stop_at_bottom(self):
@@ -54,6 +54,7 @@ class WinchProto(Protocol):
     def start(self):
         ...
 
+    # def pause(self, pause_cmd = 'PAUSE'):
     def pause(self):
         ...
 
@@ -106,7 +107,7 @@ class ParkedState():
         # same as start when in Parked state
         self.start()
 
-    def pause(self):
+    def pause(self, pause_cmd: str = WinchCmd.WINCH_CMD_PAUSE.value):
         print(f'Can not pause when {self}')
 
     def stop_at_bottom(self):
@@ -138,11 +139,11 @@ class StagingState():
     def down_cast(self):
         print(f'Can not down-cast when {self}')
 
-    def pause(self):
+    def pause(self, pause_cmd: str = WinchCmd.WINCH_CMD_PAUSE.value):
         self.winch.cmndr.stop_winch()
         self.winch.cmndr.latch_release()
         self.winch.pausemon_pub.publish(self.winch.pause_t, \
-                                        "pause".encode(), qos=2)
+                                        pause_cmd.encode(), qos=2)
         self.winch.set_state(DownStagedState(self.winch)) 
         #TODO Need to send CMD to start ctdmon data acq (initlogging, etc)
 
@@ -184,7 +185,7 @@ class DownStagedState():
     def stop_at_bottom(self):
         print(f'Can not stop-at-bottom when {self}')
 
-    def pause(self):
+    def pause(self, pause_cmd: str = WinchCmd.WINCH_CMD_PAUSE.value):
         print(f'Can not pause when {self}')
 
     def up_cast(self):
@@ -214,7 +215,7 @@ class UpStagedState():
     def down_cast(self):
         print(f'Can not downcast when {self}')
 
-    def pause(self):
+    def pause(self, pause_cmd: str = WinchCmd.WINCH_CMD_PAUSE.value):
         print(f'Can not pause when {self}')
 
     def stop_at_bottom(self):
@@ -259,16 +260,16 @@ class DowncastingState():
     def down_cast(self):
         print(f'Can not downcast when {self}.')
 
-    def pause(self):
+    def pause(self, pause_cmd: str = WinchCmd.WINCH_CMD_PAUSE.value):
         self.winch.cmndr.stop_winch()
         self.winch.pausemon_pub.publish(self.winch.pause_t, \
-                                        "pause".encode(), qos=2)
+                                        pause_cmd.encode(), qos=2)
         self.winch.set_state(DownPausedState(self.winch))        
 
     def stop_at_bottom(self):
         self.winch.cmndr.stop_winch()
         self.winch.pausemon_pub.publish(self.winch.pause_t, \
-                                        "pause".encode(), qos=2)
+                                        WinchCmd.WINCH_CMD_PAUSE.value.encode(), qos=2)
         self.winch.set_state(MaxDepthState(self.winch))
 
     def up_cast(self):
@@ -297,10 +298,10 @@ class UpcastingState():
     def down_cast(self):
         print(f'Can not downcast when {self}.')
 
-    def pause(self):
+    def pause(self, pause_cmd: str = WinchCmd.WINCH_CMD_PAUSE.value):
         self.winch.cmndr.stop_winch()
         self.winch.pausemon_pub.publish(self.winch.pause_t, \
-                                        "pause".encode(), qos=2)
+                                        pause_cmd.encode(), qos=2)
         self.winch.set_state(UpPausedState(self.winch))        
 
     def stop_at_bottom(self):
@@ -312,7 +313,7 @@ class UpcastingState():
     def up_stage(self):
         self.winch.cmndr.stop_winch()
         self.winch.pausemon_pub.publish(self.winch.pause_t, \
-                                        "pause".encode(), qos=2)
+                                        WinchCmd.WINCH_CMD_PAUSE.value.encode(), qos=2)
         self.winch.set_state(UpStagedState(self.winch))        
 
     def park(self):
@@ -335,7 +336,7 @@ class MaxDepthState():
     def down_cast(self):
         print(f'Can not downcast when {self}.')
 
-    def pause(self):
+    def pause(self, pause_cmd: str = WinchCmd.WINCH_CMD_PAUSE.value):
         print(f'Can not downpause when {self}')
 
     def stop_at_bottom(self):
@@ -377,7 +378,7 @@ class ParkingState():
     def down_cast(self):
         print(f'Can not down-cast when {self}.')
 
-    def pause(self):
+    def pause(self, pause_cmd: str = WinchCmd.WINCH_CMD_PAUSE.value):
         print(f'Can not pause when {self}')
 
     def stop_at_bottom(self):
@@ -411,7 +412,7 @@ class DownPausedState():
         self.winch.cmndr.down_cast()
         self.winch.set_state(DowncastingState(self.winch))
 
-    def pause(self):
+    def pause(self, pause_cmd: str = WinchCmd.WINCH_CMD_PAUSE.value):
         print(f'Can not pause when {self}')
 
     def stop_at_bottom(self):
@@ -444,7 +445,7 @@ class UpPausedState():
     def down_cast(self):
         print(f'Can not downcast when {self}.')
 
-    def pause(self):
+    def pause(self, pause_cmd: str = WinchCmd.WINCH_CMD_PAUSE.value):
         print(f'Can not pause when {self}')
 
     def stop_at_bottom(self):
@@ -530,6 +531,8 @@ class Winch:
     def down_cast(self):
         self.state.down_cast()
 
+    # def pause(self, pause_cmd: str = WinchCmd.WINCH_CMD_PAUSE.value):
+        # self.state.pause(pause_cmd)
     def pause(self):
         self.state.pause()
 
