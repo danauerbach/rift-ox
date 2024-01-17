@@ -1,4 +1,4 @@
 # Winch will pause at these depths (meters based on payout sensors)
 # Depths greater than the depth at which the Winch stops 
 # due to reaching MAX_DEPTH or due to reaching MIN_ALTITUDE are ignored
-DEPTHS = [40, 20, 60, 80]
+DEPTHS = [10, 40, 20, 60, 80, 100]
