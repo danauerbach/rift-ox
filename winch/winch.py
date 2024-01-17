@@ -54,8 +54,7 @@ class WinchProto(Protocol):
     def start(self):
         ...
 
-    # def pause(self, pause_cmd = 'PAUSE'):
-    def pause(self):
+    def pause(self, pause_cmd: str = WinchCmd.WINCH_CMD_PAUSE.value):
         ...
 
     def down_cast(self):
@@ -533,7 +532,7 @@ class Winch:
 
     # def pause(self, pause_cmd: str = WinchCmd.WINCH_CMD_PAUSE.value):
         # self.state.pause(pause_cmd)
-    def pause(self):
+    def pause(self, pause_cmd: str = WinchCmd.WINCH_CMD_PAUSE.value):
         self.state.pause()
 
     def stop_at_bottom(self):
