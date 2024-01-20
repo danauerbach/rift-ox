@@ -116,7 +116,7 @@ class SBE33SerialDataPort():
         self.enqueue_command('mp', '\r')
         self.enqueue_command('outputformat=1', '\r')
         self.enqueue_command('autorun=no', '\r')
-        self.enqueue_command('ignoreswitch=yes', '\r')
+        self.enqueue_command('ignoreswitch=no', '\r')
         self.enqueue_command('echo=no', '\r')
         self.enqueue_command('outputexecutedtag=no', '\r')
         t = datetime.utcnow()
