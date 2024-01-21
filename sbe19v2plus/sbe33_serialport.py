@@ -203,11 +203,11 @@ class SBE33SerialDataPort():
             # CTD is already running and acquiring data
             # for some reason ctdmon was restarted after starting the CTD
             # now read config from device
-            self.enqueue_command('stop', '\r')
+            # self.enqueue_command('stop', '\r')
             time.sleep(0.5)
             self.enqueue_command('getcd', '\r')
             self.getcd_read_event.wait()
-            self.enqueue_command('startnow', '\r')
+            # self.enqueue_command('startnow', '\r')
 
 
 
