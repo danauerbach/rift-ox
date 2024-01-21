@@ -230,6 +230,7 @@ class UpStagedState():
         #TODO send cmd to stop data acq in ctdmon
         if not self.winch.cmndr.cfg['winch']['NO_PARKING']:
             self.winch.set_state(ParkingState(self.winch))
+            time.sleep(2)
             # winch moving at ~ 2/3 meter per sec. Upcast for STGAING_DEPTH secs
             # to get most of the way back to the winch latch
             # park() takes it the rest of the way in small/short moves
