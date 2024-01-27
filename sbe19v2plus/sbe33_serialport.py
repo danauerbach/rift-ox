@@ -504,7 +504,7 @@ class SBE33SerialDataPort():
         # 2BC30D 103CA5 018861 A67E ACBD 19138B5974E941
         pos = 0
         tempstr = line[pos:pos+6]; pos += 6
-        res["temp_c"] = round((int(tempstr, 16) / 100000) - 10, 4)
+        res["t_c"] = round((int(tempstr, 16) / 100000) - 10, 4)
         condstr = line[pos:pos+6]; pos += 6
         res["cond"] = round((int(condstr, 16) / 1000000) - 1, 4)
         presstr = line[pos:pos+6]; pos += 6
@@ -513,25 +513,25 @@ class SBE33SerialDataPort():
 
         if cfg.volt0:
             strval = line[pos:pos+4]; pos += 4
-            res["volt0"] = round(int(strval, 16) / 13107, 4)
+            res["v0"] = round(int(strval, 16) / 13107, 4)
             res["alt_m"] = round(self.altimeter_meters(res["volt0"], 
                                                             minV=0, 
                                                             maxV=self.altimeter_max_volts), 2)
         if cfg.volt1:
             strval = line[pos:pos+4]; pos += 4
-            res["volt1"] = round(int(strval, 16) / 13107, 4)
+            res["v1"] = round(int(strval, 16) / 13107, 4)
         if cfg.volt2:
             strval = line[pos:pos+4]; pos += 4
-            res["volt2"] = round(int(strval, 16) / 13107, 4)
+            res["v2"] = round(int(strval, 16) / 13107, 4)
         if cfg.volt3:
             strval = line[pos:pos+4]; pos += 4
-            res["volt3"] = round(int(strval, 16) / 13107, 4)
+            res["v3"] = round(int(strval, 16) / 13107, 4)
         if cfg.volt4:
             strval = line[pos:pos+4]; pos += 4
-            res["volt4"] = round(int(strval, 16) / 13107, 4)
+            res["v4"] = round(int(strval, 16) / 13107, 4)
         if cfg.volt5:
             strval = line[pos:pos+4]; pos += 4
-            res["volt5"] = round(int(strval, 16) / 13107, 4)
+            res["v5"] = round(int(strval, 16) / 13107, 4)
 
         if cfg.sbe38:
             strval = line[pos:pos+5]; pos += 5
@@ -588,7 +588,7 @@ class SBE33SerialDataPort():
             lat = 32
             lon = -117
 
-        res["depth_m"] = round(-gsw.z_from_p(res["pres"], lat), 2)  # make positive depth down from surface
+        res["dep_m"] = round(-gsw.z_from_p(res["pres"], lat), 2)  # make positive depth down from surface
         res["lat"] = lat
         res["lon"] = lon
 
