@@ -243,7 +243,7 @@ def main(quit_evt : threading.Event):
     data_relay_thr = threading.Thread(target=data_relay_loop, args=(cfg, data_q, quit_evt), name="ctdmon:datarelay")
     data_relay_thr.start()
 
-    ext_cmd_q: queue.Queue = queue.Queue()
+    ext_cmd_q: queue.Queue = queue.Queue()   # this queue accepts 'cmds' which are passed directly, as is, to the SBE33 serialport
     ctd_io = SBE33SerialDataPort("serialport.log", quit_evt, data_q, ext_cmd_q, serialport, baud, altimeter_max_volts)
     ctd_io.start()
 
@@ -258,10 +258,12 @@ def main(quit_evt : threading.Event):
         print("winctl:winmon: client disconnected ok")
 
     def _on_message(client : mqtt.Client, userdata, message):
+        # read commands and put in local queue for sending to SBE33 data serial port
         payload = message.payload.decode("utf-8")
         print(f'Ext CTD Command rcvd: {payload}')
         ext_cmd_q.put(payload)
 
+    # set up MQTT subscriber to listen for external commands that need to be sent to the SBE33 data port
     mqtt_host = cfg['mqtt']['HOST']
     mqtt_port = cfg['mqtt']['PORT']
     cmd_t = cfg['mqtt']['CTD_CMD_TOPIC']

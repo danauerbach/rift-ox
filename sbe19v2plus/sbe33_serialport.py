@@ -76,7 +76,8 @@ class SBE33SerialDataPort():
         self.serial_port_cmd_q = queue.Queue(maxsize=1)
         self.data_q = data_q
         self.ext_cmd_q = ext_cmd_q
-        self.ser_port = serial.serial_for_url(serialport, baud, timeout=0.5, write_timeout=1, parity=serial.PARITY_EVEN, bytesize=7)
+        self.ser_port = serial.serial_for_url(serialport, baud, timeout=0.5, 
+                                              write_timeout=1, parity=serial.PARITY_EVEN, bytesize=7)
         self.altimeter_max_volts = alt_volt_range
         
         self.read_thr = threading.Thread(target=self.read_loop, name="ctdmon:read_loop")
