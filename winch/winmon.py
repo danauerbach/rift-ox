@@ -16,6 +16,7 @@ from winch import pausemon
 
 from . import WinchDir, WinchStateName, WinchCmd, pub_cmd
 from .pause_depths import PauseDepths
+from inverter import InverterState, INVERTER_CMD_LIST
 
 
 
@@ -24,14 +25,8 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
     CTD depth and CTD altimeter as well as the winch PAYOUT sensors."""
 
 
-    def stop_and_pause_at_bottom():
-        #TODO SEND ALERT MSG
-        #TODO TELL WINCH TO STOP
-        #TODO touch HOLD_FLAG_FILE and record modified time
-        #TODO loop every 5 minutes until HOLD_FLAG_FILE modified time is 15 minutes in the past
-        #TODO READ BOTINFO file
-        #TODO TELL WINCH to START UPCAST
-        #TODO SEND ALERT MSG
+    def set_inverter_power(power_state: InverterState):
+        # send inverter state cmd to inverter cmd queue
         pass
 
     def _on_connect(client, userdata, flags, rc):
@@ -122,11 +117,14 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
             last_state = cur_state
             cur_state = winch_status["state"]
 
-            # heading up from bottom, lets reread pause_depths...
+            # heading up from bottom
+            # lets reread pause_depths...
+            # and kill power to the SBE-33
             if (last_state == WinchStateName.MAXDEPTH.value) and \
                 (cur_state == WinchStateName.UPCASTING.value):
                 pause_depths.refresh()
-                #TODO KILL33
+                set_inverter_power(InverterState.POWER_OFF)
+                # KILL POWER to SBE-33 by powering off the inverter
 
         data_dict = {}
         try:
@@ -175,12 +173,10 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
                 # this avoids issues with invalid (and low numbers) in the first few samples
                 print(f'winctl:winmon: Winch is stopping within {MIN_ALTITUDE}m of the seafloor.')
                 pub_cmd(cmd_pub, winch_command_topic, WinchCmd.WINCH_CMD_STOP_AT_MAX_DEPTH.value)
-                stop_and_pause_at_bottom()
                 continue
 
             elif (cur_depth > (MAX_DEPTH - DEPTH_OFFSET_M)):
                 pub_cmd(cmd_pub, winch_command_topic, WinchCmd.WINCH_CMD_STOP_AT_MAX_DEPTH.value)
-                stop_and_pause_at_bottom()
                 print(f'winctl:winmon: Winch is stopping at MAX depth {MAX_DEPTH} meters.')
                 continue
 

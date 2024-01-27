@@ -63,7 +63,7 @@ SEA_CABLE_DIAMETER_INCH = 0.123
 SHEAVE_RADIUS_INCH = 2.5
 
 [rift-ox-pi]
-# overall system paramneters
+# overall OnLogic Pi system paramneters
 
 
 # IF REALTIME_CTD is 'true', winctl will output a log message if no CTD data is received in ~60 secs
