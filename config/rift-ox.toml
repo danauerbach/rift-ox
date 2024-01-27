@@ -81,7 +81,7 @@ PAYOUT_FN = 'payouts'
 
 # OnLogic serial ports fort C&C
 DIO_PORT = '/dev/ttyACM0'
-KILL33_PORT = '/dev/ttyACM1'
+INVERTER_CMD_PORT = '/dev/ttyACM1'
 
 #############################
 # OUTPUT PINS: DO NOT CHANGE UNLESS GPIO CONNECTIONS 
