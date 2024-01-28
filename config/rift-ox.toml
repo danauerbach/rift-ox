@@ -74,7 +74,7 @@ REALTIME_CTD = false
 SIMULATION = false
 
 # set to 'true' to enable the DATA RELAY TO AWS IoT
-SKIP_AWS = true
+SKIP_AWS = false
 
 # DIRs are relative to rift-ox homedir
 LOG_DIR = 'dev/logs'
