@@ -175,6 +175,9 @@ def data_relay_loop(cfg: dict, data_q : queue.Queue, quit_evt : threading.Event)
             msg = data_q.get(block=True, timeout=1)
             data_q.task_done()
 
+            # add client_id & winch state (NYI)
+            msg['c_id'] = client_id
+            msg['wsta'] = "NYI"
             # Convert the dictionary to bytes
             json_str = json.dumps(msg)
             bytes_data = json_str.encode("utf-8")
