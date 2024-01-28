@@ -19,13 +19,15 @@ def pause_monitor(cfg: dict, quit_evt: Event):
 
     def _on_connect(client, userdata, flags, rc):
         if rc==0:
-            print("winctl:pausemon: connected OK: {client}")
+            # print("winctl:pausemon: connected OK: {client}")
+            pass
         else:
             print("winctl:pausemon: Bad connection for {client} Returned code: ", rc)
             client.loop_stop()
 
     def _on_disconnect(client, userdata, rc):
-        print("winctl:pausemon: client disconnected ok")
+        pass
+        # print("winctl:pausemon: client disconnected ok")
 
     def _on_cmd_publish(client, userdata, mid):
         print("winctl:pausemon: {client} mid= "  ,mid)

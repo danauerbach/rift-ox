@@ -467,17 +467,17 @@ class Winch:
         def on_connect(client, userdata, flags, rc):
             if rc==0:
                 client.connected_flag=True #set flag
-                print("winctl:states:pausemon connected OK: {client}")
+                # print("winctl:winch:Winch connected OK: {client}")
             else:
-                print("winctl:states:pausemon Bad connection for {client} Returned code: ", rc)
+                print("winctl:winch:Winch Bad connection for {client} Returned code: ", rc)
                 client.loop_stop()
 
         def on_disconnect(client, userdata, rc):
             client.connected_flag=False #set flag
-            print("winctl:states:pausemon client disconnected ok")
+            # print("winctl:winch:Winch client disconnected ok")
 
         def _on_pause_publish(client, userdata, mid):
-            print("winctl:states:pausemon: {client} mid= "  ,mid)
+            print("winctl:winch:Winch: {client} mid= "  ,mid)
 
     
         self.cmndr: DIOCommander = cmndr
