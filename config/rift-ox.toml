@@ -34,20 +34,21 @@ AWS_RIFT_OX_CLIENT_ID = 'rift-ox-1'
 
 [winch]
 # DEPTHS & ALTITUDE are in meters
-STAGING_DEPTH = 4
+STAGING_DEPTH = 5
 
 # HOW DEEP DO YOU WANT TO GO (meters)?
-MAX_DEPTH = 140
+MAX_DEPTH = 300
 
 # MIN_ALTITUDE MUST be meters <=100m
-MIN_ALTITUDE = 90
+# NEGAITVE values effectively disable altimeter checking
+MIN_ALTITUDE = -90
 
 # TO HELP COMPENSATE for OVER SHOOT at ALL STOPPING DEPTHS (meters)
 DEPTH_OFFSET_M = 0.1
 
 # PAUSE TIMEOUTs in SECS. USED FOR STAGING and BOTTLE FIRING PAUSE_DEPTHS
-PAUSE_DURATION_SECS = 60
-BOTTLE_PAUSE_DURATION_SECS = 120
+PAUSE_DURATION_SECS = 300
+BOTTLE_PAUSE_DURATION_SECS = 300
 
 # Parking parameters in milliseconds
 PARKING_DOWNCAST_MS = 450
@@ -73,7 +74,7 @@ REALTIME_CTD = false
 SIMULATION = false
 
 # set to 'true' to enable the DATA RELAY TO AWS IoT
-SKIP_AWS = true
+SKIP_AWS = false
 
 # DIRs are relative to rift-ox homedir
 LOG_DIR = 'dev/logs'
