@@ -16,7 +16,7 @@ from winch import pausemon
 
 from . import WinchDir, WinchStateName, WinchCmd, pub_cmd
 from .pause_depths import PauseDepths
-from inverter import InverterState, INVERTER_CMD_LIST
+# from inverter import InverterState, INVERTER_CMD_LIST
 
 
 
@@ -25,9 +25,9 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
     CTD depth and CTD altimeter as well as the winch PAYOUT sensors."""
 
 
-    def set_inverter_power(power_state: InverterState):
-        # send inverter state cmd to inverter cmd queue
-        pass
+    # def set_inverter_power(power_state: InverterState):
+    #     # send inverter state cmd to inverter cmd queue
+    #     pass
 
     def _on_connect(client, userdata, flags, rc):
         if rc==0:
@@ -123,7 +123,7 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
             if (last_state == WinchStateName.MAXDEPTH.value) and \
                 (cur_state == WinchStateName.UPCASTING.value):
                 pause_depths.refresh()
-                set_inverter_power(InverterState.POWER_OFF)
+                # set_inverter_power(InverterState.POWER_OFF)
                 # KILL POWER to SBE-33 by powering off the inverter
 
         data_dict = {}
