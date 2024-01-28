@@ -166,7 +166,7 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
                 (cur_state == WinchStateName.STAGING.value)):
                     # just hit stagin depth on way down, call winch.state.pause() pause
                 pub_cmd(cmd_pub, winch_command_topic, WinchCmd.WINCH_CMD_PAUSE.value)
-                pub_cmd(cmd_pub, cdt_cmd_t, "startnow")
+                # pub_cmd(cmd_pub, cdt_cmd_t, "startnow")
 
             if (cur_depth > STAGING_DEPTH) and (cur_altitude < (MIN_ALTITUDE + DEPTH_OFFSET_M)):
                 # only check altimeter when below staging depth
@@ -187,7 +187,7 @@ def winmon_loop(cfg: dict, winch_status_q: queue.Queue, quit_evt : threading.Eve
                 if (cur_depth < (STAGING_DEPTH + DEPTH_OFFSET_M)):
                     # just hit stagin depth on way up, let's pause here]
                     pub_cmd(cmd_pub, winch_command_topic, WinchCmd.WINCH_CMD_UPSTAGE.value)
-                    # pub_cmd(cmd_pub, cdt_cmd_t, "stop")
+                    pub_cmd(cmd_pub, cdt_cmd_t, "stop")
 
                 else:
                     next_pause = pause_depths.get_next_depth(max_depth=max_depth_reached)

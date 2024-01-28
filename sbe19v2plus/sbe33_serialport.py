@@ -148,6 +148,8 @@ class SBE33SerialDataPort():
         self.enqueue_command('getcd', '\r')
         self.getcd_read_event.wait()
         # wait until config commands all been issued
+        time.sleep(1)
+        self.enqueue_command('startnow', 'r')
         self.serial_port_cmd_q.join()
 
     
@@ -218,6 +220,7 @@ class SBE33SerialDataPort():
         self.write_thr.start()
         time.sleep(0.5)
         self.ext_cmd_thr.start()
+        time.sleep(0.5)
         self.threads_started = True
         
         self.init_state()
