@@ -66,9 +66,9 @@ def simulate_downcast(cfg: dict, ctd_simul : mqtt.Client, monitor_client : mqtt.
                 direction = 'stop'
 
         if direction == 'forward':
-            cur_depth += PAYOUT_RATE
+            cur_depth += PAYOUT_RATE / DEPTH_DATA_RECS_PER_SEC
         elif direction == 'reverse':
-            cur_depth -= PAYOUT_RATE
+            cur_depth -= PAYOUT_RATE / DEPTH_DATA_RECS_PER_SEC
 
         time.sleep(1/DEPTH_DATA_RECS_PER_SEC)
         payload = {
