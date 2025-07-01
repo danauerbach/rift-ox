@@ -100,6 +100,9 @@ Notes: 1) commands are case sensitive
     def help_lock(self):
         print("Release the latch solenoid to prevent the cable bullet from downcasting")
 
+    def help_park(self):
+        print("Upcast until latch sensor triggered, then stop and downcast for a little bit")
+
     def winch_init(self):
         self.cmndr.init_dio_pins()
 
