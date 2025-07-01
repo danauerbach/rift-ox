@@ -13,6 +13,7 @@ import signal
 import sys
 import threading
 import time
+from typing import Union, List
 
 import paho.mqtt.client as mqtt
 import gsw
@@ -303,15 +304,16 @@ class SBE33SerialDataPort():
                 self.sbe19_active_event.set()
 
 
-    def enqueue_command(self, cmds: str or list, eol : str = ''):
+    def enqueue_command(self, cmds: Union[str, list[str]], eol : str = ''):
 
         # print(f'enqueuing: {cmds}')
 
         if isinstance(cmds, str) or (cmds == ''):
-            cmdlist = [cmds]
+            cmdlist: list[str] = [str(cmds)]
         else:
             cmdlist = cmds
 
+        cmd : str
         if isinstance(cmdlist, list):
             for cmd in cmdlist:
                 cmd += eol
@@ -463,7 +465,7 @@ class SBE33SerialDataPort():
         return len(line) == self.expected_sample_line_length(has_gps)
         
 
-    def parse_data(self, line : str or None) -> dict:
+    def parse_data(self, line : str) -> dict:
         """Parse raw data line based on current output format.
         Output a dict with parsed values in proper type: int or float
         """
