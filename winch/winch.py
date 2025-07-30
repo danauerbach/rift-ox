@@ -552,9 +552,9 @@ class Winch:
         self.cmndr.up_cast(stop_after_ms=unpark_up)
         # time.sleep(2)
         self.cmndr.latch_hold()
-        time.sleep(2)
+        time.sleep(1)
         self.cmndr.down_cast(stop_after_ms=unpark_down)
-        time.sleep(5)
+        time.sleep(1)
         self.cmndr.latch_release()
 
 
