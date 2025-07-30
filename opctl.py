@@ -14,7 +14,7 @@ from winch.winch import Winch
 class DIOShell(cmd.Cmd):
 
     DIO_CMDS = ['set', 'get', 'mode', 'edge']
-    RIFT_OX_CMNDS = ['upcast', 'downcast', 'stop', 'unlock', 'lock', 'park', 'quit']
+    RIFT_OX_CMNDS = ['upcast', 'downcast', 'stop', 'unlock', 'lock', 'park', 'unpark', 'quit']
 
     HELP_TEXT = """\n
 dio set  D{ I | O }_G<group-num>  <pin_num>  { active | inactive }   (Set pin to active/high or inactive/low)
@@ -51,6 +51,9 @@ Notes: 1) commands are case sensitive
 
     def do_park(self, arg):
         self.winch.park()
+
+    def do_unpark(self, arg):
+        self.winch.unpark()
 
     def do_upcast(self, arg):
         try:
