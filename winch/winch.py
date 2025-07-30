@@ -564,8 +564,9 @@ class Winch:
         This should leave the winch in the (physically) LATCHED position
         
         NOTE we are using dio_cmndr.<command> directly to control winch while bypassing the 
-        because WInch state machine because Parking requires multiple winch 
-        commands all while Parking and the Winch state machine can handle this."""
+        Winch state machine because Parking is a compound command and requires multiple winch
+        commands all while Parking and the Winch state machine can't handle this."""
+
 
         def _sim_inc_latch_cnt(edgeinc: int) -> None:
             self._sim_latch_edge_count += edgeinc
