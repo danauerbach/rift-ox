@@ -546,6 +546,18 @@ class Winch:
     #         self._sim_latch_edge_count += 3
     #     self.state.park()
 
+    def unpark(self):
+        unpark_up: int = int(self.cmndr.cfg['winch']['UNPARKING_UPCAST_MS'])
+        unpark_down: int = int(self.cmndr.cfg['winch']['UNPARKING_DOWNCAST_MS'])
+        self.cmndr.up_cast(stop_after_ms=unpark_up)
+        # time.sleep(2)
+        self.cmndr.latch_hold()
+        time.sleep(2)
+        self.cmndr.down_cast(stop_after_ms=unpark_down)
+        time.sleep(5)
+        self.cmndr.latch_release()
+
+
     def park(self):
         """Parking is moving winch backwards until LATCH signal
         is detected and then paying out for < 1sec so that bullet will latch.
